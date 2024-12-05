@@ -1,3 +1,15 @@
+let pieceImages;
+function preload() {
+  pieceImages = {
+    rw: loadImage("../images/rw.png"),
+    rb: loadImage("../images/rb.png"),
+    kw: loadImage("../images/kw.png"),
+    kb: loadImage("../images/kb.png"),
+    bw: loadImage("../images/bw.png"),
+    bb: loadImage("../images/bb.png"),
+  };
+}
+
 let scaleFactor = 1;
 let canvas;
 function setup() {
@@ -14,6 +26,8 @@ function setup() {
   angleMode(DEGREES); // KA
   textSize(40);
   textFont("monospace"); // textFont(createFont("monospace")); // KA
+
+  GAMEPLAY.initializeGame();
 }
 
 // nKA
@@ -31,11 +45,13 @@ function draw() {
   touchCountdown--;
   cursor(ARROW);
 
-  background(100);
+  GAMEPLAY.renderScene(); ///
 }
 
 // KA
 function touchEnded() {
   if (touchCountdown > 0) return;
   else touchCountdown = 5;
+
+  GAMEPLAY.clicked(); ///
 }
