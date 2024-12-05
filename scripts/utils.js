@@ -11,7 +11,7 @@ BOARD_INFO.squareSize = BOARD_INFO.size / 8;
 
 /*
 	Piece { isWhite, isCharged, name }
-	Target { value }
+	Target { value, sizeProgress }  (SP goes to 0)
 */
 // 2D array of pieces or targets
 let boardData = [];
@@ -21,12 +21,6 @@ for (let y = 0; y < 8; y++) {
     boardData[y][x] = null;
   }
 }
-
-function isTarget(d) {
-  return d.value !== undefined;
-}
-
-function getRandomPosition() {}
 
 ///
 function getPieceImage(sd) {
