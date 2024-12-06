@@ -1,26 +1,14 @@
-const COLORS = {};
+const letters = "ABCDEFGH";
+// const COLORS = {}; ///
 
 const BOARD_INFO = {
   color1: [192, 135, 230],
   color2: [124, 69, 161],
   x: 0,
   y: 0,
-  size: 500,
+  size: 520,
 };
-BOARD_INFO.squareSize = BOARD_INFO.size / 8;
-
-/*
-	Piece { isWhite, isCharged, name }
-	Target { value, sizeProgress }  (SP goes to 0)
-*/
-// 2D array of pieces or targets
-let boardData = [];
-for (let y = 0; y < 8; y++) {
-  boardData[y] = [];
-  for (let x = 0; x < 8; x++) {
-    boardData[y][x] = null;
-  }
-}
+BOARD_INFO.sqSize = BOARD_INFO.size / 8;
 
 ///
 function getPieceImage(sd) {
