@@ -6,7 +6,10 @@ const GAMEPLAY = {
   // 2D array of pieces or targets
   boardData: [],
   spawningPositions: [],
-  stats: {
+  hoveredSq: null,
+  selectedPiecePos: null, // {x,y}
+  possibleMoves: null, // {x,y}[]  (only when selected a piece)
+  meta: {
     gameover: true,
     isWhiteTurn: true,
     white: { score: 0, energy: 1 },
@@ -48,6 +51,99 @@ const GAMEPLAY = {
     return positions;
   },
 
+  positionIsWithinGrid: function (x, y) {
+    return x >= 0 && x < 8 && y >= 0 && y < 8;
+  },
+
+  getPossibleMoves: function (pos) {
+    const moves = [];
+    const sqData = this.boardData[pos.y][pos.x];
+    // add to moves
+    if (sqData.name === "K") {
+      for (let i = 0; i < KNIGHT_MOVES.length; i++) {
+        const vel = KNIGHT_MOVES[i];
+        const x = vel[0] + pos.x;
+        const y = vel[1] + pos.y;
+        if (this.positionIsWithinGrid(x, y)) {
+          moves.push({ x, y });
+        }
+      }
+    } else if (sqData.name === "R" || sqData.name === "B") {
+      const MOVE_VELS = sqData.name === "R" ? ROOK_MOVES : BISHOP_MOVES;
+      for (let i = 0; i < MOVE_VELS.length; i++) {
+        const vel = MOVE_VELS[i];
+        let x = vel[0] + pos.x;
+        let y = vel[1] + pos.y;
+        while (this.positionIsWithinGrid(x, y)) {
+          moves.push({ x, y });
+          // not empty? this direction is blocked
+          if (this.boardData[y][x] !== null) break;
+          x = vel[0] + x;
+          y = vel[1] + y;
+        }
+      }
+    }
+
+    return moves;
+  },
+
+  makeMove: function (movePos) {
+    const sqData = this.boardData[movePos.y][movePos.x];
+    const movingPiece =
+      this.boardData[this.selectedPiecePos.y][this.selectedPiecePos.x];
+
+    // remove piece from original position
+    this.boardData[this.selectedPiecePos.y][this.selectedPiecePos.x] = null;
+
+    // move to empty square?
+    if (sqData === null) {
+      this.boardData[movePos.y][movePos.x] = movingPiece;
+    }
+    // capturing target?
+    else if (this.isTarget(sqData)) {
+      const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
+      scorer.score += sqData.value;
+      // double score if is supercharged
+      if (movingPiece.isCharged) scorer.score += sqData.value;
+      this.boardData[movePos.y][movePos.x] = movingPiece;
+    }
+    // swapping?
+    else {
+      this.boardData[movePos.y][movePos.x] = movingPiece;
+      this.boardData[this.selectedPiecePos.y][this.selectedPiecePos.x] = sqData;
+      sqData.isCharged = true;
+    }
+
+    movingPiece.isCharged = false; // consume supercharge
+    this.deselectPiece();
+
+    // consume energy
+    if (GAMEPLAY.meta.isWhiteTurn) {
+      GAMEPLAY.meta.white.energy--;
+      if (GAMEPLAY.meta.white.energy <= 0) {
+        GAMEPLAY.meta.isWhiteTurn = false;
+        GAMEPLAY.nextTurn();
+      }
+    } else {
+      GAMEPLAY.meta.black.energy--;
+      if (GAMEPLAY.meta.black.energy <= 0) {
+        // last round? game over
+        if (GAMEPLAY.meta.round === MAX_ROUND) {
+          GAMEPLAY.meta.gameover = true;
+          return;
+        } else {
+          GAMEPLAY.nextTurn();
+          GAMEPLAY.nextRound();
+        }
+      }
+    }
+  },
+
+  deselectPiece: function () {
+    this.selectedPiecePos = null;
+    this.possibleMoves = null;
+  },
+
   // should be called before nextRound()
   nextTurn: function () {
     // increase all targets' value
@@ -60,31 +156,34 @@ const GAMEPLAY = {
       }
     }
 
-    // spawn new targets (not on round 1)
+    // spawn new targets (if not piece standing here)
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
-      this.boardData[pos.y][pos.x] = this.getNewTargetData();
+      if (this.boardData[pos.y][pos.x] === null) {
+        this.boardData[pos.y][pos.x] = this.getNewTargetData();
+      }
     }
 
     // new previews (if not last round)
-    if (this.stats.round < 4) {
+    this.spawningPositions = [];
+    if (this.meta.round < MAX_ROUND) {
       this.spawningPositions = this.getNewTargetsPosition(2);
     }
   },
 
   nextRound: function () {
-    this.stats.round++;
-    this.stats.white.energy = this.stats.round;
-    this.stats.black.energy = this.stats.round;
-    this.stats.isWhiteTurn = true;
+    this.meta.round++;
+    this.meta.white.energy = this.meta.round;
+    this.meta.black.energy = this.meta.round;
+    this.meta.isWhiteTurn = true;
   },
 
   initializeGame: function () {
-    // reset stats
-    this.stats.gameover = false;
-    this.stats.white.score = 0;
-    this.stats.black.score = 0;
-    this.stats.round = 0;
+    // reset meta
+    this.meta.gameover = false;
+    this.meta.white.score = 0;
+    this.meta.black.score = 0;
+    this.meta.round = 0;
 
     // reset boardData
     for (let y = 0; y < 8; y++) {
@@ -114,10 +213,8 @@ const GAMEPLAY = {
     this.nextRound();
   },
 
-  renderScene: function () {
-    background(20);
-
-    // render board
+  renderBoard: function () {
+    // render board background
     rectMode(CORNER);
     noStroke();
     fill(...BOARD_INFO.color1);
@@ -156,18 +253,53 @@ const GAMEPLAY = {
         BOARD_INFO.sqSize * (i + 0.5) + BOARD_INFO.y
       );
     }
+  },
 
-    // render spawn previews
-    fill(255, 255, 255, cos(frameCount * 3) * 40 + 80);
-    for (let i = 0; i < this.spawningPositions.length; i++) {
-      const pos = this.spawningPositions[i];
-      const rx = BOARD_INFO.sqSize * (pos.x + 0.5) + BOARD_INFO.x;
-      const ry = BOARD_INFO.sqSize * (pos.y + 0.5) + BOARD_INFO.y;
-      circle(rx, ry, BOARD_INFO.sqSize / 3);
+  renderUI: function () {
+    noStroke();
+    textSize(24);
+    fill(250);
+    text("WHITE: " + this.meta.white.score, 80, 560);
+    text("BLACK: " + this.meta.black.score, 250, 560);
+
+    for (let i = 0; i < this.meta.white.energy; i++) {
+      square(50 + i * 20, 580, 12, 2);
+    }
+    for (let i = 0; i < this.meta.black.energy; i++) {
+      square(220 + i * 20, 580, 12, 2);
     }
 
+    if (this.meta.gameover) {
+      textSize(32);
+      text("Gameover", 480, 570);
+    } else {
+      textSize(18);
+      text("ROUND " + this.meta.round, 480, 560);
+      text((this.meta.isWhiteTurn ? "White" : "Black") + " to move", 480, 580);
+    }
+  },
+
+  renderScene: function () {
+    background(20);
+
+    // mouse hover on square
+    this.hoveredSq = null;
+    if (
+      _mouseX > BOARD_INFO.x &&
+      _mouseX < BOARD_INFO.x + BOARD_INFO.size &&
+      _mouseY > BOARD_INFO.y &&
+      _mouseY < BOARD_INFO.y + BOARD_INFO.size
+    ) {
+      this.hoveredSq = {
+        x: floor((_mouseX - BOARD_INFO.x) / BOARD_INFO.sqSize),
+        y: floor((_mouseY - BOARD_INFO.y) / BOARD_INFO.sqSize),
+      };
+    }
+
+    this.renderBoard();
+
     // render pieces & targets
-    textSize(22);
+    textSize(32);
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         const sqData = this.boardData[y][x];
@@ -185,27 +317,55 @@ const GAMEPLAY = {
       }
     }
 
-    // render stats
+    // render spawn previews
     noStroke();
-    textSize(24);
-    fill(250);
-    text("WHITE: " + this.stats.white.score, 80, 560);
-    text("BLACK: " + this.stats.black.score, 250, 560);
-
-    for (let i = 0; i < this.stats.white.energy; i++) {
-      circle(50 + i * 20, 580, 12);
-    }
-    for (let i = 0; i < this.stats.black.energy; i++) {
-      circle(220 + i * 20, 580, 12);
+    fill(255, 255, 255, cos(frameCount * 3) * 40 + 80);
+    for (let i = 0; i < this.spawningPositions.length; i++) {
+      const pos = this.spawningPositions[i];
+      const rx = BOARD_INFO.sqSize * (pos.x + 0.5) + BOARD_INFO.x;
+      const ry = BOARD_INFO.sqSize * (pos.y + 0.5) + BOARD_INFO.y;
+      circle(rx, ry, BOARD_INFO.sqSize / 3);
     }
 
-    textSize(32);
-    text("ROUND " + this.stats.round, 480, 570);
+    // render selected piece outline
+    if (this.selectedPiecePos !== null) {
+      const rx =
+        BOARD_INFO.sqSize * (this.selectedPiecePos.x + 0.5) + BOARD_INFO.x;
+      const ry =
+        BOARD_INFO.sqSize * (this.selectedPiecePos.y + 0.5) + BOARD_INFO.y;
+      stroke(...COLORS.primary);
+      strokeWeight(3);
+      noFill();
+      square(rx, ry, BOARD_INFO.sqSize);
+    }
+
+    // render possible moves outlines
+    if (this.possibleMoves !== null) {
+      noFill();
+      stroke(...COLORS.primary);
+      strokeWeight(3);
+      for (let i = 0; i < this.possibleMoves.length; i++) {
+        const pos = this.possibleMoves[i];
+        const rx = BOARD_INFO.sqSize * (pos.x + 0.5) + BOARD_INFO.x;
+        const ry = BOARD_INFO.sqSize * (pos.y + 0.5) + BOARD_INFO.y;
+        square(rx, ry, BOARD_INFO.sqSize * (0.8 + cos(frameCount * 3) * 0.03));
+      }
+    }
+
+    this.renderUI();
   },
 
   renderPiece: function (sd, rx, ry) {
     const pieceImg = getPieceImage(sd);
     image(pieceImg, rx, ry, BOARD_INFO.sqSize, BOARD_INFO.sqSize);
+
+    // supercharged render
+    if (sd.isCharged) {
+      stroke("aqua");
+      strokeWeight(2);
+      noFill();
+      circle(rx, ry, BOARD_INFO.sqSize * (0.5 + cos(frameCount * 3) * 0.1));
+    }
   },
 
   renderTarget: function (sd, rx, ry) {
@@ -218,7 +378,8 @@ const GAMEPLAY = {
     } else {
       fill(240, 105, 146);
     }
-    circle(rx, ry, BOARD_INFO.sqSize / 2);
+    noStroke();
+    circle(rx, ry, BOARD_INFO.sqSize * 0.6);
 
     /*
     beginShape();
@@ -247,25 +408,38 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
-    if (this.stats.gameover) return;
-    if (this.stats.isWhiteTurn) {
-      this.stats.white.energy--;
-      if (this.stats.white.energy <= 0) {
-        this.stats.isWhiteTurn = false;
-        this.nextTurn();
+    if (this.meta.gameover) return;
+
+    //// buttons
+
+    // not hovering on a square?
+    if (this.hoveredSq === null) return;
+
+    // currently no selected piece?
+    if (this.selectedPiecePos === null) {
+      const sqData = this.boardData[this.hoveredSq.y][this.hoveredSq.x];
+      // check if is clicking on a piece && it has the right color
+      if (
+        !sqData ||
+        this.isTarget(sqData) ||
+        sqData.isWhite !== this.meta.isWhiteTurn
+      ) {
+        return;
       }
-    } else {
-      this.stats.black.energy--;
-      if (this.stats.black.energy <= 0) {
-        // last round? game over
-        if (this.stats.round === 4) {
-          this.gameover = true;
+      this.selectedPiecePos = this.hoveredSq;
+      this.possibleMoves = this.getPossibleMoves(this.selectedPiecePos);
+    }
+    // already selected a piece?
+    else if (this.possibleMoves !== null) {
+      // clicking on a possible move?
+      for (let i = 0; i < this.possibleMoves.length; i++) {
+        const pos = this.possibleMoves[i];
+        if (this.hoveredSq.x === pos.x && this.hoveredSq.y === pos.y) {
+          this.makeMove(this.hoveredSq);
           return;
-        } else {
-          this.nextTurn();
-          this.nextRound();
         }
       }
+      this.deselectPiece(); // not clicking a possible move
     }
   },
 };

@@ -1,6 +1,9 @@
 const letters = "ABCDEFGH";
-// const COLORS = {}; ///
+const COLORS = {
+  primary: [233, 199, 255],
+};
 
+const MAX_ROUND = 4;
 const BOARD_INFO = {
   color1: [192, 135, 230],
   color2: [124, 69, 161],
@@ -9,6 +12,31 @@ const BOARD_INFO = {
   size: 520,
 };
 BOARD_INFO.sqSize = BOARD_INFO.size / 8;
+
+const KNIGHT_MOVES = [
+  [-2, 1],
+  [-2, -1],
+  [-1, -2],
+  [1, -2],
+  [2, 1],
+  [2, -1],
+  [-1, 2],
+  [1, 2],
+];
+
+const ROOK_MOVES = [
+  [0, 1],
+  [0, -1],
+  [-1, 0],
+  [1, 0],
+];
+
+const BISHOP_MOVES = [
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
+];
 
 ///
 function getPieceImage(sd) {
