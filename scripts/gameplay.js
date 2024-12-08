@@ -104,8 +104,6 @@ const GAMEPLAY = {
     else if (this.isTarget(sqData)) {
       const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
       scorer.score += sqData.value * (movingPiece.isCharged ? CHARGED_MULT : 1);
-      // double score if is supercharged
-      if (movingPiece.isCharged) scorer.score += sqData.value;
       this.boardData[movePos.y][movePos.x] = movingPiece;
     }
     // swapping?
