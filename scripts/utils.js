@@ -3,9 +3,13 @@ const COLORS = {
   primary: [233, 199, 255],
 };
 
-const MAX_ROUND = 4;
+const MAX_ROUND = 5;
+const CHARGED_MULT = 3;
+const RESPAWN_TARGETS_COUNT = 3;
+const INITIAL_TARGETS_COUNT = 7;
+
 const BOARD_INFO = {
-  color1: [192, 135, 230],
+  color1: [196, 128, 242],
   color2: [124, 69, 161],
   x: 0,
   y: 0,

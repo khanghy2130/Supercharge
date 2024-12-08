@@ -1,7 +1,7 @@
 const GAMEPLAY = {
   /*
     Piece { isWhite, isCharged, name }
-    Target { value, sizeProgress }  (SP goes to 0)
+    Target { value, sizeFactor }  (SP goes to 0)
   */
   // 2D array of pieces or targets
   boardData: [],
@@ -25,7 +25,8 @@ const GAMEPLAY = {
     return { name: name, isWhite: isWhite, isCharged: false };
   },
   getNewTargetData: function () {
-    return { value: 1, sizeProgress: 1 };
+    /// floor(random(1,7))
+    return { value: 1, sizeFactor: 1 };
   },
   getNewTargetsPosition: function (amount) {
     const positions = []; // {x,y}[]
@@ -89,11 +90,11 @@ const GAMEPLAY = {
 
   makeMove: function (movePos) {
     const sqData = this.boardData[movePos.y][movePos.x];
-    const movingPiece =
-      this.boardData[this.selectedPiecePos.y][this.selectedPiecePos.x];
+    const spPos = this.selectedPiecePos;
+    const movingPiece = this.boardData[spPos.y][spPos.x];
 
     // remove piece from original position
-    this.boardData[this.selectedPiecePos.y][this.selectedPiecePos.x] = null;
+    this.boardData[spPos.y][spPos.x] = null;
 
     // move to empty square?
     if (sqData === null) {
@@ -102,7 +103,7 @@ const GAMEPLAY = {
     // capturing target?
     else if (this.isTarget(sqData)) {
       const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-      scorer.score += sqData.value;
+      scorer.score += sqData.value * (movingPiece.isCharged ? CHARGED_MULT : 1);
       // double score if is supercharged
       if (movingPiece.isCharged) scorer.score += sqData.value;
       this.boardData[movePos.y][movePos.x] = movingPiece;
@@ -110,7 +111,7 @@ const GAMEPLAY = {
     // swapping?
     else {
       this.boardData[movePos.y][movePos.x] = movingPiece;
-      this.boardData[this.selectedPiecePos.y][this.selectedPiecePos.x] = sqData;
+      this.boardData[spPos.y][spPos.x] = sqData;
       sqData.isCharged = true;
     }
 
@@ -122,7 +123,6 @@ const GAMEPLAY = {
       GAMEPLAY.meta.white.energy--;
       if (GAMEPLAY.meta.white.energy <= 0) {
         GAMEPLAY.meta.isWhiteTurn = false;
-        GAMEPLAY.nextTurn();
       }
     } else {
       GAMEPLAY.meta.black.energy--;
@@ -131,10 +131,7 @@ const GAMEPLAY = {
         if (GAMEPLAY.meta.round === MAX_ROUND) {
           GAMEPLAY.meta.gameover = true;
           return;
-        } else {
-          GAMEPLAY.nextTurn();
-          GAMEPLAY.nextRound();
-        }
+        } else GAMEPLAY.nextRound();
       }
     }
   },
@@ -144,8 +141,7 @@ const GAMEPLAY = {
     this.possibleMoves = null;
   },
 
-  // should be called before nextRound()
-  nextTurn: function () {
+  updateTargets: function () {
     // increase all targets' value
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
@@ -156,7 +152,7 @@ const GAMEPLAY = {
       }
     }
 
-    // spawn new targets (if not piece standing here)
+    // spawn new targets (if no piece standing here)
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
       if (this.boardData[pos.y][pos.x] === null) {
@@ -166,15 +162,21 @@ const GAMEPLAY = {
 
     // new previews (if not last round)
     this.spawningPositions = [];
-    if (this.meta.round < MAX_ROUND) {
-      this.spawningPositions = this.getNewTargetsPosition(2);
+    // round +1 because isn't increased yet
+    if (this.meta.round + 1 < MAX_ROUND) {
+      this.spawningPositions = this.getNewTargetsPosition(
+        RESPAWN_TARGETS_COUNT
+      );
     }
   },
 
   nextRound: function () {
+    // skip this first round
+    if (this.meta.round > 0) this.updateTargets();
+
     this.meta.round++;
-    this.meta.white.energy = this.meta.round;
-    this.meta.black.energy = this.meta.round;
+    this.meta.white.energy = 2;
+    this.meta.black.energy = 2;
     this.meta.isWhiteTurn = true;
   },
 
@@ -202,7 +204,7 @@ const GAMEPLAY = {
     this.boardData[2][6] = this.getPieceData("K", false);
 
     // spawn initial targets
-    const targetPositions = this.getNewTargetsPosition(6);
+    const targetPositions = this.getNewTargetsPosition(INITIAL_TARGETS_COUNT);
     for (let i = 0; i < targetPositions.length; i++) {
       const pos = targetPositions[i];
       this.boardData[pos.y][pos.x] = this.getNewTargetData();
@@ -369,16 +371,16 @@ const GAMEPLAY = {
   },
 
   renderTarget: function (sd, rx, ry) {
-    if (sd.value < 3) {
-      fill(136, 240, 122);
-    } else if (sd.value < 5) {
-      fill(118, 211, 245);
-    } else if (sd.value < 7) {
-      fill(247, 240, 104);
-    } else {
-      fill(240, 105, 146);
-    }
-    noStroke();
+    if (sd.value === 1) fill(125, 240, 161);
+    else if (sd.value === 2) fill(125, 240, 227);
+    else if (sd.value === 3) fill(125, 159, 240);
+    else if (sd.value === 4) fill(240, 125, 196);
+    else if (sd.value === 5) fill(240, 129, 125);
+    else if (sd.value === 6) fill(240, 194, 125);
+    else noFill();
+
+    strokeWeight(2);
+    stroke(0);
     circle(rx, ry, BOARD_INFO.sqSize * 0.6);
 
     /*
@@ -404,6 +406,7 @@ const GAMEPLAY = {
     */
 
     fill(0);
+    noStroke();
     text(sd.value, rx, ry);
   },
 
