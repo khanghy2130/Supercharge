@@ -17,21 +17,31 @@ const GAMEPLAY = {
     round: 1,
   },
 
+  // {rx, ry, content, progress}
+  pointsPopups: [],
+
   isTarget: function (sqData) {
     return sqData.value !== undefined;
+  },
+
+  getRenderPos: function (x, y) {
+    return {
+      rx: BOARD_INFO.sqSize * (x + 0.5) + BOARD_INFO.x,
+      ry: BOARD_INFO.sqSize * (y + 0.5) + BOARD_INFO.y,
+    };
   },
 
   getPieceData: function (name, isWhite) {
     return { name: name, isWhite: isWhite, isCharged: false };
   },
   getNewTargetData: function () {
-    /// floor(random(1,7))
+    /// floor(random(1,?))
     return { value: 1, sizeFactor: 1 };
   },
   getNewTargetsPosition: function (amount) {
     const positions = []; // {x,y}[]
-
-    while (positions.length < amount) {
+    let loopCount = 0; // prevent infinite loop
+    while (positions.length < amount && loopCount++ < 100) {
       const newPos = {
         x: floor(random() * 8),
         y: floor(random() * 8),
@@ -103,8 +113,19 @@ const GAMEPLAY = {
     // capturing target?
     else if (this.isTarget(sqData)) {
       const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-      scorer.score += sqData.value * (movingPiece.isCharged ? CHARGED_MULT : 1);
+      const gainedScore =
+        sqData.value * (movingPiece.isCharged ? CHARGED_MULT : 1);
+      scorer.score += gainedScore;
       this.boardData[movePos.y][movePos.x] = movingPiece;
+
+      // add to popups
+      const { rx, ry } = this.getRenderPos(movePos.x, movePos.y);
+      this.pointsPopups.push({
+        rx,
+        ry,
+        content: "+ " + gainedScore,
+        progress: 0,
+      });
     }
     // swapping?
     else {
@@ -160,7 +181,7 @@ const GAMEPLAY = {
 
     // new previews (if not last round)
     this.spawningPositions = [];
-    // round +1 because isn't increased yet
+    // skip last round (round +1 because isn't increased yet)
     if (this.meta.round + 1 < MAX_ROUND) {
       this.spawningPositions = this.getNewTargetsPosition(
         RESPAWN_TARGETS_COUNT
@@ -209,7 +230,7 @@ const GAMEPLAY = {
     }
 
     // initial spawn previews
-    this.spawningPositions = this.getNewTargetsPosition(2);
+    this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
     this.nextRound();
   },
 
@@ -304,8 +325,7 @@ const GAMEPLAY = {
       for (let x = 0; x < 8; x++) {
         const sqData = this.boardData[y][x];
         if (!sqData) continue;
-        const rx = BOARD_INFO.sqSize * (x + 0.5) + BOARD_INFO.x;
-        const ry = BOARD_INFO.sqSize * (y + 0.5) + BOARD_INFO.y;
+        const { rx, ry } = this.getRenderPos(x, y);
         // target
         if (this.isTarget(sqData)) {
           this.renderTarget(sqData, rx, ry);
@@ -322,17 +342,16 @@ const GAMEPLAY = {
     fill(255, 255, 255, cos(frameCount * 3) * 40 + 80);
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
-      const rx = BOARD_INFO.sqSize * (pos.x + 0.5) + BOARD_INFO.x;
-      const ry = BOARD_INFO.sqSize * (pos.y + 0.5) + BOARD_INFO.y;
+      const { rx, ry } = this.getRenderPos(pos.x, pos.y);
       circle(rx, ry, BOARD_INFO.sqSize / 3);
     }
 
     // render selected piece outline
     if (this.selectedPiecePos !== null) {
-      const rx =
-        BOARD_INFO.sqSize * (this.selectedPiecePos.x + 0.5) + BOARD_INFO.x;
-      const ry =
-        BOARD_INFO.sqSize * (this.selectedPiecePos.y + 0.5) + BOARD_INFO.y;
+      const { rx, ry } = this.getRenderPos(
+        this.selectedPiecePos.x,
+        this.selectedPiecePos.y
+      );
       stroke(...COLORS.primary);
       strokeWeight(3);
       noFill();
@@ -346,9 +365,28 @@ const GAMEPLAY = {
       strokeWeight(3);
       for (let i = 0; i < this.possibleMoves.length; i++) {
         const pos = this.possibleMoves[i];
-        const rx = BOARD_INFO.sqSize * (pos.x + 0.5) + BOARD_INFO.x;
-        const ry = BOARD_INFO.sqSize * (pos.y + 0.5) + BOARD_INFO.y;
+        const { rx, ry } = this.getRenderPos(pos.x, pos.y);
         square(rx, ry, BOARD_INFO.sqSize * (0.8 + cos(frameCount * 3) * 0.03));
+      }
+    }
+
+    // render points popups (first one is always first to disappear)
+    noStroke();
+    fill(255);
+    textSize(24);
+    const textYOffset = BOARD_INFO.sqSize * 0.3;
+    for (let i = 0; i < this.pointsPopups.length; i++) {
+      const pp = this.pointsPopups[i];
+      text(
+        pp.content,
+        pp.rx,
+        pp.ry - textYOffset - pp.progress * textYOffset * 0.8
+      );
+
+      pp.progress += 0.02;
+      if (pp.progress >= 1) {
+        this.pointsPopups.shift();
+        i--;
       }
     }
 
@@ -362,46 +400,26 @@ const GAMEPLAY = {
     // supercharged render
     if (sd.isCharged) {
       stroke("aqua");
-      strokeWeight(2);
+      strokeWeight(5);
       noFill();
-      circle(rx, ry, BOARD_INFO.sqSize * (0.5 + cos(frameCount * 3) * 0.1));
+      circle(rx, ry, BOARD_INFO.sqSize * (0.7 + cos(frameCount * 3) * 0.1));
     }
   },
 
   renderTarget: function (sd, rx, ry) {
-    if (sd.value === 1) fill(125, 240, 161);
-    else if (sd.value === 2) fill(125, 240, 227);
-    else if (sd.value === 3) fill(125, 159, 240);
-    else if (sd.value === 4) fill(240, 125, 196);
-    else if (sd.value === 5) fill(240, 129, 125);
-    else if (sd.value === 6) fill(240, 194, 125);
+    if (sd.value === 1) fill(240, 163, 125);
+    else if (sd.value === 2) fill(240, 223, 125);
+    else if (sd.value === 3) fill(186, 240, 125);
+    else if (sd.value === 4) fill(125, 240, 171);
+    else if (sd.value === 5) fill(125, 213, 240);
+    else if (sd.value === 6) fill(125, 146, 240);
+    else if (sd.value === 7) fill(238, 125, 240);
+    else if (sd.value === 8) fill(240, 125, 156);
     else noFill();
 
     strokeWeight(2);
     stroke(0);
     circle(rx, ry, BOARD_INFO.sqSize * 0.6);
-
-    /*
-    beginShape();
-    const deg = 360 / (sd.value + 2);
-    for (let i = 0; i < sd.value + 2; i++) {
-      vertex(
-        rx + (sin(i * deg) * BOARD_INFO.sqSize) / 3,
-        ry + (cos(i * deg) * BOARD_INFO.sqSize) / 3
-      );
-    }
-    endShape(CLOSE);
-    stroke(80, 160, 80);
-    for (let i = 0; i < sd.value + 2; i++) {
-      line(
-        rx + (sin(i * deg) * BOARD_INFO.sqSize) / 3,
-        ry + (cos(i * deg) * BOARD_INFO.sqSize) / 3,
-        rx,
-        ry
-      );
-    }
-    noStroke();
-    */
 
     fill(0);
     noStroke();
