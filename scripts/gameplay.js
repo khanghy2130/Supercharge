@@ -1,7 +1,7 @@
 const GAMEPLAY = {
   /*
     Piece { isWhite, isCharged, name }
-    Target { value, sizeFactor }  (SP goes to 0)
+    Target (number)
   */
   // 2D array of pieces or targets
   boardData: [],
@@ -21,7 +21,7 @@ const GAMEPLAY = {
   pointsPopups: [],
 
   isTarget: function (sqData) {
-    return sqData.value !== undefined;
+    return typeof sqData === "number";
   },
 
   getRenderPos: function (x, y) {
@@ -33,10 +33,6 @@ const GAMEPLAY = {
 
   getPieceData: function (name, isWhite) {
     return { name: name, isWhite: isWhite, isCharged: false };
-  },
-  getNewTargetData: function () {
-    /// floor(random(1,?))
-    return { value: 1, sizeFactor: 1 };
   },
   getNewTargetsPosition: function (amount) {
     const positions = []; // {x,y}[]
@@ -113,8 +109,7 @@ const GAMEPLAY = {
     // capturing target?
     else if (this.isTarget(sqData)) {
       const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-      const gainedScore =
-        sqData.value * (movingPiece.isCharged ? CHARGED_MULT : 1);
+      const gainedScore = sqData * (movingPiece.isCharged ? CHARGED_MULT : 1);
       scorer.score += gainedScore;
       this.boardData[movePos.y][movePos.x] = movingPiece;
 
@@ -165,9 +160,7 @@ const GAMEPLAY = {
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         const sqData = this.boardData[y][x];
-        if (sqData && this.isTarget(sqData)) {
-          sqData.value++;
-        }
+        if (this.isTarget(sqData)) this.boardData[y][x]++;
       }
     }
 
@@ -175,7 +168,7 @@ const GAMEPLAY = {
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
       if (this.boardData[pos.y][pos.x] === null) {
-        this.boardData[pos.y][pos.x] = this.getNewTargetData();
+        this.boardData[pos.y][pos.x] = 1;
       }
     }
 
@@ -226,7 +219,7 @@ const GAMEPLAY = {
     const targetPositions = this.getNewTargetsPosition(INITIAL_TARGETS_COUNT);
     for (let i = 0; i < targetPositions.length; i++) {
       const pos = targetPositions[i];
-      this.boardData[pos.y][pos.x] = this.getNewTargetData();
+      this.boardData[pos.y][pos.x] = 1;
     }
 
     // initial spawn previews
@@ -327,13 +320,9 @@ const GAMEPLAY = {
         if (!sqData) continue;
         const { rx, ry } = this.getRenderPos(x, y);
         // target
-        if (this.isTarget(sqData)) {
-          this.renderTarget(sqData, rx, ry);
-        }
+        if (this.isTarget(sqData)) this.renderTarget(sqData, rx, ry);
         // piece
-        else {
-          this.renderPiece(sqData, rx, ry);
-        }
+        else this.renderPiece(sqData, rx, ry);
       }
     }
 
@@ -407,14 +396,14 @@ const GAMEPLAY = {
   },
 
   renderTarget: function (sd, rx, ry) {
-    if (sd.value === 1) fill(240, 163, 125);
-    else if (sd.value === 2) fill(240, 223, 125);
-    else if (sd.value === 3) fill(186, 240, 125);
-    else if (sd.value === 4) fill(125, 240, 171);
-    else if (sd.value === 5) fill(125, 213, 240);
-    else if (sd.value === 6) fill(125, 146, 240);
-    else if (sd.value === 7) fill(238, 125, 240);
-    else if (sd.value === 8) fill(240, 125, 156);
+    if (sd === 1) fill(240, 163, 125);
+    else if (sd === 2) fill(240, 223, 125);
+    else if (sd === 3) fill(186, 240, 125);
+    else if (sd === 4) fill(125, 240, 171);
+    else if (sd === 5) fill(125, 213, 240);
+    else if (sd === 6) fill(125, 146, 240);
+    else if (sd === 7) fill(238, 125, 240);
+    else if (sd === 8) fill(240, 125, 156);
     else noFill();
 
     strokeWeight(2);
@@ -423,7 +412,7 @@ const GAMEPLAY = {
 
     fill(0);
     noStroke();
-    text(sd.value, rx, ry);
+    text(sd, rx, ry);
   },
 
   clicked: function () {
@@ -437,7 +426,7 @@ const GAMEPLAY = {
     // currently no selected piece?
     if (this.selectedPiecePos === null) {
       const sqData = this.boardData[this.hoveredSq.y][this.hoveredSq.x];
-      // check if is clicking on a piece && it has the right color
+      // check if is not clicking on a piece OR it has the wrong color
       if (
         !sqData ||
         this.isTarget(sqData) ||
