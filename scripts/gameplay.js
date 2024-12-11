@@ -310,6 +310,9 @@ const GAMEPLAY = {
       };
     }
 
+    // process bot
+    if (BOT.isProcessing) BOT.processMinimax();
+
     this.renderBoard();
 
     // render pieces & targets
