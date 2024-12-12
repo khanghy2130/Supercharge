@@ -1,9 +1,9 @@
 const BOT = {
   isProcessing: false,
   stack: [],
-  bestMove: null, // {node, scoreDiff}
+  finalOutput: null, // { actionsHistory, scoreDiff }
 
-  getBoardCopy: function () {
+  getSimulatedData: function (actionsHistory) {
     const boardData = [];
     for (let y = 0; y < 8; y++) {
       const row = [];
@@ -17,116 +17,134 @@ const BOT = {
       }
       boardData[y] = row;
     }
-    return boardData;
+
+    /// apply actions, also apply updateTargets at the right order
+
+    return {
+      boardData: boardData,
+      whiteScore: null, ///
+      blackScore: null,
+    };
   },
 
   startMinimax: function () {
     this.isProcessing = true;
-    this.bestMove = null;
+    this.finalOutput = null;
+    const isMaximizing = GAMEPLAY.meta.isWhiteTurn;
     this.stack = [
       {
-        node: this.getBoardCopy(),
+        // Action: [sx, sy, ex, ey][2]
+        actionsHistory: [],
+        potentialActions: null, // null by default
+        returnValue: {
+          action: null,
+          scoreDiff: isMaximizing ? -Infinity : Infinity,
+        },
         depth: 0,
-        isMaximizing: GAMEPLAY.meta.isWhiteTurn,
+        isMaximizing: isMaximizing,
         alpha: -Infinity,
         beta: Infinity,
       },
     ];
   },
 
-  processMinimax: function () {
-    // process amount per frame here
-    for (let i = 0; i < 10; i++) {
-      if (this.stack.length === 0) {
-        this.isProcessing = false; // All nodes processed
-        /// make the final move here
-        break;
+  // returnValue: { actionsHistory, scoreDiff }
+  updateParent: function (isMaximizing, returnValue) {
+    this.stack.pop(); // pop last node
+    const parent = this.stack[this.stack.length - 1];
+
+    // popped the root node? set best move
+    if (!parent) {
+      this.finalOutput = returnValue;
+      return;
+    }
+
+    // update parent returnValue plus alpha/beta
+    if (isMaximizing) {
+      if (parent.returnValue.scoreDiff <= returnValue.scoreDiff) {
+        parent.returnValue = returnValue;
       }
-
-      // Pop and process the next node
-      const { node, depth, isMaximizing, alpha, beta } = this.stack.pop();
-
-      // Base case
-      ///// last round check here to stop before max depth
-      if (depth === 3) {
-        const scoreDiff = this.evaluateScoreDiff(node);
-        continue;
+      parent.alpha = max(parent.alpha, returnValue.scoreDiff);
+    } else {
+      if (parent.returnValue.scoreDiff >= returnValue.scoreDiff) {
+        parent.returnValue = returnValue;
       }
+      parent.beta = min(parent.beta, returnValue.scoreDiff);
+    }
 
-      // is white
-      if (isMaximizing) {
-        /*
-
-				alpha (& beta) being updated during the loop
-				meaning the next children have it updated 
-				to potentially not be added to stack.
-
-				each node has different alpha & beta.
-
-
-
-				maxEval = -Infinity
-				for each child of getChildren()
-					eval = minimax(child, depth + 1, false, alpha, beta)
-					maxEval = max(maxEval, eval)
-					alpha = max(alpha, eval)
-					if (beta <= alpha) break
-				return maxEval
-				*/
-      } else {
-        /*
-				minEval = Infinity
-				for each child of getChildren()
-					eval = minimax(child, depth + 1, true, alpha, beta)
-					minEval = min(minEval, eval)
-					beta = min(alpha, eval)
-					if (beta <= alpha) break
-				return minEval
-				*/
-      }
-
-      /*
-        // Base case: Evaluate the node
-        //// check if is last round here to stop before depth 3
-        if (depth === 3) {
-            const score = evaluate(node);
-
-            // Update best move and pruning values
-            if (isMaximizing) {
-                if (!bestMove || score > bestMove.score) {
-                    bestMove = { node, score };
-                }
-                alpha = Math.max(alpha, score); // Update alpha
-            } else {
-                if (!bestMove || score < bestMove.score) {
-                    bestMove = { node, score };
-                }
-                beta = Math.min(beta, score); // Update beta
-            }
-
-            // Pruning condition
-            if (beta <= alpha) {
-                continue; // Skip further exploration of this branch
-            }
-
-            continue;
-        }
-
-        // Generate children and push them to the stack
-        const children = getChildren(node);
-        for (let i = children.length - 1; i >= 0; i--) {
-            const child = children[i];
-            nodeStack.push({ 
-                node: child, 
-                depth: depth + 1, 
-                isMaximizing: !isMaximizing, 
-                alpha, 
-                beta 
-            });
-        }
-        */
+    // Prune if alpha >= beta
+    if (parent.beta <= parent.alpha) {
+      parent.potentialActions = []; // Skip remaining children
     }
   },
 
-  evaluateScoreDiff: function (actions) {},
+  processMinimax: function () {
+    // process amount per frame here
+    for (let i = 0; i < 10; i++) {
+      // All nodes processed ?
+      if (this.stack.length === 0) {
+        this.isProcessing = false;
+        console.log("Final output:");
+        console.log(this.finalOutput);
+        break;
+      }
+
+      const current = this.stack[this.stack.length - 1];
+      const {
+        actionsHistory,
+        potentialActions,
+        returnValue,
+        depth,
+        isMaximizing,
+      } = current;
+
+      /// last round check here to stop before max depth (depends on black or white too)
+      // Base case
+      if (depth === 3) {
+        const { whiteScore, blackScore } =
+          this.getSimulatedData(actionsHistory);
+        this.updateParent(isMaximizing, {
+          actionsHistory: actionsHistory,
+          scoreDiff: whiteScore - blackScore,
+        });
+        continue;
+      }
+
+      // did not generate potential actions?
+      if (potentialActions === null) {
+        potentialActions = this.getPotentialActions(actionsHistory);
+        current.potentialActions = potentialActions;
+      }
+
+      // still have any potential action to process?
+      else if (potentialActions.length > 0) {
+        // remove the first pAction, add to stack
+        const newAction = potentialActions.shift();
+        const newIsMaximizing = !isMaximizing;
+        this.stack.push({
+          actionsHistory: [...actionsHistory, newAction],
+          potentialActions: null,
+          returnValue: {
+            action: null,
+            scoreDiff: newIsMaximizing ? -Infinity : Infinity,
+          },
+          depth: 0,
+          isMaximizing: newIsMaximizing,
+          alpha: -Infinity,
+          beta: Infinity,
+        });
+      }
+
+      // processed all potential actions (or pruned)?
+      else {
+        this.updateParent(isMaximizing, returnValue);
+      }
+    }
+  },
+
+  getPotentialActions: function (actionsHistory) {
+    const { boardData } = this.getSimulatedData(actionsHistory);
+    /// computate all actions, undo move when backtrack
+    return []; /// return sorted list
+  },
 };
