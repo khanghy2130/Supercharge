@@ -13,7 +13,7 @@ const BOARD_INFO = {
   color2: [124, 69, 161],
   x: 0,
   y: 0,
-  size: 520,
+  size: 500,
 };
 BOARD_INFO.sqSize = BOARD_INFO.size / 8;
 

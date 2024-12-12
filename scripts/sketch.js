@@ -14,7 +14,7 @@ let scaleFactor = 1;
 let canvas;
 function setup() {
   // nKA
-  canvas = createCanvas(600, 600, document.getElementById("game-canvas"));
+  canvas = createCanvas(500, 600, document.getElementById("game-canvas"));
   windowResized();
 
   // configs
@@ -32,7 +32,7 @@ function setup() {
 
 // nKA
 function windowResized() {
-  viewportWidth = Math.min(window.innerWidth, window.innerHeight);
+  viewportWidth = Math.min(window.innerWidth * (6 / 5), window.innerHeight);
   scaleFactor = viewportWidth / 600;
   canvas.elt.style.transform = "scale(" + scaleFactor + ")";
 }

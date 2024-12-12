@@ -249,6 +249,7 @@ const GAMEPLAY = {
     }
     rectMode(CENTER);
 
+    /*
     // render board coordinate
     noStroke();
     fill(120);
@@ -266,12 +267,12 @@ const GAMEPLAY = {
         BOARD_INFO.x + BOARD_INFO.size + 10,
         BOARD_INFO.sqSize * (i + 0.5) + BOARD_INFO.y
       );
-    }
+    }*/
   },
 
   renderUI: function () {
     noStroke();
-    textSize(24);
+    textSize(20);
     fill(250);
     text("WHITE: " + this.meta.white.score, 80, 560);
     text("BLACK: " + this.meta.black.score, 250, 560);
@@ -285,11 +286,11 @@ const GAMEPLAY = {
 
     if (this.meta.gameover) {
       textSize(32);
-      text("Gameover", 480, 570);
+      text("Gameover", 420, 570);
     } else {
       textSize(18);
-      text("ROUND " + this.meta.round, 480, 560);
-      text((this.meta.isWhiteTurn ? "White" : "Black") + " to move", 480, 580);
+      text("ROUND " + this.meta.round, 420, 560);
+      text((this.meta.isWhiteTurn ? "White" : "Black") + " to move", 420, 580);
     }
   },
 
