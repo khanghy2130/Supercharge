@@ -324,9 +324,6 @@ const GAMEPLAY = {
       };
     }
 
-    // process bot
-    if (BOT.isProcessing) BOT.processMinimax();
-
     this.renderBoard();
 
     // render pieces & targets
@@ -397,6 +394,9 @@ const GAMEPLAY = {
     }
 
     this.renderUI();
+
+    // process bot ///
+    if (BOT.isProcessing) BOT.processMinimax();
   },
 
   renderPiece: function (sd, rx, ry) {

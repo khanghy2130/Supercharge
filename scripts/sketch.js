@@ -18,6 +18,7 @@ function setup() {
   windowResized();
 
   // configs
+  // frameRate(1); /////
   pixelDensity(1); // nKA
   rectMode(CENTER);
   imageMode(CENTER);
