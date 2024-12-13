@@ -62,9 +62,9 @@ const GAMEPLAY = {
     return x >= 0 && x < 8 && y >= 0 && y < 8;
   },
 
-  getPossibleMoves: function (pos) {
+  getPossibleMoves: function (pos, board) {
     const moves = [];
-    const sqData = this.boardData[pos.y][pos.x];
+    const sqData = board[pos.y][pos.x];
     // add to moves
     if (sqData.name === "K") {
       for (let i = 0; i < KNIGHT_MOVES.length; i++) {
@@ -84,7 +84,7 @@ const GAMEPLAY = {
         while (this.positionIsWithinGrid(x, y)) {
           moves.push({ x, y });
           // not empty? this direction is blocked
-          if (this.boardData[y][x] !== null) break;
+          if (board[y][x] !== null) break;
           x = vel[0] + x;
           y = vel[1] + y;
         }
@@ -94,42 +94,56 @@ const GAMEPLAY = {
     return moves;
   },
 
-  makeMove: function (movePos) {
-    const sqData = this.boardData[movePos.y][movePos.x];
-    const spPos = this.selectedPiecePos;
-    const movingPiece = this.boardData[spPos.y][spPos.x];
+  applyMove: function (startPos, endPos, board) {
+    let scoreGained = 0;
+    const sqData = board[endPos.y][endPos.x];
+    const movingPiece = board[startPos.y][startPos.x];
 
     // remove piece from original position
-    this.boardData[spPos.y][spPos.x] = null;
+    board[startPos.y][startPos.x] = null;
 
     // move to empty square?
     if (sqData === null) {
-      this.boardData[movePos.y][movePos.x] = movingPiece;
+      board[endPos.y][endPos.x] = movingPiece; // move piece there
     }
     // capturing target?
     else if (this.isTarget(sqData)) {
-      const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-      const gainedScore = sqData * (movingPiece.isCharged ? CHARGED_MULT : 1);
-      scorer.score += gainedScore;
-      this.boardData[movePos.y][movePos.x] = movingPiece;
-
-      // add to popups
-      const { rx, ry } = this.getRenderPos(movePos.x, movePos.y);
-      this.pointsPopups.push({
-        rx,
-        ry,
-        content: "+ " + gainedScore,
-        progress: 0,
-      });
+      scoreGained = sqData;
+      if (movingPiece.isCharged) scoreGained *= CHARGED_MULT;
+      board[endPos.y][endPos.x] = movingPiece; // move piece there
     }
     // swapping?
     else {
-      this.boardData[movePos.y][movePos.x] = movingPiece;
-      this.boardData[spPos.y][spPos.x] = sqData;
+      board[endPos.y][endPos.x] = movingPiece; // move piece there
+      board[startPos.y][startPos.x] = sqData;
       sqData.isCharged = true;
     }
 
     movingPiece.isCharged = false; // consume supercharge
+    return scoreGained;
+  },
+
+  makeMove: function (movePos) {
+    const scoreGained = this.applyMove(
+      this.selectedPiecePos,
+      movePos,
+      this.boardData
+    );
+
+    if (scoreGained > 0) {
+      const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
+      scorer.score += scoreGained;
+
+      // add score gained to popups
+      const { rx, ry } = this.getRenderPos(movePos.x, movePos.y);
+      this.pointsPopups.push({
+        rx,
+        ry,
+        content: "+ " + scoreGained,
+        progress: 0,
+      });
+    }
+
     this.deselectPiece();
 
     // consume energy
@@ -155,37 +169,36 @@ const GAMEPLAY = {
     this.possibleMoves = null;
   },
 
-  updateTargets: function () {
+  updateTargets: function (board) {
     // increase all targets' value
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
-        const sqData = this.boardData[y][x];
-        if (this.isTarget(sqData)) this.boardData[y][x]++;
+        const sqData = board[y][x];
+        if (this.isTarget(sqData)) board[y][x]++;
       }
     }
 
     // spawn new targets (if no piece standing here)
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
-      if (this.boardData[pos.y][pos.x] === null) {
-        this.boardData[pos.y][pos.x] = 1;
+      if (board[pos.y][pos.x] === null) {
+        board[pos.y][pos.x] = 1;
       }
-    }
-
-    // new previews (if not last round)
-    this.spawningPositions = [];
-    // skip last round (round +1 because isn't increased yet)
-    if (this.meta.round + 1 < MAX_ROUND) {
-      this.spawningPositions = this.getNewTargetsPosition(
-        RESPAWN_TARGETS_COUNT
-      );
     }
   },
 
   nextRound: function () {
     // skip this first round
-    if (this.meta.round > 0) this.updateTargets();
-
+    if (this.meta.round > 0) {
+      this.updateTargets(this.boardData);
+      this.spawningPositions = [];
+      // new previews, skip last round (round +1 because isn't increased yet)
+      if (this.meta.round + 1 < MAX_ROUND) {
+        this.spawningPositions = this.getNewTargetsPosition(
+          RESPAWN_TARGETS_COUNT
+        );
+      }
+    }
     this.meta.round++;
     this.meta.white.energy = 2;
     this.meta.black.energy = 2;
@@ -439,7 +452,10 @@ const GAMEPLAY = {
         return;
       }
       this.selectedPiecePos = this.hoveredSq;
-      this.possibleMoves = this.getPossibleMoves(this.selectedPiecePos);
+      this.possibleMoves = this.getPossibleMoves(
+        this.selectedPiecePos,
+        this.boardData
+      );
     }
     // already selected a piece?
     else if (this.possibleMoves !== null) {
