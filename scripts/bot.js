@@ -1,9 +1,11 @@
 const BOT = {
+  maxDepth: 3,
+  maxProgress: null, // length of potential actions of root node
   isProcessing: false,
   stack: [],
   finalOutput: null, // { actionsHistory, scoreDiff }
 
-  getSimulatedData: function (actionsHistory, isMaximizing, depth) {
+  getSimulatedData: function (actionsHistory) {
     const white = { score: GAMEPLAY.meta.white.score };
     const black = { score: GAMEPLAY.meta.black.score };
     const boardData = [];
@@ -20,13 +22,16 @@ const BOT = {
       boardData[y] = row;
     }
 
-    // apply updateTargets IF is white but not current turn
-    if (isMaximizing && depth > 0) GAMEPLAY.updateTargets(boardData);
-
     // apply actions
     let isWhiteTurn = GAMEPLAY.meta.isWhiteTurn;
     for (let i = 0; i < actionsHistory.length; i++) {
       const moves = actionsHistory[i];
+      const scorer = isWhiteTurn ? white : black;
+
+      // apply target update IF is white && it is 2nd or 3rd action
+      if (isWhiteTurn && i > 0 && i < 3) GAMEPLAY.updateTargets(boardData);
+
+      // for each move in this action
       for (let m = 0; m < moves.length; m++) {
         const [sx, sy, ex, ey] = moves[m];
         const scoreGained = GAMEPLAY.applyMove(
@@ -34,9 +39,9 @@ const BOT = {
           { x: ex, y: ey },
           boardData
         );
-        (isWhiteTurn ? white : black).score += scoreGained;
+        scorer.score += scoreGained;
       }
-      isWhiteTurn = !isWhiteTurn;
+      isWhiteTurn = !isWhiteTurn; // flip for next iteration
     }
 
     return {
@@ -46,6 +51,7 @@ const BOT = {
   },
 
   startMinimax: function () {
+    this.maxProgress = null;
     this.isProcessing = true;
     this.finalOutput = null;
     const isMaximizing = GAMEPLAY.meta.isWhiteTurn;
@@ -74,7 +80,6 @@ const BOT = {
     // popped the root node? set best move
     if (!parent) {
       this.finalOutput = returnValue;
-      print("finallll");
       return;
     }
 
@@ -98,10 +103,21 @@ const BOT = {
   },
 
   processMinimax: function () {
-    ////
-    textSize(30);
-    fill("blue");
-    text(this.stack.length, 250, 520);
+    if (this.stack.length > 0) {
+      const root = this.stack[0];
+      if (root.potentialActions !== null) {
+        fill("lime");
+        textSize(32);
+        text(
+          floor(
+            (100 / this.maxProgress) *
+              (this.maxProgress - root.potentialActions.length)
+          ) + "%",
+          _mouseX,
+          _mouseY
+        );
+      }
+    }
 
     // process amount per frame here
     for (let i = 0; i < 3000; i++) {
@@ -125,14 +141,12 @@ const BOT = {
       } = current;
 
       // Base case: return score to parent
-      // isLastTurn check works because depth is 3
       const isLastTurn =
         GAMEPLAY.meta.round === MAX_ROUND && isMaximizing && depth > 0;
-      if (depth === 3 || isLastTurn) {
+      if (depth === this.maxDepth || isLastTurn) {
         this.updateParent({
           actionsHistory: actionsHistory,
-          scoreDiff: this.getSimulatedData(actionsHistory, isMaximizing, depth)
-            .scoreDiff,
+          scoreDiff: this.getSimulatedData(actionsHistory).scoreDiff,
         });
         continue;
       }
@@ -140,9 +154,11 @@ const BOT = {
       // did not generate potential actions?
       if (potentialActions === null) {
         current.potentialActions = this.getPotentialActions(
-          this.getSimulatedData(actionsHistory, isMaximizing, depth).boardData,
+          this.getSimulatedData(actionsHistory).boardData,
           isMaximizing
         );
+        if (this.maxProgress === null)
+          this.maxProgress = current.potentialActions.length;
       }
 
       // still have any potential action to process?

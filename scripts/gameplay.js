@@ -147,19 +147,26 @@ const GAMEPLAY = {
     this.deselectPiece();
 
     // consume energy
-    if (GAMEPLAY.meta.isWhiteTurn) {
-      GAMEPLAY.meta.white.energy--;
-      if (GAMEPLAY.meta.white.energy <= 0) {
-        GAMEPLAY.meta.isWhiteTurn = false;
+    if (this.meta.isWhiteTurn) {
+      this.meta.white.energy--;
+      if (this.meta.white.energy <= 0) {
+        this.meta.isWhiteTurn = false;
+        BOT.finalOutput = null; ////
+        BOT.startMinimax(); /////
       }
     } else {
-      GAMEPLAY.meta.black.energy--;
-      if (GAMEPLAY.meta.black.energy <= 0) {
+      this.meta.black.energy--;
+      if (this.meta.black.energy <= 0) {
+        BOT.finalOutput = null; ////
         // last round? game over
-        if (GAMEPLAY.meta.round === MAX_ROUND) {
-          GAMEPLAY.meta.gameover = true;
+        if (this.meta.round === MAX_ROUND) {
+          this.meta.gameover = true;
           return;
-        } else GAMEPLAY.nextRound();
+        } else {
+          this.meta.isWhiteTurn = true;
+          BOT.startMinimax(); /////
+          this.nextRound();
+        }
       }
     }
   },
@@ -202,7 +209,6 @@ const GAMEPLAY = {
     this.meta.round++;
     this.meta.white.energy = 2;
     this.meta.black.energy = 2;
-    this.meta.isWhiteTurn = true;
   },
 
   initializeGame: function () {
@@ -238,6 +244,7 @@ const GAMEPLAY = {
     // initial spawn previews
     this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
     this.nextRound();
+    BOT.startMinimax(); /////
   },
 
   renderBoard: function () {
@@ -395,7 +402,20 @@ const GAMEPLAY = {
 
     this.renderUI();
 
-    // process bot ///
+    ///// bot arrow
+    if (BOT.finalOutput !== null) {
+      const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
+
+      const [sx, sy, ex, ey] =
+        BOT.finalOutput.actionsHistory[0][mover.energy === 2 ? 0 : 1];
+      stroke("lime");
+      strokeWeight(2);
+      const start = this.getRenderPos(sx, sy);
+      const end = this.getRenderPos(ex, ey);
+      line(start.rx, start.ry, end.rx, end.ry);
+    }
+
+    // process bot //////
     if (BOT.isProcessing) BOT.processMinimax();
   },
 
