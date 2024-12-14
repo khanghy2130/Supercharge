@@ -6,8 +6,8 @@ const BOT = {
   finalOutput: null, // { actionsHistory, scoreDiff }
 
   getSimulatedData: function (actionsHistory) {
-    const white = { score: GAMEPLAY.meta.white.score };
-    const black = { score: GAMEPLAY.meta.black.score };
+    const white = { score: 0 };
+    const black = { score: 0 };
     const boardData = [];
     for (let y = 0; y < 8; y++) {
       const row = [];
@@ -40,6 +40,9 @@ const BOT = {
           boardData
         );
         scorer.score += scoreGained;
+        if (isWhiteTurn === GAMEPLAY.meta.isWhiteTurn) {
+          scorer.score *= 1.2; // extra incentive to gain score
+        }
       }
       isWhiteTurn = !isWhiteTurn; // flip for next iteration
     }
@@ -114,13 +117,13 @@ const BOT = {
               (this.maxProgress - root.potentialActions.length)
           ) + "%",
           _mouseX,
-          _mouseY
+          _mouseY + 50
         );
       }
     }
 
     // process amount per frame here
-    for (let i = 0; i < 3000; i++) {
+    for (let i = 0; i < 20000; i++) {
       // All nodes processed ?
       if (this.stack.length === 0) {
         this.isProcessing = false;
@@ -159,6 +162,7 @@ const BOT = {
         );
         if (this.maxProgress === null)
           this.maxProgress = current.potentialActions.length;
+        i += 500; //costly operation
       }
 
       // still have any potential action to process?
@@ -216,7 +220,6 @@ const BOT = {
           pPos.y,
           possibleMoves[pm].x,
           possibleMoves[pm].y,
-          boardData[pPos.y][pPos.x].name, /////
         ]);
       }
     }
@@ -230,11 +233,15 @@ const BOT = {
       const originalEndValue = boardData[ey][ex];
 
       // apply 1st move
-      const firstMoveScoreGained = GAMEPLAY.applyMove(
+      let firstMoveScoreGained = GAMEPLAY.applyMove(
         { x: sx, y: sy },
         { x: ex, y: ey },
         boardData
       );
+
+      // bonus score if was swapping
+      if (originalEndValue !== null && GAMEPLAY.isTarget(originalEndValue))
+        firstMoveScoreGained += 10;
 
       // for each pieces: get all of its 2nd moves
       for (let i = 0; i < piecesPositions.length; i++) {
@@ -250,22 +257,33 @@ const BOT = {
         // for each 2nd move: add into scoredActions
         for (let m2 = 0; m2 < possibleMoves.length; m2++) {
           const { x, y } = possibleMoves[m2];
+          const movedPiece2 = boardData[pPos.y][pPos.x];
           const endValue = boardData[y][x];
 
           let secondMoveScoreGained = 0;
           // set score if capturing a target (and if is charged)
           if (GAMEPLAY.isTarget(endValue)) {
             secondMoveScoreGained = endValue;
-            if (boardData[pPos.y][pPos.x].isCharged) {
+            if (movedPiece2.isCharged) {
               secondMoveScoreGained *= CHARGED_MULT;
             }
           }
 
+          // bonus score if was swapping
+          if (originalEndValue !== null && GAMEPLAY.isTarget(originalEndValue))
+            secondMoveScoreGained += 10;
+
+          // don't add this action if no capture nor swap
+          // AND was moving the same piece
+          if (
+            movedPiece === movedPiece2 &&
+            firstMoveScoreGained + secondMoveScoreGained === 0
+          ) {
+            continue;
+          }
+
           scoredActions.push({
-            action: [
-              firstMoves[m1],
-              [pPos.x, pPos.y, x, y, boardData[pPos.y][pPos.x].name], ///
-            ],
+            action: [firstMoves[m1], [pPos.x, pPos.y, x, y]],
             sortScore: firstMoveScoreGained + secondMoveScoreGained,
           });
         }
