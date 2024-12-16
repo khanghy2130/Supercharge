@@ -1,5 +1,5 @@
 const BOT = {
-  maxDepth: 3,
+  playAsWhite: true,
   maxProgress: null, // length of potential actions of root node
   isProcessing: false,
   stack: [],
@@ -146,7 +146,7 @@ const BOT = {
       // Base case: return score to parent
       const isLastTurn =
         GAMEPLAY.meta.round === MAX_ROUND && isMaximizing && depth > 0;
-      if (depth === this.maxDepth || isLastTurn) {
+      if (depth === 3 || isLastTurn) {
         this.updateParent({
           actionsHistory: actionsHistory,
           scoreDiff: this.getSimulatedData(actionsHistory).scoreDiff,

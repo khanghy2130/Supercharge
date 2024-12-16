@@ -152,7 +152,7 @@ const GAMEPLAY = {
       if (this.meta.white.energy <= 0) {
         this.meta.isWhiteTurn = false;
         BOT.finalOutput = null; ////
-        BOT.startMinimax(); /////
+        if (!BOT.playAsWhite) BOT.startMinimax(); /////
       }
     } else {
       this.meta.black.energy--;
@@ -164,7 +164,7 @@ const GAMEPLAY = {
           return;
         } else {
           this.meta.isWhiteTurn = true;
-          BOT.startMinimax(); /////
+          if (BOT.playAsWhite) BOT.startMinimax(); /////
           this.nextRound();
         }
       }
@@ -244,7 +244,7 @@ const GAMEPLAY = {
     // initial spawn previews
     this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
     this.nextRound();
-    BOT.startMinimax(); /////
+    if (BOT.playAsWhite) BOT.startMinimax(); /////
   },
 
   renderBoard: function () {
