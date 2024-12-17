@@ -11,7 +11,6 @@ const INITIAL_TARGETS_COUNT = 6;
 const BOARD_INFO = {
   color1: [196, 128, 242],
   color2: [124, 69, 161],
-  x: 0,
   y: 0,
   size: 500,
 };

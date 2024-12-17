@@ -12,8 +12,8 @@ const GAMEPLAY = {
   meta: {
     gameover: true,
     isWhiteTurn: true,
-    white: { score: 0, energy: 1 },
-    black: { score: 0, energy: 1 },
+    white: { score: 0, energy: 2, elapsedTime: 0 },
+    black: { score: 0, energy: 2, elapsedTime: 0 },
     round: 1,
   },
 
@@ -26,7 +26,7 @@ const GAMEPLAY = {
 
   getRenderPos: function (x, y) {
     return {
-      rx: BOARD_INFO.sqSize * (x + 0.5) + BOARD_INFO.x,
+      rx: BOARD_INFO.sqSize * (x + 0.5),
       ry: BOARD_INFO.sqSize * (y + 0.5) + BOARD_INFO.y,
     };
   },
@@ -252,7 +252,7 @@ const GAMEPLAY = {
     rectMode(CORNER);
     noStroke();
     fill(...BOARD_INFO.color1);
-    rect(BOARD_INFO.x, BOARD_INFO.y, BOARD_INFO.size, BOARD_INFO.size);
+    rect(0, BOARD_INFO.y, BOARD_INFO.size, BOARD_INFO.size);
 
     // render dark squares
     fill(...BOARD_INFO.color2);
@@ -260,7 +260,7 @@ const GAMEPLAY = {
       for (let x = 0; x < 8; x++) {
         if ((x + y) % 2 === 0) continue;
         rect(
-          BOARD_INFO.sqSize * x + BOARD_INFO.x,
+          BOARD_INFO.sqSize * x,
           BOARD_INFO.sqSize * y + BOARD_INFO.y,
           BOARD_INFO.sqSize,
           BOARD_INFO.sqSize
@@ -268,26 +268,6 @@ const GAMEPLAY = {
       }
     }
     rectMode(CENTER);
-
-    /*
-    // render board coordinate
-    noStroke();
-    fill(120);
-    textSize(16);
-    for (let i = 0; i < 8; i++) {
-      text(
-        letters[i],
-        BOARD_INFO.sqSize * (i + 0.5) + BOARD_INFO.x,
-        BOARD_INFO.y + BOARD_INFO.size + 12
-      );
-    }
-    for (let i = 0; i < 8; i++) {
-      text(
-        8 - i,
-        BOARD_INFO.x + BOARD_INFO.size + 10,
-        BOARD_INFO.sqSize * (i + 0.5) + BOARD_INFO.y
-      );
-    }*/
   },
 
   renderUI: function () {
@@ -320,13 +300,13 @@ const GAMEPLAY = {
     // mouse hover on square
     this.hoveredSq = null;
     if (
-      _mouseX > BOARD_INFO.x &&
-      _mouseX < BOARD_INFO.x + BOARD_INFO.size &&
+      _mouseX > 0 &&
+      _mouseX < BOARD_INFO.size &&
       _mouseY > BOARD_INFO.y &&
       _mouseY < BOARD_INFO.y + BOARD_INFO.size
     ) {
       this.hoveredSq = {
-        x: floor((_mouseX - BOARD_INFO.x) / BOARD_INFO.sqSize),
+        x: floor(_mouseX / BOARD_INFO.sqSize),
         y: floor((_mouseY - BOARD_INFO.y) / BOARD_INFO.sqSize),
       };
     }
@@ -406,8 +386,9 @@ const GAMEPLAY = {
     if (BOT.finalOutput !== null) {
       const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
 
+      const action = BOT.finalOutput.actionsHistory[0];
       const [sx, sy, ex, ey] =
-        BOT.finalOutput.actionsHistory[0][mover.energy === 2 ? 0 : 1];
+        action[mover.energy === 2 ? 0 : action.length - 1];
       stroke("lime");
       strokeWeight(2);
       const start = this.getRenderPos(sx, sy);

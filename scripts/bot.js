@@ -1,4 +1,5 @@
 const BOT = {
+  maxDepth: 3,
   playAsWhite: true,
   maxProgress: null, // length of potential actions of root node
   isProcessing: false,
@@ -146,7 +147,7 @@ const BOT = {
       // Base case: return score to parent
       const isLastTurn =
         GAMEPLAY.meta.round === MAX_ROUND && isMaximizing && depth > 0;
-      if (depth === 3 || isLastTurn) {
+      if (depth === this.maxDepth || isLastTurn) {
         this.updateParent({
           actionsHistory: actionsHistory,
           scoreDiff: this.getSimulatedData(actionsHistory).scoreDiff,
@@ -224,75 +225,91 @@ const BOT = {
       }
     }
 
-    // for each move (of this piece)
-    for (let m1 = 0; m1 < firstMoves.length; m1++) {
-      const [sx, sy, ex, ey] = firstMoves[m1];
-
-      const movedPiece = boardData[sy][sx];
-      const originalChargeValue = movedPiece.isCharged;
-      const originalEndValue = boardData[ey][ex];
-
-      // apply 1st move
-      let firstMoveScoreGained = GAMEPLAY.applyMove(
-        { x: sx, y: sy },
-        { x: ex, y: ey },
-        boardData
-      );
-
-      // bonus score if was swapping
-      if (originalEndValue !== null && GAMEPLAY.isTarget(originalEndValue))
-        firstMoveScoreGained += 10;
-
-      // for each pieces: get all of its 2nd moves
-      for (let i = 0; i < piecesPositions.length; i++) {
-        let pPos = piecesPositions[i];
-        // new pPos if was moved (or swapped)
-        if (pPos.x === sx && pPos.y === sy) {
-          pPos = { x: ex, y: ey }; // is now at end position
-        } else if (pPos.x === ex && pPos.y === ey) {
-          pPos = { x: sx, y: sy }; // is now at start position
-        }
-
-        const possibleMoves = GAMEPLAY.getPossibleMoves(pPos, boardData);
-        // for each 2nd move: add into scoredActions
-        for (let m2 = 0; m2 < possibleMoves.length; m2++) {
-          const { x, y } = possibleMoves[m2];
-          const movedPiece2 = boardData[pPos.y][pPos.x];
-          const endValue = boardData[y][x];
-
-          let secondMoveScoreGained = 0;
-          // set score if capturing a target (and if is charged)
-          if (GAMEPLAY.isTarget(endValue)) {
-            secondMoveScoreGained = endValue;
-            if (movedPiece2.isCharged) {
-              secondMoveScoreGained *= CHARGED_MULT;
-            }
-          }
-
-          // bonus score if was swapping
-          if (originalEndValue !== null && GAMEPLAY.isTarget(originalEndValue))
-            secondMoveScoreGained += 10;
-
-          // don't add this action if no capture nor swap
-          // AND was moving the same piece
-          if (
-            movedPiece === movedPiece2 &&
-            firstMoveScoreGained + secondMoveScoreGained === 0
-          ) {
-            continue;
-          }
-
-          scoredActions.push({
-            action: [firstMoves[m1], [pPos.x, pPos.y, x, y]],
-            sortScore: firstMoveScoreGained + secondMoveScoreGained,
-          });
-        }
+    // if has 1 move left then only add 1st move to this action
+    const mover = isMaximizing ? GAMEPLAY.meta.white : GAMEPLAY.meta.black;
+    if (mover.energy === 1 && this.stack[0].potentialActions === null) {
+      for (let m1 = 0; m1 < firstMoves.length; m1++) {
+        scoredActions.push({
+          action: [firstMoves[m1]],
+          sortScore: 0,
+        });
       }
+    }
+    // normal 2 moves
+    else {
+      // for each move (of this piece)
+      for (let m1 = 0; m1 < firstMoves.length; m1++) {
+        const [sx, sy, ex, ey] = firstMoves[m1];
 
-      // undo 1st move
-      boardData[ey][ex] = originalEndValue;
-      boardData[sy][sx] = movedPiece;
-      movedPiece.isCharged = originalChargeValue;
+        const movedPiece = boardData[sy][sx];
+        const originalChargeValue = movedPiece.isCharged;
+        const originalEndValue = boardData[ey][ex];
+
+        // apply 1st move
+        let firstMoveScoreGained = GAMEPLAY.applyMove(
+          { x: sx, y: sy },
+          { x: ex, y: ey },
+          boardData
+        );
+
+        // bonus score if was swapping
+        if (originalEndValue !== null && GAMEPLAY.isTarget(originalEndValue))
+          firstMoveScoreGained += 10;
+
+        // for each pieces: get all of its 2nd moves
+        for (let i = 0; i < piecesPositions.length; i++) {
+          let pPos = piecesPositions[i];
+          // new pPos if was moved (or swapped)
+          if (pPos.x === sx && pPos.y === sy) {
+            pPos = { x: ex, y: ey }; // is now at end position
+          } else if (pPos.x === ex && pPos.y === ey) {
+            pPos = { x: sx, y: sy }; // is now at start position
+          }
+
+          const possibleMoves = GAMEPLAY.getPossibleMoves(pPos, boardData);
+          // for each 2nd move: add into scoredActions
+          for (let m2 = 0; m2 < possibleMoves.length; m2++) {
+            const { x, y } = possibleMoves[m2];
+            const movedPiece2 = boardData[pPos.y][pPos.x];
+            const endValue = boardData[y][x];
+
+            let secondMoveScoreGained = 0;
+            // set score if capturing a target (and if is charged)
+            if (GAMEPLAY.isTarget(endValue)) {
+              secondMoveScoreGained = endValue;
+              if (movedPiece2.isCharged) {
+                secondMoveScoreGained *= CHARGED_MULT;
+              }
+            }
+
+            // bonus score if was swapping
+            if (
+              originalEndValue !== null &&
+              GAMEPLAY.isTarget(originalEndValue)
+            )
+              secondMoveScoreGained += 10;
+
+            // don't add this action if no capture nor swap
+            // AND was moving the same piece
+            if (
+              movedPiece === movedPiece2 &&
+              firstMoveScoreGained + secondMoveScoreGained === 0
+            ) {
+              continue;
+            }
+
+            scoredActions.push({
+              action: [firstMoves[m1], [pPos.x, pPos.y, x, y]],
+              sortScore: firstMoveScoreGained + secondMoveScoreGained,
+            });
+          }
+        }
+
+        // undo 1st move
+        boardData[ey][ex] = originalEndValue;
+        boardData[sy][sx] = movedPiece;
+        movedPiece.isCharged = originalChargeValue;
+      }
     }
 
     return scoredActions
