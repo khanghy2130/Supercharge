@@ -278,20 +278,20 @@ const GAMEPLAY = {
     text("BLACK: " + this.meta.black.score, 250, 560);
 
     for (let i = 0; i < this.meta.white.energy; i++) {
-      square(50 + i * 20, 580, 12, 2);
+      square(70 + i * 20, 580, 12, 2);
     }
     for (let i = 0; i < this.meta.black.energy; i++) {
-      square(220 + i * 20, 580, 12, 2);
+      square(240 + i * 20, 580, 12, 2);
     }
 
-    if (this.meta.gameover) {
-      textSize(32);
-      text("Gameover", 420, 570);
-    } else {
-      textSize(18);
-      text("ROUND " + this.meta.round, 420, 560);
-      text((this.meta.isWhiteTurn ? "White" : "Black") + " to move", 420, 580);
+    if (this.meta.round > MAX_ROUND - 2 && !this.meta.gameover) {
+      fill(cos(frameCount * 5) * 100 + 150);
     }
+    const roundText = this.meta.gameover
+      ? "Gameover"
+      : "ROUND " + this.meta.round + "/8";
+    textSize(24);
+    text(roundText, 160, 525);
   },
 
   renderScene: function () {
@@ -383,17 +383,23 @@ const GAMEPLAY = {
     this.renderUI();
 
     ///// bot arrow
-    if (BOT.finalOutput !== null) {
+    if (BOT.finalOutput !== null && frameCount % 60 > 30) {
       const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
 
       const action = BOT.finalOutput.actionsHistory[0];
       const [sx, sy, ex, ey] =
         action[mover.energy === 2 ? 0 : action.length - 1];
-      stroke("lime");
-      strokeWeight(2);
+      stroke(255, 50, 50);
+      strokeWeight(5);
       const start = this.getRenderPos(sx, sy);
       const end = this.getRenderPos(ex, ey);
       line(start.rx, start.ry, end.rx, end.ry);
+      push();
+      translate(end.rx, end.ry);
+      rotate(atan2(end.ry - start.ry, end.rx - start.rx));
+      line(-10, 10, 0, 0);
+      line(-10, -10, 0, 0);
+      pop();
     }
 
     // process bot //////
@@ -434,7 +440,7 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
-    if (this.meta.gameover) return;
+    if (this.meta.gameover || BOT.isProcessing) return;
 
     //// buttons
 

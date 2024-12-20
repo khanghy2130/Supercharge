@@ -110,15 +110,19 @@ const BOT = {
     if (this.stack.length > 0) {
       const root = this.stack[0];
       if (root.potentialActions !== null) {
-        fill("lime");
+        fill(255);
+        stroke(0);
+        strokeWeight(5);
         textSize(32);
         text(
-          floor(
-            (100 / this.maxProgress) *
-              (this.maxProgress - root.potentialActions.length)
-          ) + "%",
-          _mouseX,
-          _mouseY + 50
+          "Calculating " +
+            floor(
+              (100 / this.maxProgress) *
+                (this.maxProgress - root.potentialActions.length)
+            ) +
+            "%",
+          250,
+          250
         );
       }
     }
