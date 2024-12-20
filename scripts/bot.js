@@ -1,6 +1,6 @@
 const BOT = {
   maxDepth: 3,
-  playAsWhite: true,
+  playAsWhite: false,
   maxProgress: null, // length of potential actions of root node
   isProcessing: false,
   stack: [],
@@ -55,6 +55,12 @@ const BOT = {
   },
 
   startMinimax: function () {
+    // don't start if not bot turn
+    if (this.playAsWhite !== GAMEPLAY.meta.isWhiteTurn) return;
+
+    // don't start if already has output
+    if (this.finalOutput !== null) return;
+
     this.maxProgress = null;
     this.isProcessing = true;
     this.finalOutput = null;
@@ -132,8 +138,6 @@ const BOT = {
       // All nodes processed ?
       if (this.stack.length === 0) {
         this.isProcessing = false;
-        console.log("Final output:");
-        console.log(this.finalOutput);
         break;
       }
 

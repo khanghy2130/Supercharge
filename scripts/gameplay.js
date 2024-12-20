@@ -144,31 +144,47 @@ const GAMEPLAY = {
       });
     }
 
-    this.deselectPiece();
-
     // consume energy
     if (this.meta.isWhiteTurn) {
       this.meta.white.energy--;
       if (this.meta.white.energy <= 0) {
         this.meta.isWhiteTurn = false;
-        BOT.finalOutput = null; ////
-        if (!BOT.playAsWhite) BOT.startMinimax(); /////
+        BOT.finalOutput = null;
       }
     } else {
       this.meta.black.energy--;
       if (this.meta.black.energy <= 0) {
-        BOT.finalOutput = null; ////
+        BOT.finalOutput = null;
         // last round? game over
         if (this.meta.round === MAX_ROUND) {
           this.meta.gameover = true;
+          this.deselectPiece();
           return;
         } else {
           this.meta.isWhiteTurn = true;
-          if (BOT.playAsWhite) BOT.startMinimax(); /////
           this.nextRound();
         }
       }
     }
+
+    const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
+    // discard bot output if made a different 1st move from the output
+    if (mover.energy === 1 && BOT.finalOutput !== null) {
+      const [sx, sy, ex, ey] = BOT.finalOutput.actionsHistory[0][0];
+      if (
+        !(
+          this.selectedPiecePos.x === sx &&
+          this.selectedPiecePos.y === sy &&
+          movePos.x === ex &&
+          movePos.y === ey
+        )
+      ) {
+        BOT.finalOutput = null;
+      }
+    }
+
+    this.deselectPiece();
+    BOT.startMinimax();
   },
 
   deselectPiece: function () {
@@ -271,12 +287,14 @@ const GAMEPLAY = {
   },
 
   renderUI: function () {
+    // scores
     noStroke();
     textSize(20);
     fill(250);
     text("WHITE: " + this.meta.white.score, 80, 560);
     text("BLACK: " + this.meta.black.score, 250, 560);
 
+    // moves left
     for (let i = 0; i < this.meta.white.energy; i++) {
       square(70 + i * 20, 580, 12, 2);
     }
@@ -284,6 +302,7 @@ const GAMEPLAY = {
       square(240 + i * 20, 580, 12, 2);
     }
 
+    // round text
     if (this.meta.round > MAX_ROUND - 2 && !this.meta.gameover) {
       fill(cos(frameCount * 5) * 100 + 150);
     }
@@ -292,6 +311,15 @@ const GAMEPLAY = {
       : "ROUND " + this.meta.round + "/8";
     textSize(24);
     text(roundText, 160, 525);
+
+    // bot options ////
+    fill(60);
+    rect(410, 530, 170, 30, 5);
+    rect(410, 570, 170, 30, 5);
+    fill(250);
+    textSize(16);
+    text("bot color: " + (BOT.playAsWhite ? "white" : "black"), 410, 530);
+    text("difficulty: " + (BOT.maxDepth === 1 ? "easy" : "hard"), 410, 570);
   },
 
   renderScene: function () {
@@ -383,9 +411,8 @@ const GAMEPLAY = {
     this.renderUI();
 
     ///// bot arrow
-    if (BOT.finalOutput !== null && frameCount % 60 > 30) {
+    if (BOT.finalOutput !== null && frameCount % 60 > 18) {
       const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-
       const action = BOT.finalOutput.actionsHistory[0];
       const [sx, sy, ex, ey] =
         action[mover.energy === 2 ? 0 : action.length - 1];
@@ -442,7 +469,18 @@ const GAMEPLAY = {
   clicked: function () {
     if (this.meta.gameover || BOT.isProcessing) return;
 
-    //// buttons
+    // bot options ////
+    if (_mouseX > 410 - 85 && _mouseX < 410 + 85) {
+      if (_mouseY > 530 - 15 && _mouseY < 530 + 15) {
+        BOT.playAsWhite = !BOT.playAsWhite;
+        BOT.finalOutput = null;
+        BOT.startMinimax();
+      } else if (_mouseY > 570 - 15 && _mouseY < 570 + 15) {
+        BOT.maxDepth = BOT.maxDepth === 1 ? 3 : 1;
+        BOT.finalOutput = null;
+        BOT.startMinimax();
+      }
+    }
 
     // not hovering on a square?
     if (this.hoveredSq === null) return;

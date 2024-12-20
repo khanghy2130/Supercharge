@@ -28,7 +28,6 @@ function setup() {
   textSize(40);
   textFont("monospace"); // textFont(createFont("monospace")); // KA
 
-  BOT.playAsWhite = random() > 0.5;
   GAMEPLAY.initializeGame();
 }
 
