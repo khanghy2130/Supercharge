@@ -302,7 +302,18 @@ const GAMEPLAY = {
       square(240 + i * 20, 580, 12, 2);
     }
 
+    // turn indicator
+    if (!this.meta.gameover) {
+      fill(255, 255, 255, frameCount % 60 > 30 ? 0 : 255);
+      if (this.meta.isWhiteTurn) {
+        triangle(15, 563, 15, 553, 25, 558);
+      } else {
+        triangle(185, 563, 185, 553, 195, 558);
+      }
+    }
+
     // round text
+    fill(250);
     if (this.meta.round > MAX_ROUND - 2 && !this.meta.gameover) {
       fill(cos(frameCount * 5) * 100 + 150);
     }
@@ -357,11 +368,11 @@ const GAMEPLAY = {
 
     // render spawn previews
     noStroke();
-    fill(255, 255, 255, cos(frameCount * 3) * 40 + 80);
+    fill(0, 0, 0, cos(frameCount * 3) * 50 + 80);
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
       const { rx, ry } = this.getRenderPos(pos.x, pos.y);
-      circle(rx, ry, BOARD_INFO.sqSize / 3);
+      circle(rx, ry, BOARD_INFO.sqSize * 0.4);
     }
 
     // render selected piece outline
