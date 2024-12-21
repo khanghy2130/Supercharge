@@ -192,7 +192,7 @@ const GAMEPLAY = {
     this.possibleMoves = null;
   },
 
-  updateTargets: function (board) {
+  updateTargets: function (board, spawnsPositions) {
     // increase all targets' value
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
@@ -202,8 +202,8 @@ const GAMEPLAY = {
     }
 
     // spawn new targets (if no piece standing here)
-    for (let i = 0; i < this.spawningPositions.length; i++) {
-      const pos = this.spawningPositions[i];
+    for (let i = 0; i < spawnsPositions.length; i++) {
+      const pos = spawnsPositions[i];
       if (board[pos.y][pos.x] === null) {
         board[pos.y][pos.x] = 1;
       }
@@ -213,7 +213,7 @@ const GAMEPLAY = {
   nextRound: function () {
     // skip this first round
     if (this.meta.round > 0) {
-      this.updateTargets(this.boardData);
+      this.updateTargets(this.boardData, this.spawningPositions);
       this.spawningPositions = [];
       // new previews, skip last round (round +1 because isn't increased yet)
       if (this.meta.round + 1 < MAX_ROUND) {

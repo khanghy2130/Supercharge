@@ -30,7 +30,8 @@ const BOT = {
       const scorer = isWhiteTurn ? white : black;
 
       // apply target update IF is white && it is 2nd or 3rd action
-      if (isWhiteTurn && i > 0 && i < 3) GAMEPLAY.updateTargets(boardData);
+      if (isWhiteTurn && i > 0 && i < 3)
+        GAMEPLAY.updateTargets(boardData, GAMEPLAY.spawningPositions);
 
       // for each move in this action
       for (let m = 0; m < moves.length; m++) {
