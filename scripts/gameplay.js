@@ -10,6 +10,7 @@ const GAMEPLAY = {
   selectedPiecePos: null, // {x,y}
   possibleMoves: null, // {x,y}[]  (only when selected a piece)
   meta: {
+    latestMoveIndex: 0,
     gameover: true,
     isWhiteTurn: true,
     white: { score: 0, energy: 2, elapsedTime: 0 },
@@ -124,18 +125,30 @@ const GAMEPLAY = {
   },
 
   makeMove: function (movePos) {
+    const { x: sx, y: sy } = this.selectedPiecePos;
+    const { x: ex, y: ey } = movePos;
+
+    const recordMove = {
+      startData: this.boardData[sy][sx],
+      endData: this.boardData[ey][ex],
+      lastMove: { sx, sy, ex, ey },
+      scoreGained: 0,
+    };
+
     const scoreGained = this.applyMove(
       this.selectedPiecePos,
       movePos,
       this.boardData
     );
 
+    // if gained any score
     if (scoreGained > 0) {
+      recordMove.scoreGained = scoreGained;
       const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
       scorer.score += scoreGained;
 
       // add score gained to popups
-      const { rx, ry } = this.getRenderPos(movePos.x, movePos.y);
+      const { rx, ry } = this.getRenderPos(ex, ey);
       this.pointsPopups.push({
         rx,
         ry,
@@ -144,47 +157,66 @@ const GAMEPLAY = {
       });
     }
 
-    // consume energy
-    if (this.meta.isWhiteTurn) {
-      this.meta.white.energy--;
-      if (this.meta.white.energy <= 0) {
-        this.meta.isWhiteTurn = false;
-        BOT.finalOutput = null;
-      }
-    } else {
-      this.meta.black.energy--;
-      if (this.meta.black.energy <= 0) {
-        BOT.finalOutput = null;
-        // last round? game over
-        if (this.meta.round === MAX_ROUND) {
-          this.meta.gameover = true;
-          this.deselectPiece();
-          return;
-        } else {
-          this.meta.isWhiteTurn = true;
-          this.nextRound();
-        }
+    REPLAYSYS.moves.push(recordMove);
+    this.deselectPiece();
+
+    // set energy, whose turn, and round based on moveIndex
+    this.meta.latestMoveIndex++;
+    REPLAYSYS.viewingMoveIndex = this.meta.latestMoveIndex;
+    const moveIndexOfRound = this.meta.latestMoveIndex % 4;
+
+    this.meta.round = ceil(this.meta.latestMoveIndex / 4);
+
+    // check if game over: energy is 0, round is just 8
+    if (this.meta.latestMoveIndex === MAX_ROUND * 4) {
+      this.meta.gameover = true;
+      this.meta.isWhiteTurn = false;
+      this.meta.white.energy = 0;
+      this.meta.black.energy = 0;
+    }
+    // white: 0,1  black: 2,3
+    else if (moveIndexOfRound === 0) {
+      this.meta.isWhiteTurn = true;
+      this.meta.white.energy = 2;
+      this.meta.black.energy = 2;
+    } else if (moveIndexOfRound === 1) {
+      this.meta.isWhiteTurn = true;
+      this.meta.white.energy = 1;
+      this.meta.black.energy = 2;
+    } else if (moveIndexOfRound === 2) {
+      this.meta.isWhiteTurn = false;
+      this.meta.white.energy = 0;
+      this.meta.black.energy = 2;
+    } else if (moveIndexOfRound === 3) {
+      this.meta.isWhiteTurn = false;
+      this.meta.white.energy = 0;
+      this.meta.black.energy = 1;
+    }
+
+    // update targets & generate new spawn positions
+    if (!this.meta.gameover && moveIndexOfRound === 0) {
+      this.updateTargets(this.boardData, this.spawningPositions);
+      this.spawningPositions = [];
+      // skip respawn if last round
+      if (this.meta.round < MAX_ROUND) {
+        this.spawningPositions = this.getNewTargetsPosition(
+          RESPAWN_TARGETS_COUNT
+        );
       }
     }
 
+    ////// remove this once bot moves
     const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
     // discard bot output if made a different 1st move from the output
     if (mover.energy === 1 && BOT.finalOutput !== null) {
-      const [sx, sy, ex, ey] = BOT.finalOutput.actionsHistory[0][0];
-      if (
-        !(
-          this.selectedPiecePos.x === sx &&
-          this.selectedPiecePos.y === sy &&
-          movePos.x === ex &&
-          movePos.y === ey
-        )
-      ) {
+      const [sx2, sy2, ex2, ey2] = BOT.finalOutput.actionsHistory[0][0];
+      if (!(sx === sx2 && sy === sy2 && ex === ex2 && ey === ey2)) {
         BOT.finalOutput = null;
       }
     }
 
-    this.deselectPiece();
-    BOT.startMinimax();
+    BOT.finalOutput = null; ///
+    if (!this.meta.gameover) BOT.startMinimax();
   },
 
   deselectPiece: function () {
@@ -210,29 +242,13 @@ const GAMEPLAY = {
     }
   },
 
-  nextRound: function () {
-    // skip this first round
-    if (this.meta.round > 0) {
-      this.updateTargets(this.boardData, this.spawningPositions);
-      this.spawningPositions = [];
-      // new previews, skip last round (round +1 because isn't increased yet)
-      if (this.meta.round + 1 < MAX_ROUND) {
-        this.spawningPositions = this.getNewTargetsPosition(
-          RESPAWN_TARGETS_COUNT
-        );
-      }
-    }
-    this.meta.round++;
-    this.meta.white.energy = 2;
-    this.meta.black.energy = 2;
-  },
-
   initializeGame: function () {
     // reset meta
     this.meta.gameover = false;
     this.meta.white.score = 0;
     this.meta.black.score = 0;
     this.meta.round = 0;
+    this.meta.latestMoveIndex = 0;
 
     // reset boardData
     for (let y = 0; y < 8; y++) {
@@ -259,8 +275,7 @@ const GAMEPLAY = {
 
     // initial spawn previews
     this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
-    this.nextRound();
-    if (BOT.playAsWhite) BOT.startMinimax(); /////
+    BOT.startMinimax(); /////
   },
 
   renderBoard: function () {
@@ -315,7 +330,7 @@ const GAMEPLAY = {
     // round text
     fill(250);
     if (this.meta.round > MAX_ROUND - 2 && !this.meta.gameover) {
-      fill(cos(frameCount * 5) * 100 + 150);
+      fill(cos(frameCount * 6) * 80 + 150);
     }
     const roundText = this.meta.gameover
       ? "Gameover"
