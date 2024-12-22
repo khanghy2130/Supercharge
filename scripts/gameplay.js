@@ -196,26 +196,10 @@ const GAMEPLAY = {
     // update targets & generate new spawn positions
     if (!this.meta.gameover && moveIndexOfRound === 0) {
       this.updateTargets(this.boardData, this.spawningPositions);
-      this.spawningPositions = [];
-      // skip respawn if last round
-      if (this.meta.round < MAX_ROUND) {
-        this.spawningPositions = this.getNewTargetsPosition(
-          RESPAWN_TARGETS_COUNT
-        );
-      }
+      this.generateNewTargetsPreviews();
     }
 
-    ////// remove this once bot moves
-    const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-    // discard bot output if made a different 1st move from the output
-    if (mover.energy === 1 && BOT.finalOutput !== null) {
-      const [sx2, sy2, ex2, ey2] = BOT.finalOutput.actionsHistory[0][0];
-      if (!(sx === sx2 && sy === sy2 && ex === ex2 && ey === ey2)) {
-        BOT.finalOutput = null;
-      }
-    }
-
-    BOT.finalOutput = null; ///
+    BOT.finalOutput = null; // clear previous bot output ////
     if (!this.meta.gameover) BOT.startMinimax();
   },
 
@@ -240,6 +224,13 @@ const GAMEPLAY = {
         board[pos.y][pos.x] = 1;
       }
     }
+  },
+
+  generateNewTargetsPreviews: function () {
+    this.spawningPositions = []; // clear
+    if (this.meta.round === MAX_ROUND) return; // no spawning last round
+    this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
+    REPLAYSYS.targetPreviewsPositions.push(this.spawningPositions);
   },
 
   initializeGame: function () {
@@ -274,7 +265,7 @@ const GAMEPLAY = {
     }
 
     // initial spawn previews
-    this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
+    this.generateNewTargetsPreviews();
     BOT.startMinimax(); /////
   },
 

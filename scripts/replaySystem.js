@@ -9,7 +9,7 @@ const REPLAYSYS = {
   */
   moves: [],
   viewingMoveIndex: 0,
-  spawnsPositions: [], // pos[3][8]
+  targetPreviewsPositions: [], // pos[3][8]
   saveState: function () {},
   loadState: function () {},
 };
