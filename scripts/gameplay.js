@@ -18,9 +18,6 @@ const GAMEPLAY = {
     round: 1,
   },
 
-  // {rx, ry, content, progress}
-  pointsPopups: [],
-
   isTarget: function (sqData) {
     return typeof sqData === "number";
   },
@@ -124,83 +121,61 @@ const GAMEPLAY = {
     return scoreGained;
   },
 
+  copySqData: function (sqData) {
+    if (sqData === null || this.isTarget(sqData)) {
+      return sqData;
+    }
+    // piece data
+    return Object.assign({}, sqData);
+  },
+
+  // only when viewing index is the same as latest index
   makeMove: function (movePos) {
+    if (REPLAYSYS.viewingMoveIndex !== this.meta.latestMoveIndex) {
+      print("Can't make move, viewingMoveIndex !== latestMoveIndex");
+      return;
+    }
+
+    this.meta.latestMoveIndex++; // next index
+
+    // set game over
+    if (this.meta.latestMoveIndex === MAX_ROUND * 4 - 1) {
+      this.meta.gameover = true;
+    }
+
     const { x: sx, y: sy } = this.selectedPiecePos;
     const { x: ex, y: ey } = movePos;
+    this.deselectPiece(); // clear this.selectedPiecePos
 
-    const recordMove = {
-      startData: this.boardData[sy][sx],
-      endData: this.boardData[ey][ex],
-      lastMove: { sx, sy, ex, ey },
-      scoreGained: 0,
-    };
-
-    const scoreGained = this.applyMove(
-      this.selectedPiecePos,
-      movePos,
-      this.boardData
-    );
-
-    // if gained any score
-    if (scoreGained > 0) {
-      recordMove.scoreGained = scoreGained;
-      const scorer = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-      scorer.score += scoreGained;
-
-      // add score gained to popups
-      const { rx, ry } = this.getRenderPos(ex, ey);
-      this.pointsPopups.push({
-        rx,
-        ry,
-        content: "+ " + scoreGained,
-        progress: 0,
-      });
-    }
-
-    REPLAYSYS.moves.push(recordMove);
-    this.deselectPiece();
-
-    // set energy, whose turn, and round based on moveIndex
-    this.meta.latestMoveIndex++;
-    REPLAYSYS.viewingMoveIndex = this.meta.latestMoveIndex;
     const moveIndexOfRound = this.meta.latestMoveIndex % 4;
 
-    this.meta.round = ceil(this.meta.latestMoveIndex / 4);
+    // add new move
+    REPLAYSYS.moves.push({
+      startData: this.copySqData(this.boardData[sy][sx]),
+      endData: this.copySqData(this.boardData[ey][ex]),
+      lastMove: { sx, sy, ex, ey },
+      scoreGained: 0,
+    });
 
-    // check if game over: energy is 0, round is just 8
-    if (this.meta.latestMoveIndex === MAX_ROUND * 4) {
-      this.meta.gameover = true;
-      this.meta.isWhiteTurn = false;
-      this.meta.white.energy = 0;
-      this.meta.black.energy = 0;
-    }
-    // white: 0,1  black: 2,3
-    else if (moveIndexOfRound === 0) {
-      this.meta.isWhiteTurn = true;
-      this.meta.white.energy = 2;
-      this.meta.black.energy = 2;
-    } else if (moveIndexOfRound === 1) {
-      this.meta.isWhiteTurn = true;
-      this.meta.white.energy = 1;
-      this.meta.black.energy = 2;
-    } else if (moveIndexOfRound === 2) {
-      this.meta.isWhiteTurn = false;
-      this.meta.white.energy = 0;
-      this.meta.black.energy = 2;
-    } else if (moveIndexOfRound === 3) {
-      this.meta.isWhiteTurn = false;
-      this.meta.white.energy = 0;
-      this.meta.black.energy = 1;
-    }
+    REPLAYSYS.loadState(true);
 
-    // update targets & generate new spawn positions
-    if (!this.meta.gameover && moveIndexOfRound === 0) {
-      this.updateTargets(this.boardData, this.spawningPositions);
-      this.generateNewTargetsPreviews();
+    // generate and add new targets previews (if is last move of round)
+    if (moveIndexOfRound === 3) {
+      // if not on last round
+      if (this.meta.latestMoveIndex < (MAX_ROUND - 2) * 4) {
+        REPLAYSYS.targetPreviewsPositions.push(
+          this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT)
+        );
+      } else {
+        REPLAYSYS.targetPreviewsPositions.push([]);
+      }
     }
+    // fix not having the new previews yet
+    this.spawningPositions =
+      REPLAYSYS.targetPreviewsPositions[this.meta.round - 1];
 
-    BOT.finalOutput = null; // clear previous bot output ////
-    if (!this.meta.gameover) BOT.startMinimax();
+    // BOT.finalOutput = null; // clear previous bot output ////
+    // if (!this.meta.gameover) BOT.startMinimax();
   },
 
   deselectPiece: function () {
@@ -226,20 +201,14 @@ const GAMEPLAY = {
     }
   },
 
-  generateNewTargetsPreviews: function () {
-    this.spawningPositions = []; // clear
-    if (this.meta.round === MAX_ROUND) return; // no spawning last round
-    this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
-    REPLAYSYS.targetPreviewsPositions.push(this.spawningPositions);
-  },
-
   initializeGame: function () {
     // reset meta
     this.meta.gameover = false;
     this.meta.white.score = 0;
     this.meta.black.score = 0;
     this.meta.round = 0;
-    this.meta.latestMoveIndex = 0;
+    this.meta.latestMoveIndex = -1;
+    REPLAYSYS.initialize();
 
     // reset boardData
     for (let y = 0; y < 8; y++) {
@@ -249,7 +218,7 @@ const GAMEPLAY = {
       }
     }
 
-    // set starting positions
+    // add pieces to board
     this.boardData[1][1] = this.getPieceData("R", true);
     this.boardData[3][2] = this.getPieceData("B", true);
     this.boardData[5][1] = this.getPieceData("K", true);
@@ -264,9 +233,9 @@ const GAMEPLAY = {
       this.boardData[pos.y][pos.x] = 1;
     }
 
-    // initial spawn previews
-    this.generateNewTargetsPreviews();
-    BOT.startMinimax(); /////
+    // set and add first batch of targets previews
+    this.spawnsPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
+    REPLAYSYS.targetPreviewsPositions = [this.spawnsPositions];
   },
 
   renderBoard: function () {
@@ -417,26 +386,6 @@ const GAMEPLAY = {
         const pos = this.possibleMoves[i];
         const { rx, ry } = this.getRenderPos(pos.x, pos.y);
         square(rx, ry, BOARD_INFO.sqSize * (0.8 + cos(frameCount * 3) * 0.03));
-      }
-    }
-
-    // render points popups (first one is always first to disappear)
-    noStroke();
-    fill(255);
-    textSize(24);
-    const textYOffset = BOARD_INFO.sqSize * 0.3;
-    for (let i = 0; i < this.pointsPopups.length; i++) {
-      const pp = this.pointsPopups[i];
-      text(
-        pp.content,
-        pp.rx,
-        pp.ry - textYOffset - pp.progress * textYOffset * 0.8
-      );
-
-      pp.progress += 0.02;
-      if (pp.progress >= 1) {
-        this.pointsPopups.shift();
-        i--;
       }
     }
 
