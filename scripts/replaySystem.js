@@ -21,6 +21,14 @@ const REPLAYSYS = {
   // min viewingIndex = -1
   // max viewingIndex = this.moves.length - 1
   loadState: function (goesForward) {
+    if (
+      (!goesForward && this.viewingMoveIndex <= -1) ||
+      (goesForward && this.viewingMoveIndex >= this.moves.length - 1)
+    ) {
+      print("stepping out of range");
+      return;
+    }
+
     this.viewingMoveIndex = this.viewingMoveIndex + (goesForward ? 1 : -1);
     const gp = GAMEPLAY;
     const vmi = this.viewingMoveIndex;
@@ -41,19 +49,34 @@ const REPLAYSYS = {
         gp.updateTargets(gp.boardData, gp.spawningPositions);
       }
     } else {
-      // unspawn targets backward on last move of round
+      const move = this.moves[vmi + 1];
+      // on last move of round: devalue & unspawn targets
       if (moveIndexOfRound === 2) {
-        print("unspawn targets"); //////
+        for (let y = 0; y < 8; y++) {
+          for (let x = 0; x < 8; x++) {
+            const sqData = gp.boardData[y][x];
+            if (gp.isTarget(sqData)) {
+              // unspawn if is 1
+              if (sqData === 1) gp.boardData[y][x] = null;
+              else gp.boardData[y][x]--;
+            }
+          }
+        }
       }
 
-      ///// apply unmove
+      // apply unmove
+      gp.boardData[move.lastMove.sy][move.lastMove.sx] = gp.copySqData(
+        move.startData
+      );
+      gp.boardData[move.lastMove.ey][move.lastMove.ex] = gp.copySqData(
+        move.endData
+      );
     }
 
     // >> set rounds, whose turn, energies
 
     // initial state (-1), before any move
     if (vmi === -1) {
-      print("initial state loaded");
       gp.meta.round = 1; // set round
       gp.meta.isWhiteTurn = true;
       gp.meta.white.energy = 2;
@@ -61,7 +84,6 @@ const REPLAYSYS = {
     }
     // last state, after last move
     else if (vmi === MAX_ROUND * 4 - 1) {
-      print("last state loaded");
       gp.meta.round = MAX_ROUND; // set round
       gp.meta.isWhiteTurn = false;
       gp.meta.white.energy = 0;

@@ -234,8 +234,8 @@ const GAMEPLAY = {
     }
 
     // set and add first batch of targets previews
-    this.spawnsPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
-    REPLAYSYS.targetPreviewsPositions = [this.spawnsPositions];
+    this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
+    REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
   },
 
   renderBoard: function () {
@@ -310,7 +310,6 @@ const GAMEPLAY = {
 
   renderScene: function () {
     background(20);
-
     // mouse hover on square
     this.hoveredSq = null;
     if (
@@ -466,8 +465,11 @@ const GAMEPLAY = {
     // not hovering on a square?
     if (this.hoveredSq === null) return;
 
-    // currently no selected piece?
-    if (this.selectedPiecePos === null) {
+    // currently no selected piece && viewing latest index?
+    if (
+      this.selectedPiecePos === null &&
+      this.meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex
+    ) {
       const sqData = this.boardData[this.hoveredSq.y][this.hoveredSq.x];
       // check if is not clicking on a piece OR it has the wrong color
       if (
