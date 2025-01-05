@@ -107,7 +107,7 @@ const GAMEPLAY = {
     // capturing target?
     else if (this.isTarget(sqData)) {
       scoreGained = sqData;
-      if (movingPiece.isCharged) scoreGained *= CHARGED_MULT;
+      if (movingPiece.isCharged) scoreGained *= CONSTANTS.CHARGED_MULT;
       board[endPos.y][endPos.x] = movingPiece; // move piece there
     }
     // swapping?
@@ -139,7 +139,7 @@ const GAMEPLAY = {
     this.meta.latestMoveIndex++; // next index
 
     // set game over
-    if (this.meta.latestMoveIndex === MAX_ROUND * 4 - 1) {
+    if (this.meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
       this.meta.gameover = true;
     }
 
@@ -162,9 +162,9 @@ const GAMEPLAY = {
     // generate and add new targets previews (if is last move of round)
     if (moveIndexOfRound === 3) {
       // if not on last round
-      if (this.meta.latestMoveIndex < (MAX_ROUND - 2) * 4) {
+      if (this.meta.latestMoveIndex < (CONSTANTS.MAX_ROUND - 2) * 4) {
         REPLAYSYS.targetPreviewsPositions.push(
-          this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT)
+          this.getNewTargetsPosition(CONSTANTS.RESPAWN_TARGETS_COUNT)
         );
       } else {
         REPLAYSYS.targetPreviewsPositions.push([]);
@@ -201,7 +201,14 @@ const GAMEPLAY = {
     }
   },
 
-  initializeGame: function () {
+  // black/white: { bot: 0|1|3, squad: string[3]  }
+  initializeGame: function ({
+    black,
+    white,
+    respawns,
+    initialSpawns,
+    chargeMultiplier,
+  }) {
     // reset meta
     this.meta.gameover = false;
     this.meta.white.score = 0;
@@ -209,6 +216,11 @@ const GAMEPLAY = {
     this.meta.round = 0;
     this.meta.latestMoveIndex = -1;
     REPLAYSYS.initialize();
+
+    // set constants
+    CONSTANTS.INITIAL_TARGETS_COUNT = initialSpawns;
+    CONSTANTS.RESPAWN_TARGETS_COUNT = respawns;
+    CONSTANTS.CHARGED_MULT = chargeMultiplier;
 
     // reset boardData
     for (let y = 0; y < 8; y++) {
@@ -219,22 +231,26 @@ const GAMEPLAY = {
     }
 
     // add pieces to board
-    this.boardData[1][1] = this.getPieceData("R", true);
-    this.boardData[3][2] = this.getPieceData("B", true);
-    this.boardData[5][1] = this.getPieceData("K", true);
-    this.boardData[6][6] = this.getPieceData("R", false);
-    this.boardData[4][5] = this.getPieceData("B", false);
-    this.boardData[2][6] = this.getPieceData("K", false);
+    this.boardData[1][1] = this.getPieceData(white.squad[0], true);
+    this.boardData[3][2] = this.getPieceData(white.squad[1], true);
+    this.boardData[5][1] = this.getPieceData(white.squad[2], true);
+    this.boardData[2][6] = this.getPieceData(black.squad[0], false);
+    this.boardData[4][5] = this.getPieceData(black.squad[1], false);
+    this.boardData[6][6] = this.getPieceData(black.squad[2], false);
 
     // spawn initial targets
-    const targetPositions = this.getNewTargetsPosition(INITIAL_TARGETS_COUNT);
+    const targetPositions = this.getNewTargetsPosition(
+      CONSTANTS.INITIAL_TARGETS_COUNT
+    );
     for (let i = 0; i < targetPositions.length; i++) {
       const pos = targetPositions[i];
       this.boardData[pos.y][pos.x] = 1;
     }
 
     // set and add first batch of targets previews
-    this.spawningPositions = this.getNewTargetsPosition(RESPAWN_TARGETS_COUNT);
+    this.spawningPositions = this.getNewTargetsPosition(
+      CONSTANTS.RESPAWN_TARGETS_COUNT
+    );
     REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
   },
 
@@ -289,7 +305,7 @@ const GAMEPLAY = {
 
     // round text
     fill(250);
-    if (this.meta.round > MAX_ROUND - 2 && !this.meta.gameover) {
+    if (this.meta.round > CONSTANTS.MAX_ROUND - 2 && !this.meta.gameover) {
       fill(cos(frameCount * 6) * 80 + 150);
     }
     const roundText = this.meta.gameover
@@ -324,6 +340,7 @@ const GAMEPLAY = {
       };
     }
 
+    REPLAYSYS.updateSkipping();
     this.renderBoard();
 
     // add pieces and targets positions
@@ -447,7 +464,8 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
-    if (this.meta.gameover || BOT.isProcessing) return;
+    if (this.meta.gameover || BOT.isProcessing || REPLAYSYS.skipping !== null)
+      return;
 
     // bot options ////
     if (_mouseX > 410 - 85 && _mouseX < 410 + 85) {

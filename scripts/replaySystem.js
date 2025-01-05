@@ -7,6 +7,7 @@ const REPLAYSYS = {
 			scoreGained
 		}
   */
+  skipping: null, // null, true, false
   moves: [],
   viewingMoveIndex: -1,
   targetPreviewsPositions: [], // pos[3][8]
@@ -25,14 +26,15 @@ const REPLAYSYS = {
       (!goesForward && this.viewingMoveIndex <= -1) ||
       (goesForward && this.viewingMoveIndex >= this.moves.length - 1)
     ) {
-      print("stepping out of range");
-      return;
+      return "OUT OF RANGE";
     }
 
     this.viewingMoveIndex = this.viewingMoveIndex + (goesForward ? 1 : -1);
     const gp = GAMEPLAY;
     const vmi = this.viewingMoveIndex;
     const moveIndexOfRound = vmi % 4;
+
+    gp.deselectPiece();
 
     // apply move/unmove and spawn/unspawn targets
     if (goesForward) {
@@ -45,7 +47,7 @@ const REPLAYSYS = {
       );
 
       // spawn targets on last move of round (and not last state)
-      if (moveIndexOfRound === 3 && vmi < MAX_ROUND * 4 - 1) {
+      if (moveIndexOfRound === 3 && vmi < CONSTANTS.MAX_ROUND * 4 - 1) {
         gp.updateTargets(gp.boardData, gp.spawningPositions);
       }
     } else {
@@ -83,8 +85,8 @@ const REPLAYSYS = {
       gp.meta.black.energy = 2;
     }
     // last state, after last move
-    else if (vmi === MAX_ROUND * 4 - 1) {
-      gp.meta.round = MAX_ROUND; // set round
+    else if (vmi === CONSTANTS.MAX_ROUND * 4 - 1) {
+      gp.meta.round = CONSTANTS.MAX_ROUND; // set round
       gp.meta.isWhiteTurn = false;
       gp.meta.white.energy = 0;
       gp.meta.black.energy = 0;
@@ -127,5 +129,17 @@ const REPLAYSYS = {
     }
     gp.meta.white.score = wScore;
     gp.meta.black.score = bScore;
+  },
+
+  updateSkipping: function () {
+    if (this.skipping === null || frameCount % CONSTANTS.SKIP_DELAY !== 0)
+      return;
+    const returnValue = this.loadState(this.skipping);
+    // done skipping?
+    if (returnValue === "OUT OF RANGE") this.skipping = null;
+  },
+
+  setUpSkipping: function (goesForward) {
+    this.skipping = goesForward;
   },
 };

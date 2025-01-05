@@ -3,10 +3,13 @@ const COLORS = {
   primary: [233, 199, 255],
 };
 
-const MAX_ROUND = 8;
-const CHARGED_MULT = 3;
-const RESPAWN_TARGETS_COUNT = 3;
-const INITIAL_TARGETS_COUNT = 6;
+const CONSTANTS = {
+  MAX_ROUND: 8,
+  CHARGED_MULT: 3,
+  RESPAWN_TARGETS_COUNT: 3,
+  INITIAL_TARGETS_COUNT: 6,
+  SKIP_DELAY: 5,
+};
 
 const BOARD_INFO = {
   color1: [196, 128, 242],

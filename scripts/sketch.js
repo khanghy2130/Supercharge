@@ -28,7 +28,13 @@ function setup() {
   textSize(40);
   textFont("monospace"); // textFont(createFont("monospace")); // KA
 
-  GAMEPLAY.initializeGame();
+  GAMEPLAY.initializeGame({
+    white: { bot: 0, squad: ["R", "B", "K"] },
+    black: { bot: 3, squad: ["K", "B", "R"] },
+    respawns: 3,
+    initialSpawns: 6,
+    chargeMultiplier: 3,
+  });
 }
 
 // nKA

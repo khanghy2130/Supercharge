@@ -155,7 +155,9 @@ const BOT = {
 
       // Base case: return score to parent
       const isLastTurn =
-        GAMEPLAY.meta.round === MAX_ROUND && isMaximizing && depth > 0;
+        GAMEPLAY.meta.round === CONSTANTS.MAX_ROUND &&
+        isMaximizing &&
+        depth > 0;
       if (depth === this.maxDepth || isLastTurn) {
         this.updateParent({
           actionsHistory: actionsHistory,
@@ -287,7 +289,7 @@ const BOT = {
             if (GAMEPLAY.isTarget(endValue)) {
               secondMoveScoreGained = endValue;
               if (movedPiece2.isCharged) {
-                secondMoveScoreGained *= CHARGED_MULT;
+                secondMoveScoreGained *= CONSTANTS.CHARGED_MULT;
               }
             }
 
