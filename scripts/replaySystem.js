@@ -16,6 +16,11 @@ const REPLAYSYS = {
     this.moves = [];
     this.viewingMoveIndex = -1;
     this.targetPreviewsPositions = [];
+
+    RENDER.movement = {
+      progress: 1,
+      pPositions: [],
+    };
   },
 
   // only called within limits below:
@@ -50,7 +55,27 @@ const REPLAYSYS = {
       if (moveIndexOfRound === 3 && vmi < CONSTANTS.MAX_ROUND * 4 - 1) {
         gp.updateTargets(gp.boardData, gp.spawningPositions);
       }
-    } else {
+
+      // add to movement animation
+      RENDER.movement = {
+        progress: 0,
+        pieces: [
+          {
+            pos: { x: move.lastMove.ex, y: move.lastMove.ey },
+            prevPos: { x: move.lastMove.sx, y: move.lastMove.sy },
+          },
+        ],
+      };
+      // add second piece moving
+      if (move.endData !== null && !gp.isTarget(move.endData)) {
+        RENDER.movement.pieces.push({
+          pos: { x: move.lastMove.sx, y: move.lastMove.sy },
+          prevPos: { x: move.lastMove.ex, y: move.lastMove.ey },
+        });
+      }
+    }
+    // move backward?
+    else {
       const move = this.moves[vmi + 1];
       // on last move of round: devalue & unspawn targets
       if (moveIndexOfRound === 2) {
@@ -73,6 +98,24 @@ const REPLAYSYS = {
       gp.boardData[move.lastMove.ey][move.lastMove.ex] = gp.copySqData(
         move.endData
       );
+
+      // add to movement animation
+      RENDER.movement = {
+        progress: 0,
+        pieces: [
+          {
+            pos: { x: move.lastMove.sx, y: move.lastMove.sy },
+            prevPos: { x: move.lastMove.ex, y: move.lastMove.ey },
+          },
+        ],
+      };
+      // add second piece moving
+      if (move.endData !== null && !gp.isTarget(move.endData)) {
+        RENDER.movement.pieces.push({
+          pos: { x: move.lastMove.ex, y: move.lastMove.ey },
+          prevPos: { x: move.lastMove.sx, y: move.lastMove.sy },
+        });
+      }
     }
 
     // >> set rounds, whose turn, energies

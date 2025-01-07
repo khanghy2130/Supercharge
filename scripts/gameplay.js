@@ -22,13 +22,6 @@ const GAMEPLAY = {
     return typeof sqData === "number";
   },
 
-  getRenderPos: function (x, y) {
-    return {
-      rx: BOARD_INFO.sqSize * (x + 0.5),
-      ry: BOARD_INFO.sqSize * (y + 0.5),
-    };
-  },
-
   getPieceData: function (name, isWhite) {
     return { name: name, isWhite: isWhite, isCharged: false };
   },
@@ -209,6 +202,8 @@ const GAMEPLAY = {
     initialSpawns,
     chargeMultiplier,
   }) {
+    /// set bot
+
     // reset meta
     this.meta.gameover = false;
     this.meta.white.score = 0;
@@ -360,30 +355,25 @@ const GAMEPLAY = {
     for (let i = 0; i < targetsPositions.length; i++) {
       const targetPos = targetsPositions[i];
       const targetData = this.boardData[targetPos.y][targetPos.x];
-      const { rx, ry } = this.getRenderPos(targetPos.x, targetPos.y);
+      const { rx, ry } = RENDER.getRenderPos(targetPos.x, targetPos.y);
       this.renderTarget(targetData, rx, ry);
     }
 
     // render pieces
-    for (let i = 0; i < piecesPositions.length; i++) {
-      const piecePos = piecesPositions[i];
-      const pieceData = this.boardData[piecePos.y][piecePos.x];
-      const { rx, ry } = this.getRenderPos(piecePos.x, piecePos.y);
-      this.renderPiece(pieceData, rx, ry);
-    }
+    RENDER.renderAllPieces(piecesPositions, this.boardData);
 
     // render spawn previews
     noStroke();
     fill(0, 0, 0, cos(frameCount * 3) * 50 + 80);
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
-      const { rx, ry } = this.getRenderPos(pos.x, pos.y);
+      const { rx, ry } = RENDER.getRenderPos(pos.x, pos.y);
       circle(rx, ry, BOARD_INFO.sqSize * 0.4);
     }
 
     // render selected piece outline
     if (this.selectedPiecePos !== null) {
-      const { rx, ry } = this.getRenderPos(
+      const { rx, ry } = RENDER.getRenderPos(
         this.selectedPiecePos.x,
         this.selectedPiecePos.y
       );
@@ -400,7 +390,7 @@ const GAMEPLAY = {
       strokeWeight(3);
       for (let i = 0; i < this.possibleMoves.length; i++) {
         const pos = this.possibleMoves[i];
-        const { rx, ry } = this.getRenderPos(pos.x, pos.y);
+        const { rx, ry } = RENDER.getRenderPos(pos.x, pos.y);
         square(rx, ry, BOARD_INFO.sqSize * (0.8 + cos(frameCount * 3) * 0.03));
       }
     }
@@ -415,8 +405,8 @@ const GAMEPLAY = {
         action[mover.energy === 2 ? 0 : action.length - 1];
       stroke(255, 50, 50);
       strokeWeight(5);
-      const start = this.getRenderPos(sx, sy);
-      const end = this.getRenderPos(ex, ey);
+      const start = RENDER.getRenderPos(sx, sy);
+      const end = RENDER.getRenderPos(ex, ey);
       line(start.rx, start.ry, end.rx, end.ry);
       push();
       translate(end.rx, end.ry);
@@ -428,19 +418,6 @@ const GAMEPLAY = {
 
     // process bot //////
     if (BOT.isProcessing) BOT.processMinimax();
-  },
-
-  renderPiece: function (sd, rx, ry) {
-    const pieceImg = getPieceImage(sd);
-    image(pieceImg, rx, ry, BOARD_INFO.sqSize, BOARD_INFO.sqSize);
-
-    // supercharged render
-    if (sd.isCharged) {
-      stroke("aqua");
-      strokeWeight(5);
-      noFill();
-      circle(rx, ry, BOARD_INFO.sqSize * (0.7 + cos(frameCount * 3) * 0.1));
-    }
   },
 
   renderTarget: function (sd, rx, ry) {
