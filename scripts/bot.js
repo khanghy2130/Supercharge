@@ -159,9 +159,16 @@ const BOT = {
         isMaximizing &&
         depth > 0;
       if (depth === this.maxDepth || isLastTurn) {
+        let { scoreDiff, boardData } = this.getSimulatedData(actionsHistory);
+
+        // add heuristic score if is easy bot and is not last round
+        if (this.maxDepth === 1 && GAMEPLAY.meta.round !== MAX_ROUND) {
+          scoreDiff += this.getHeuristicScore(boardData, !isMaximizing);
+        }
+
         this.updateParent({
           actionsHistory: actionsHistory,
-          scoreDiff: this.getSimulatedData(actionsHistory).scoreDiff,
+          scoreDiff: scoreDiff,
         });
         continue;
       }
@@ -201,6 +208,43 @@ const BOT = {
         this.updateParent(returnValue);
       }
     }
+  },
+
+  getHeuristicScore: function (boardData, isWhite) {
+    let highestControlledValue = 0;
+    const piecesPositions = [];
+    // get pieces positions
+    outerloop: for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const sqData = boardData[y][x];
+        if (
+          sqData !== null &&
+          !GAMEPLAY.isTarget(sqData) &&
+          sqData.isWhite === isWhite
+        ) {
+          piecesPositions.push({ x, y });
+          if (piecesPositions.length === 3) break outerloop;
+        }
+      }
+    }
+
+    // get all 1st moves
+    for (let i = 0; i < piecesPositions.length; i++) {
+      const pPos = piecesPositions[i];
+      const pieceData = boardData[pPos.y][pPos.x];
+      const possibleMoves = GAMEPLAY.getPossibleMoves(pPos, boardData);
+      for (let pm = 0; pm < possibleMoves.length; pm++) {
+        const sqData = boardData[possibleMoves[pm].y][possibleMoves[pm].x];
+        if (GAMEPLAY.isTarget(sqData)) {
+          highestControlledValue = max(
+            highestControlledValue,
+            sqData * (pieceData.isCharged ? CONSTANTS.CHARGED_MULT : 1)
+          );
+        }
+      }
+    }
+
+    return highestControlledValue * (isWhite ? 1 : -1);
   },
 
   getPotentialActions: function (boardData, isMaximizing) {
