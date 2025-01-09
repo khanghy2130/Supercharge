@@ -194,15 +194,10 @@ const GAMEPLAY = {
     }
   },
 
-  // black/white: { bot: 0|1|3, squad: string[3]  }
-  initializeGame: function ({
-    black,
-    white,
-    respawns,
-    initialSpawns,
-    chargeMultiplier,
-  }) {
-    /// set bot
+  // black/white: { botDepth: 0|1|3, squad: string[3]  }
+  initializeGame: function ({ black, white }) {
+    BOT.whiteDepth = white.botDepth;
+    BOT.blackDepth = black.botDepth;
 
     // reset meta
     this.meta.gameover = false;
@@ -211,11 +206,6 @@ const GAMEPLAY = {
     this.meta.round = 0;
     this.meta.latestMoveIndex = -1;
     REPLAYSYS.initialize();
-
-    // set constants
-    CONSTANTS.INITIAL_TARGETS_COUNT = initialSpawns;
-    CONSTANTS.RESPAWN_TARGETS_COUNT = respawns;
-    CONSTANTS.CHARGED_MULT = chargeMultiplier;
 
     // reset boardData
     for (let y = 0; y < 8; y++) {

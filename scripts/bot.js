@@ -1,4 +1,6 @@
 const BOT = {
+  blackDepth: 3,
+  whiteDepth: 3,
   maxDepth: 3,
   playAsWhite: false,
   maxProgress: null, // length of potential actions of root node
@@ -56,6 +58,7 @@ const BOT = {
   },
 
   startMinimax: function () {
+    //// use black/white depth
     // don't start if not bot turn
     if (this.playAsWhite !== GAMEPLAY.meta.isWhiteTurn) return;
 
@@ -162,7 +165,10 @@ const BOT = {
         let { scoreDiff, boardData } = this.getSimulatedData(actionsHistory);
 
         // add heuristic score if is easy bot and is not last round
-        if (this.maxDepth === 1 && GAMEPLAY.meta.round !== MAX_ROUND) {
+        if (
+          this.maxDepth === 1 &&
+          GAMEPLAY.meta.round !== CONSTANTS.MAX_ROUND
+        ) {
           scoreDiff += this.getHeuristicScore(boardData, !isMaximizing);
         }
 
