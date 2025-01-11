@@ -1,6 +1,16 @@
 const letters = "ABCDEFGH";
 const COLORS = {
   primary: [233, 199, 255],
+  targets: [
+    [240, 163, 125],
+    [240, 223, 125],
+    [178, 237, 119],
+    [116, 232, 178],
+    [125, 213, 240],
+    [125, 146, 240],
+    [238, 125, 240],
+    [240, 125, 156],
+  ],
 };
 
 const CONSTANTS = {
@@ -10,6 +20,7 @@ const CONSTANTS = {
   INITIAL_TARGETS_COUNT: 6,
   SKIP_DELAY: 5,
   MOVE_SPEED: 0.08,
+  CIRCLE_SIZE: 32,
 };
 
 const BOARD_INFO = {

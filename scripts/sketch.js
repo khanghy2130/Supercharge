@@ -20,11 +20,11 @@ function setup() {
   // configs
   // frameRate(1); /////
   pixelDensity(1); // nKA
+  angleMode(DEGREES); // KA
   rectMode(CENTER);
   imageMode(CENTER);
   textAlign(CENTER, CENTER);
   strokeJoin(ROUND);
-  angleMode(DEGREES); // KA
   textSize(40);
   textFont("monospace"); // textFont(createFont("monospace")); // KA
 

@@ -223,6 +223,8 @@ const GAMEPLAY = {
     this.boardData[4][5] = this.getPieceData(black.squad[1], false);
     this.boardData[6][6] = this.getPieceData(black.squad[2], false);
 
+    RENDER.setPiecesPositions();
+
     // spawn initial targets
     const targetPositions = this.getNewTargetsPosition(
       CONSTANTS.INITIAL_TARGETS_COUNT
@@ -237,6 +239,8 @@ const GAMEPLAY = {
       CONSTANTS.RESPAWN_TARGETS_COUNT
     );
     REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
+
+    RENDER.updateAllTRs(true);
   },
 
   renderBoard: function () {
@@ -328,29 +332,11 @@ const GAMEPLAY = {
     REPLAYSYS.updateSkipping();
     this.renderBoard();
 
-    // add pieces and targets positions
-    const piecesPositions = [];
-    const targetsPositions = [];
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        const sqData = this.boardData[y][x];
-        if (!sqData) continue;
-        if (this.isTarget(sqData)) targetsPositions.push({ x, y });
-        else piecesPositions.push({ x, y });
-      }
-    }
-
     // render targets
-    textSize(32);
-    for (let i = 0; i < targetsPositions.length; i++) {
-      const targetPos = targetsPositions[i];
-      const targetData = this.boardData[targetPos.y][targetPos.x];
-      const { rx, ry } = RENDER.getRenderPos(targetPos.x, targetPos.y);
-      this.renderTarget(targetData, rx, ry);
-    }
+    RENDER.renderAllTargets();
 
     // render pieces
-    RENDER.renderAllPieces(piecesPositions, this.boardData);
+    RENDER.renderAllPieces(this.boardData);
 
     // render spawn previews
     noStroke();
@@ -408,26 +394,6 @@ const GAMEPLAY = {
 
     // process bot //////
     if (BOT.isProcessing) BOT.processMinimax();
-  },
-
-  renderTarget: function (sd, rx, ry) {
-    if (sd === 1) fill(240, 163, 125);
-    else if (sd === 2) fill(240, 223, 125);
-    else if (sd === 3) fill(186, 240, 125);
-    else if (sd === 4) fill(125, 240, 171);
-    else if (sd === 5) fill(125, 213, 240);
-    else if (sd === 6) fill(125, 146, 240);
-    else if (sd === 7) fill(238, 125, 240);
-    else if (sd === 8) fill(240, 125, 156);
-    else noFill();
-
-    strokeWeight(2);
-    stroke(0);
-    circle(rx, ry, BOARD_INFO.sqSize * 0.6);
-
-    fill(0);
-    noStroke();
-    text(sd, rx, ry);
   },
 
   clicked: function () {

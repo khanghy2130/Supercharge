@@ -78,7 +78,10 @@ const REPLAYSYS = {
     else {
       const move = this.moves[vmi + 1];
       // on last move of round: devalue & unspawn targets
-      if (moveIndexOfRound === 2) {
+      if (
+        moveIndexOfRound === 2 &&
+        this.viewingMoveIndex < (CONSTANTS.MAX_ROUND - 1) * 4
+      ) {
         for (let y = 0; y < 8; y++) {
           for (let x = 0; x < 8; x++) {
             const sqData = gp.boardData[y][x];
@@ -118,8 +121,10 @@ const REPLAYSYS = {
       }
     }
 
-    // >> set rounds, whose turn, energies
+    RENDER.updateAllTRs(goesForward);
+    RENDER.setPiecesPositions();
 
+    // SET ROUND, WHOSE TURN, AND ENERGIES
     // initial state (-1), before any move
     if (vmi === -1) {
       gp.meta.round = 1; // set round
