@@ -8,7 +8,94 @@ const RENDER = {
   targets: [],
   removingTR: null,
 
-  deleteRemovingTR: function () {
+  capturedTR: {
+    pos: { x: 0, y: 0 },
+    value: 1,
+    fadingCircles: [], // {pos{rx, ry}, deg}
+    progress: 1,
+  },
+
+  renderCapturedTarget: function () {
+    if (this.capturedTR.progress >= 1) return;
+    this.capturedTR.progress += 0.01; // CAPTURE ANIMATION SPEED
+
+    const move = REPLAYSYS.moves[REPLAYSYS.viewingMoveIndex];
+    // can't get move or no score gained?
+    if (!move || move.scoreGained === 0) return;
+
+    const circlesPositions = [];
+    for (let ci = 0; ci < this.capturedTR.fadingCircles.length; ci++) {
+      const cir = this.capturedTR.fadingCircles[ci];
+      // FADING CIRCLE MOVE SPEED
+      cir.pos.rx += cos(cir.deg) * 0.5;
+      cir.pos.ry += sin(cir.deg) * 0.5;
+      circlesPositions.push({
+        rx: cir.pos.rx,
+        ry: cir.pos.ry,
+      });
+    }
+
+    // render circles outlines
+    const circleSize =
+      max(0, 1 - this.capturedTR.progress * 2.2) * CONSTANTS.CIRCLE_SIZE;
+    noFill();
+    stroke(0);
+    strokeWeight(6);
+    for (let ci = 0; ci < circlesPositions.length; ci++) {
+      const { rx, ry } = circlesPositions[ci];
+      ellipse(rx, ry, circleSize, circleSize);
+    }
+
+    // render inner circles
+    noStroke();
+    const targetColor = color(...COLORS.targets[this.capturedTR.value - 1]);
+    fill(targetColor);
+    for (let ci = 0; ci < circlesPositions.length; ci++) {
+      const { rx, ry } = circlesPositions[ci];
+      ellipse(rx, ry, circleSize, circleSize);
+    }
+
+    //// where to show move.scoreGained?
+    //// use this.capturedTR.progress to do score bar animation?
+
+    fill(0, 0, 0, max(0, 1 - this.capturedTR.progress * 5) * 255);
+    textSize(30);
+    const { rx, ry } = this.getRenderPos(
+      this.capturedTR.pos.x,
+      this.capturedTR.pos.y
+    );
+    text(this.capturedTR.value, rx, ry);
+  },
+
+  deleteRemovingTR: function (doesCaptureAnimation) {
+    this.capturedTR.progress = 1; // end previous animation
+    if (this.removingTR === null) return;
+
+    if (doesCaptureAnimation) {
+      const TR = this.removingTR;
+      this.capturedTR.value = TR.value;
+      this.capturedTR.pos = TR.pos;
+      this.capturedTR.progress = 0;
+      this.capturedTR.fadingCircles = [];
+      // add to fadingCircles
+      const randomOffsetDeg = random() * 90;
+      for (let i = 0; i < TR.circles.length; i++) {
+        const { startPos, endPos, progress } = TR.circles[i];
+        if (startPos === undefined) continue; // safety skip
+
+        const prg = this.easeInOutCubic(progress);
+        this.capturedTR.fadingCircles.push({
+          deg: randomOffsetDeg + i * 72,
+          pos: {
+            rx: startPos.x + prg * (endPos.x - startPos.x),
+            ry: startPos.y + prg * (endPos.y - startPos.y),
+          },
+        });
+      }
+
+      //// trigger score bar animation
+    }
+
     const index = this.targets.indexOf(this.removingTR);
     if (index === -1) return;
     this.targets.splice(index, 1);
@@ -40,7 +127,7 @@ const RENDER = {
     TR.value = value;
     // animate transition if going forward
     if (goesForward) {
-      TR.delay = (TR.pos.x + TR.pos.y) * 3 + 30; // WAVE DELAY + PIECE MOVE DELAYthis.getTRDelay(TR.pos);
+      TR.delay = (TR.pos.x + TR.pos.y) * 3 + 20; // WAVE DELAY + PIECE MOVE DELAYthis.getTRDelay(TR.pos);
       TR.progress = 0;
     } else {
       TR.delay = 0;
@@ -64,10 +151,11 @@ const RENDER = {
       const TR = this.targets[i];
       for (let j = 0; j < targetsPositions.length; j++) {
         const tPos = targetsPositions[j];
-        // exists? update TR
+        // exists && value changed? update TR
         if (TR.pos.x === tPos.x && TR.pos.y === tPos.y) {
           targetsPositions.splice(j, 1); // remove target from list
-          this.updateTR(TR, gp.boardData[tPos.y][tPos.x], goesForward);
+          if (gp.boardData[tPos.y][tPos.x] !== TR.value)
+            this.updateTR(TR, gp.boardData[tPos.y][tPos.x], goesForward);
           continue outerloop;
         }
       }
@@ -98,6 +186,15 @@ const RENDER = {
     textSize(30); ///
     for (let i = 0; i < this.targets.length; i++) {
       const TR = this.targets[i];
+      let value = TR.value;
+      if (TR.delay > 0) {
+        TR.delay--;
+        if (value === 1) {
+          /// render spawn preview instead
+          continue;
+        }
+        value -= 1;
+      } else if (TR.progress < 1) TR.progress += 0.05;
 
       const circlesPositions = [];
       for (let ci = 0; ci < TR.circles.length; ci++) {
@@ -128,7 +225,10 @@ const RENDER = {
 
       // render inner circles
       noStroke();
-      fill(...COLORS.targets[TR.value - 1]);
+      const targetColor = color(...COLORS.targets[value - 1]);
+      if (TR.delay <= 0 && TR.progress < 1) {
+        fill(lerpColor(color(255), targetColor, TR.progress));
+      } else fill(targetColor);
       for (let ci = 0; ci < circlesPositions.length; ci++) {
         const { rx, ry } = circlesPositions[ci];
         ellipse(rx, ry, CONSTANTS.CIRCLE_SIZE, CONSTANTS.CIRCLE_SIZE);
@@ -137,8 +237,10 @@ const RENDER = {
       ////
       fill(0);
       const { rx, ry } = this.getRenderPos(TR.pos.x, TR.pos.y);
-      text(TR.value, rx, ry);
+      text(value, rx, ry);
     }
+
+    this.renderCapturedTarget();
   },
 
   piecesPositions: [],
@@ -197,6 +299,11 @@ const RENDER = {
           this.movement.progress + CONSTANTS.MOVE_SPEED,
           1
         );
+      }
+
+      // trigger capture animation if ended
+      if (this.movement.progress === 1) {
+        this.deleteRemovingTR(true);
       }
     }
 

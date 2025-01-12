@@ -332,11 +332,11 @@ const GAMEPLAY = {
     REPLAYSYS.updateSkipping();
     this.renderBoard();
 
-    // render targets
-    RENDER.renderAllTargets();
-
     // render pieces
     RENDER.renderAllPieces(this.boardData);
+
+    // render targets
+    RENDER.renderAllTargets();
 
     // render spawn previews
     noStroke();

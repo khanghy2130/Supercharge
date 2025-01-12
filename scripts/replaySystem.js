@@ -121,7 +121,7 @@ const REPLAYSYS = {
       }
     }
 
-    RENDER.updateAllTRs(goesForward);
+    RENDER.updateAllTRs(goesForward && this.skipping === null);
     RENDER.setPiecesPositions();
 
     // SET ROUND, WHOSE TURN, AND ENERGIES
