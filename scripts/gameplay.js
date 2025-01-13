@@ -332,12 +332,6 @@ const GAMEPLAY = {
     REPLAYSYS.updateSkipping();
     this.renderBoard();
 
-    // render pieces
-    RENDER.renderAllPieces(this.boardData);
-
-    // render targets
-    RENDER.renderAllTargets();
-
     // render spawn previews
     noStroke();
     fill(0, 0, 0, cos(frameCount * 3) * 50 + 80);
@@ -346,6 +340,12 @@ const GAMEPLAY = {
       const { rx, ry } = RENDER.getRenderPos(pos.x, pos.y);
       circle(rx, ry, BOARD_INFO.sqSize * 0.4);
     }
+
+    // render pieces
+    RENDER.renderAllPieces(this.boardData);
+
+    // render targets
+    RENDER.renderAllTargets();
 
     // render selected piece outline
     if (this.selectedPiecePos !== null) {

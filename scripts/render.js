@@ -1,4 +1,28 @@
 const RENDER = {
+  easeInOutCubic: function (x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  },
+  easeOutElastic: function (x) {
+    const c4 = (2 * Math.PI) / 3;
+    return x === 0
+      ? 0
+      : x === 1
+      ? 1
+      : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+  },
+
+  numHalfWidths: {},
+
+  // takes a string with only numbers and plus sign
+  getNumHalfWidth: function (numStr) {
+    const arr = numStr.split("");
+    let hw = 0;
+    for (let i = 0; i < arr.length; i++) {
+      hw += this.numHalfWidths[arr[i]];
+    }
+    return hw;
+  },
+
   /*
     TargetRender: {
       pos, delay, progress, value, 
@@ -17,12 +41,50 @@ const RENDER = {
 
   renderCapturedTarget: function () {
     if (this.capturedTR.progress >= 1) return;
-    this.capturedTR.progress += 0.01; // CAPTURE ANIMATION SPEED
+    this.capturedTR.progress += 0.012; // CAPTURE ANIMATION SPEED
 
     const move = REPLAYSYS.moves[REPLAYSYS.viewingMoveIndex];
     // can't get move or no score gained?
     if (!move || move.scoreGained === 0) return;
+    const targetRenderPos = this.getRenderPos(
+      this.capturedTR.pos.x,
+      this.capturedTR.pos.y
+    );
 
+    // render score gained
+    let popupSizeFactor = 1;
+    if (this.capturedTR.progress < 0.3) {
+      popupSizeFactor = (1 / 0.3) * this.capturedTR.progress;
+    } else if (this.capturedTR.progress < 0.9) {
+    } else {
+      popupSizeFactor = (1 / 0.1) * (0.1 - (this.capturedTR.progress - 0.9));
+    }
+    push(); // KA
+    translate(
+      targetRenderPos.rx,
+      targetRenderPos.ry + 47 * (this.capturedTR.pos.y !== 0 ? -1 : 1)
+    );
+    scale(
+      this.capturedTR.progress < 0.3
+        ? this.easeOutElastic(popupSizeFactor)
+        : popupSizeFactor
+    );
+    fill(0, 0, 0, 200);
+    rect(0, 0, 60, 40, 10);
+    const scoreGainedStr = "+" + move.scoreGained.toString();
+    myText(
+      scoreGainedStr,
+      -this.getNumHalfWidth(scoreGainedStr),
+      CONSTANTS.VALUE_NUM_SIZE / 2,
+      CONSTANTS.VALUE_NUM_SIZE,
+      color(255)
+    );
+    pop(); // KA
+
+    const circlesProgress = this.capturedTR.progress * 2.2;
+    if (circlesProgress >= 1) return;
+
+    // calculate circles positions
     const circlesPositions = [];
     for (let ci = 0; ci < this.capturedTR.fadingCircles.length; ci++) {
       const cir = this.capturedTR.fadingCircles[ci];
@@ -36,8 +98,7 @@ const RENDER = {
     }
 
     // render circles outlines
-    const circleSize =
-      max(0, 1 - this.capturedTR.progress * 2.2) * CONSTANTS.CIRCLE_SIZE;
+    const circleSize = (1 - circlesProgress) * CONSTANTS.CIRCLE_SIZE;
     noFill();
     stroke(0);
     strokeWeight(6);
@@ -55,16 +116,17 @@ const RENDER = {
       ellipse(rx, ry, circleSize, circleSize);
     }
 
-    //// where to show move.scoreGained?
-    //// use this.capturedTR.progress to do score bar animation?
-
-    fill(0, 0, 0, max(0, 1 - this.capturedTR.progress * 5) * 255);
-    textSize(30);
-    const { rx, ry } = this.getRenderPos(
-      this.capturedTR.pos.x,
-      this.capturedTR.pos.y
+    // render fading value
+    const textProgress = this.capturedTR.progress * 10;
+    if (textProgress >= 1) return;
+    const valueStr = this.capturedTR.value.toString();
+    myText(
+      valueStr,
+      targetRenderPos.rx - this.getNumHalfWidth(valueStr),
+      targetRenderPos.ry + CONSTANTS.VALUE_NUM_SIZE / 2,
+      CONSTANTS.VALUE_NUM_SIZE,
+      color(0, 0, 0, (1 - textProgress) * 255)
     );
-    text(this.capturedTR.value, rx, ry);
   },
 
   deleteRemovingTR: function (doesCaptureAnimation) {
@@ -178,10 +240,6 @@ const RENDER = {
     }
   },
 
-  easeInOutCubic: function (x) {
-    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-  },
-
   renderAllTargets: function () {
     textSize(30); ///
     for (let i = 0; i < this.targets.length; i++) {
@@ -234,12 +292,17 @@ const RENDER = {
         ellipse(rx, ry, CONSTANTS.CIRCLE_SIZE, CONSTANTS.CIRCLE_SIZE);
       }
 
-      ////
-      fill(0);
+      // render value
       const { rx, ry } = this.getRenderPos(TR.pos.x, TR.pos.y);
-      text(value, rx, ry);
+      const valueStr = value.toString();
+      myText(
+        valueStr,
+        rx - this.getNumHalfWidth(valueStr),
+        ry + CONSTANTS.VALUE_NUM_SIZE / 2,
+        CONSTANTS.VALUE_NUM_SIZE,
+        color(0)
+      );
     }
-
     this.renderCapturedTarget();
   },
 

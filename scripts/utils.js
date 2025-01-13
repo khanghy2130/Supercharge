@@ -21,6 +21,7 @@ const CONSTANTS = {
   SKIP_DELAY: 5,
   MOVE_SPEED: 0.08,
   CIRCLE_SIZE: 32,
+  VALUE_NUM_SIZE: 18,
 };
 
 const BOARD_INFO = {
