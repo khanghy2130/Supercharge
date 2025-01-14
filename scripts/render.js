@@ -24,6 +24,118 @@ const RENDER = {
   },
 
   /*
+    Lightning: {
+      segments{startPos,endPos,deg,distance}, 
+      segIndex, distProgress, isAppearing
+    }
+  */
+  lightnings: [],
+
+  bigSpawnLightings: function (rx, ry) {
+    for (let i = 0; i < 10; i++) {
+      // within a small square
+      this.spawnLightning(rx + random() * 50 - 25, ry + random() * 50 - 25);
+    }
+  },
+  spawnLightning: function (x, y) {
+    const segAmount = round(random() * 2) + 2; // range + minimum
+    const segments = [];
+    for (let i = 0; i < segAmount; i++) {
+      const lastVertex = i === 0 ? null : segments[i - 1];
+      const startPos = lastVertex ? lastVertex.endPos : { x, y };
+
+      let deg;
+      if (lastVertex)
+        deg =
+          lastVertex.deg +
+          (60 + random() * 90) *
+            ((i < 2 ? random() > 0.5 : lastVertex.deg - segments[i - 2].deg < 0)
+              ? 1
+              : -1);
+      else deg = random() * 360; // else: new starting
+
+      const distance = random() * 7 + 6; // range + minimum
+      const endPos = {
+        x: startPos.x + cos(deg) * distance,
+        y: startPos.y + sin(deg) * distance,
+      };
+      segments.push({ startPos, endPos, deg, distance });
+    }
+
+    this.lightnings.push({
+      segments,
+      segIndex: 0,
+      isAppearing: true,
+      distProgress: 0,
+    });
+  },
+
+  renderLightnings: function () {
+    stroke(96, 214, 235); // LIGHTING COLOR
+    strokeWeight(3);
+    for (let i = this.lightnings.length - 1; i >= 0; i--) {
+      const ln = this.lightnings[i];
+
+      // update distProgress
+      ln.distProgress += 2; // LIGHTNING SPEED
+
+      if (ln.isAppearing) {
+        // render all segments before, current segment startPos to progress
+        for (let si = 0; si < ln.segments.length; si++) {
+          const seg = ln.segments[si];
+          if (si < ln.segIndex) {
+            line(seg.startPos.x, seg.startPos.y, seg.endPos.x, seg.endPos.y);
+          } else if (si === ln.segIndex) {
+            const prg = min(ln.distProgress, seg.distance);
+            line(
+              seg.startPos.x,
+              seg.startPos.y,
+              seg.startPos.x + cos(seg.deg) * prg,
+              seg.startPos.y + sin(seg.deg) * prg
+            );
+            // done with segment?
+            if (ln.distProgress >= seg.distance) {
+              ln.segIndex++;
+              ln.distProgress = 0;
+              // done with appearing?
+              if (ln.segIndex === ln.segments.length) {
+                ln.isAppearing = false;
+                ln.segIndex = 0;
+              }
+            }
+          } else break;
+        }
+      }
+      // disappearing
+      else {
+        // render all segments after, current segment progress to endPos
+        for (let si = ln.segments.length - 1; si >= 0; si--) {
+          const seg = ln.segments[si];
+          if (si > ln.segIndex) {
+            line(seg.startPos.x, seg.startPos.y, seg.endPos.x, seg.endPos.y);
+          } else if (si === ln.segIndex) {
+            const prg = min(ln.distProgress, seg.distance);
+            line(
+              seg.startPos.x + cos(seg.deg) * prg,
+              seg.startPos.y + sin(seg.deg) * prg,
+              seg.endPos.x,
+              seg.endPos.y
+            );
+            // done with segment?
+            if (ln.distProgress >= seg.distance) {
+              ln.segIndex++;
+              ln.distProgress = 0;
+              // done with disappearing?
+              if (ln.segIndex === ln.segments.length)
+                this.lightnings.splice(i, 1);
+            }
+          } else break;
+        }
+      }
+    }
+  },
+
+  /*
     TargetRender: {
       pos, delay, progress, value, 
       circles {startPos, endPos, endDeg, progress} 
@@ -81,8 +193,8 @@ const RENDER = {
     );
     pop(); // KA
 
-    const circlesProgress = this.capturedTR.progress * 2.2;
-    if (circlesProgress >= 1) return;
+    const circlesProgress = this.capturedTR.progress * 2.1;
+    if (circlesProgress >= 1) return; // circles already disappeared
 
     // calculate circles positions
     const circlesPositions = [];
@@ -115,18 +227,6 @@ const RENDER = {
       const { rx, ry } = circlesPositions[ci];
       ellipse(rx, ry, circleSize, circleSize);
     }
-
-    // render fading value
-    const textProgress = this.capturedTR.progress * 10;
-    if (textProgress >= 1) return;
-    const valueStr = this.capturedTR.value.toString();
-    myText(
-      valueStr,
-      targetRenderPos.rx - this.getNumHalfWidth(valueStr),
-      targetRenderPos.ry + CONSTANTS.VALUE_NUM_SIZE / 2,
-      CONSTANTS.VALUE_NUM_SIZE,
-      color(0, 0, 0, (1 - textProgress) * 255)
-    );
   },
 
   deleteRemovingTR: function (doesCaptureAnimation) {
@@ -334,7 +434,6 @@ const RENDER = {
         const { rx: rpx, ry: rpy } = this.getRenderPos(prevPos.x, prevPos.y);
         const { rx, ry } = this.getRenderPos(pos.x, pos.y);
 
-        //// flash charge icon if is charged
         this.renderPiece(
           pieceData,
           rpx + (rx - rpx) * this.movement.progress,
@@ -367,6 +466,31 @@ const RENDER = {
       // trigger capture animation if ended
       if (this.movement.progress === 1) {
         this.deleteRemovingTR(true);
+
+        // if not skipping & moving forward
+        if (REPLAYSYS.skipping === null && REPLAYSYS.lastLoadIsForward) {
+          // spawn lightings if charged a piece
+          const move =
+            REPLAYSYS.viewingMoveIndex < 0
+              ? null
+              : REPLAYSYS.moves[REPLAYSYS.viewingMoveIndex];
+          if (move && move.endData && !GAMEPLAY.isTarget(move.endData)) {
+            const { rx, ry } = this.getRenderPos(
+              move.lastMove.sx,
+              move.lastMove.sy
+            );
+            this.bigSpawnLightings(rx, ry);
+          }
+
+          // spawn lightnings if charged
+          if (move && move.startData.isCharged) {
+            const { rx, ry } = this.getRenderPos(
+              move.lastMove.ex,
+              move.lastMove.ey
+            );
+            this.bigSpawnLightings(rx, ry);
+          }
+        }
       }
     }
 

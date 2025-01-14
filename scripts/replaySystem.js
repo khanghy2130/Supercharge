@@ -8,11 +8,13 @@ const REPLAYSYS = {
 		}
   */
   skipping: null, // null, true, false
+  lastLoadIsForward: true,
   moves: [],
   viewingMoveIndex: -1,
   targetPreviewsPositions: [], // pos[3][8]
 
   initialize: function () {
+    this.lastLoadIsForward = true;
     this.moves = [];
     this.viewingMoveIndex = -1;
     this.targetPreviewsPositions = [];
@@ -33,6 +35,7 @@ const REPLAYSYS = {
     ) {
       return "OUT OF RANGE";
     }
+    this.lastLoadIsForward = goesForward;
 
     this.viewingMoveIndex = this.viewingMoveIndex + (goesForward ? 1 : -1);
     const gp = GAMEPLAY;

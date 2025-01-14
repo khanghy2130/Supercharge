@@ -240,6 +240,8 @@ const GAMEPLAY = {
     );
     REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
 
+    RENDER.capturedTR.progress = 1; // end animation
+    RENDER.lightnings = [];
     RENDER.updateAllTRs(true);
   },
 
@@ -314,6 +316,7 @@ const GAMEPLAY = {
   },
 
   renderScene: function () {
+    const r = RENDER;
     background(20);
     // mouse hover on square
     this.hoveredSq = null;
@@ -337,19 +340,17 @@ const GAMEPLAY = {
     fill(0, 0, 0, cos(frameCount * 3) * 50 + 80);
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
-      const { rx, ry } = RENDER.getRenderPos(pos.x, pos.y);
+      const { rx, ry } = r.getRenderPos(pos.x, pos.y);
       circle(rx, ry, BOARD_INFO.sqSize * 0.4);
     }
 
-    // render pieces
-    RENDER.renderAllPieces(this.boardData);
-
-    // render targets
-    RENDER.renderAllTargets();
+    r.renderAllPieces(this.boardData);
+    r.renderLightnings();
+    r.renderAllTargets();
 
     // render selected piece outline
     if (this.selectedPiecePos !== null) {
-      const { rx, ry } = RENDER.getRenderPos(
+      const { rx, ry } = r.getRenderPos(
         this.selectedPiecePos.x,
         this.selectedPiecePos.y
       );
