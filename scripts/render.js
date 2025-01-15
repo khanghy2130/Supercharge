@@ -77,7 +77,7 @@ const RENDER = {
       const ln = this.lightnings[i];
 
       // update distProgress
-      ln.distProgress += 2; // LIGHTNING SPEED
+      ln.distProgress += 1.5; // LIGHTNING SPEED
 
       if (ln.isAppearing) {
         // render all segments before, current segment startPos to progress
@@ -499,20 +499,16 @@ const RENDER = {
       const pieceData = bd[piecePos.y][piecePos.x];
       const { rx, ry } = this.getRenderPos(piecePos.x, piecePos.y);
       this.renderPiece(pieceData, rx, ry);
+      // supercharged render
+      if (pieceData.isCharged && frameCount % 25 === 0) {
+        this.spawnLightning(rx + random() * 30 - 15, ry + random() * 30 - 15);
+      }
     }
   },
 
   renderPiece: function (sd, rx, ry) {
     const pieceImg = getPieceImage(sd);
     image(pieceImg, rx, ry, BOARD_INFO.sqSize, BOARD_INFO.sqSize);
-
-    // supercharged render
-    if (sd.isCharged) {
-      stroke("aqua");
-      strokeWeight(5);
-      noFill();
-      circle(rx, ry, BOARD_INFO.sqSize * (0.7 + cos(frameCount * 3) * 0.1));
-    }
   },
 
   getRenderPos: function (x, y) {

@@ -349,16 +349,16 @@ const GAMEPLAY = {
     r.renderAllTargets();
 
     // render selected piece outline
-    if (this.selectedPiecePos !== null) {
-      const { rx, ry } = r.getRenderPos(
-        this.selectedPiecePos.x,
-        this.selectedPiecePos.y
-      );
-      stroke(...COLORS.primary);
-      strokeWeight(3);
-      noFill();
-      square(rx, ry, BOARD_INFO.sqSize);
-    }
+    // if (this.selectedPiecePos !== null) {
+    //   const { rx, ry } = r.getRenderPos(
+    //     this.selectedPiecePos.x,
+    //     this.selectedPiecePos.y
+    //   );
+    //   stroke(...COLORS.primary);
+    //   strokeWeight(3);
+    //   noFill();
+    //   square(rx, ry, BOARD_INFO.sqSize);
+    // }
 
     // render possible moves outlines
     if (this.possibleMoves !== null) {
