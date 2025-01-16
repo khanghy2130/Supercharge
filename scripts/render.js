@@ -27,14 +27,15 @@ const RENDER = {
   renderUI: function () {
     const meta = GAMEPLAY.meta;
 
-    // scores
+    /*
+    // scores ////
     noStroke();
-    textSize(16);
-    fill(150);
-    text("WHITE: " + meta.white.score, 80, 570);
-    text("BLACK: " + meta.black.score, 250, 570);
+    textSize(14);
+    fill(BOARD_INFO.color2);
+    text("WHITE: " + meta.white.score, 80, 580);
+    text("BLACK: " + meta.black.score, 250, 580);
 
-    // moves left
+    // moves left ////
     for (let i = 0; i < meta.white.energy; i++) {
       square(70 + i * 20, 590, 8);
     }
@@ -42,46 +43,44 @@ const RENDER = {
       square(240 + i * 20, 590, 8);
     }
 
-    // round text
-    fill(150);
+    // round text ///
+    fill(BOARD_INFO.color2);
     if (meta.round > CONSTANTS.MAX_ROUND - 2 && !meta.gameover) {
       fill(cos(frameCount * 6) * 80 + 150);
     }
     const roundText = meta.gameover ? "Gameover" : "ROUND " + meta.round + "/8";
     textSize(16);
     text(roundText, 160, 590);
+    */
 
     // score bar
-    rectMode(CORNER);
-    fill(150);
-    rect(62.5, 500, 375, 15);
-    rectMode(CENTER);
+    noStroke();
+    fill(255);
+    rect(0, 500, 250, 12);
+    fill(0);
+    rect(250, 500, 250, 12);
 
     // score texts
-    noStroke();
-    myText("44", 10, 535, 20, color(255));
-    myText("44", 450, 535, 20, color(255));
-
-    // render time
-    fill(50);
-    rect(175, 533, 60, 25, 5);
-    myText("44:00", 149, 540, 12, color(200));
-
-    fill(50);
-    rect(325, 533, 60, 25, 5);
-    myText("44:00", 300, 540, 12, color(200));
+    /// center text
+    myText("44", 10, 555, 34, color(255));
+    myText("44", 425, 555, 34, color(0));
 
     // render names
-    myText("player", 65, 540, 12, color(200));
-    myText("player", 375, 540, 12, color(200));
+    /// left/right text
+    myText("player1", 95, 535, 13, color(250));
+    myText("player2", 333, 535, 13, color(0));
+
+    // render time
+    /// left/right text
+    myText("44:00", 95, 555, 13, color(255));
+    myText("44:00", 350, 555, 13, color(0));
+
+    // render round number
+    myText(meta.round + "", 225, 552, 30, color(BOARD_INFO.color2));
+    myText("/8", 251, 535, 13, color(BOARD_INFO.color2));
 
     // render moves left
-    fill(255);
-    rect(226, 533, 9, 15, 3);
-    rect(242, 533, 9, 15, 3);
-
-    rect(258, 533, 9, 15, 3);
-    rect(274, 533, 9, 15, 3);
+    /// quad
   },
 
   /*
@@ -133,7 +132,7 @@ const RENDER = {
 
   renderLightnings: function () {
     stroke(96, 214, 235); // LIGHTING COLOR
-    strokeWeight(3);
+    strokeWeight(3.5);
     for (let i = this.lightnings.length - 1; i >= 0; i--) {
       const ln = this.lightnings[i];
 
@@ -243,6 +242,7 @@ const RENDER = {
         : popupSizeFactor
     );
     fill(0, 0, 0, 200);
+    rectMode(CENTER);
     rect(0, 0, 60, 40, 10);
     const scoreGainedStr = "+" + move.scoreGained.toString();
     myText(

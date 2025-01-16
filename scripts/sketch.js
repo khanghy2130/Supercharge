@@ -21,12 +21,14 @@ function setup() {
   // frameRate(1); /////
   pixelDensity(1); // nKA
   angleMode(DEGREES); // KA
-  rectMode(CENTER);
   imageMode(CENTER);
   textAlign(CENTER, CENTER);
   strokeJoin(ROUND);
   textSize(40);
   textFont("monospace"); // textFont(createFont("monospace")); // KA
+
+  BOARD_INFO.color1 = color(...BOARD_INFO.color1);
+  BOARD_INFO.color2 = color(...BOARD_INFO.color2);
 
   // set num widths
   RENDER.numHalfWidths["0"] =

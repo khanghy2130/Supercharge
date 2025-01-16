@@ -138,7 +138,7 @@ const BOT = {
     }
 
     // process amount per frame here
-    for (let i = 0; i < 20000; i++) {
+    for (let i = 0; i < 10000; i++) {
       // All nodes processed ?
       if (this.stack.length === 0) {
         this.isProcessing = false;

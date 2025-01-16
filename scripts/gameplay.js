@@ -203,7 +203,7 @@ const GAMEPLAY = {
     this.meta.gameover = false;
     this.meta.white.score = 0;
     this.meta.black.score = 0;
-    this.meta.round = 0;
+    this.meta.round = 1;
     this.meta.latestMoveIndex = -1;
     REPLAYSYS.initialize();
 
@@ -246,31 +246,20 @@ const GAMEPLAY = {
   },
 
   renderBoard: function () {
-    // render board background
-    rectMode(CORNER);
-    noStroke();
-    fill(...BOARD_INFO.color1);
-    rect(0, 0, BOARD_INFO.size, BOARD_INFO.size);
-
     // render dark squares
-    fill(...BOARD_INFO.color2);
+    fill(BOARD_INFO.color2);
+    const ss = BOARD_INFO.sqSize;
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         if ((x + y) % 2 === 0) continue;
-        rect(
-          BOARD_INFO.sqSize * x,
-          BOARD_INFO.sqSize * y,
-          BOARD_INFO.sqSize,
-          BOARD_INFO.sqSize
-        );
+        rect(ss * x, ss * y, ss, ss);
       }
     }
-    rectMode(CENTER);
   },
 
   renderScene: function () {
     const r = RENDER;
-    background(20);
+    background(BOARD_INFO.color1);
     // mouse hover on square
     this.hoveredSq = null;
     if (
@@ -286,6 +275,8 @@ const GAMEPLAY = {
     }
 
     REPLAYSYS.updateSkipping();
+
+    r.renderUI();
     this.renderBoard();
 
     // render spawn previews
@@ -320,12 +311,10 @@ const GAMEPLAY = {
       strokeWeight(3);
       for (let i = 0; i < this.possibleMoves.length; i++) {
         const pos = this.possibleMoves[i];
-        const { rx, ry } = RENDER.getRenderPos(pos.x, pos.y);
-        square(rx, ry, BOARD_INFO.sqSize * (0.8 + cos(frameCount * 3) * 0.03));
+        const ss = BOARD_INFO.sqSize;
+        rect(ss * pos.x, ss * pos.y, ss, ss);
       }
     }
-
-    r.renderUI();
 
     ///// bot arrow
     if (BOT.finalOutput !== null && frameCount % 60 > 18) {
