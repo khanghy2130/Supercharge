@@ -13,14 +13,75 @@ const RENDER = {
 
   numHalfWidths: {},
 
-  // takes a string with only numbers and plus sign
-  getNumHalfWidth: function (numStr) {
+  // takes a string with only numbers, plus sign, and colon sign
+  getNumHalfWidth: function (numStr, s) {
     const arr = numStr.split("");
     let hw = 0;
     for (let i = 0; i < arr.length; i++) {
       hw += this.numHalfWidths[arr[i]];
     }
+    if (s !== undefined) return (hw / CONSTANTS.VALUE_NUM_SIZE) * s;
     return hw;
+  },
+
+  renderUI: function () {
+    const meta = GAMEPLAY.meta;
+
+    // scores
+    noStroke();
+    textSize(16);
+    fill(150);
+    text("WHITE: " + meta.white.score, 80, 570);
+    text("BLACK: " + meta.black.score, 250, 570);
+
+    // moves left
+    for (let i = 0; i < meta.white.energy; i++) {
+      square(70 + i * 20, 590, 8);
+    }
+    for (let i = 0; i < meta.black.energy; i++) {
+      square(240 + i * 20, 590, 8);
+    }
+
+    // round text
+    fill(150);
+    if (meta.round > CONSTANTS.MAX_ROUND - 2 && !meta.gameover) {
+      fill(cos(frameCount * 6) * 80 + 150);
+    }
+    const roundText = meta.gameover ? "Gameover" : "ROUND " + meta.round + "/8";
+    textSize(16);
+    text(roundText, 160, 590);
+
+    // score bar
+    rectMode(CORNER);
+    fill(150);
+    rect(62.5, 500, 375, 15);
+    rectMode(CENTER);
+
+    // score texts
+    noStroke();
+    myText("44", 10, 535, 20, color(255));
+    myText("44", 450, 535, 20, color(255));
+
+    // render time
+    fill(50);
+    rect(175, 533, 60, 25, 5);
+    myText("44:00", 149, 540, 12, color(200));
+
+    fill(50);
+    rect(325, 533, 60, 25, 5);
+    myText("44:00", 300, 540, 12, color(200));
+
+    // render names
+    myText("player", 65, 540, 12, color(200));
+    myText("player", 375, 540, 12, color(200));
+
+    // render moves left
+    fill(255);
+    rect(226, 533, 9, 15, 3);
+    rect(242, 533, 9, 15, 3);
+
+    rect(258, 533, 9, 15, 3);
+    rect(274, 533, 9, 15, 3);
   },
 
   /*

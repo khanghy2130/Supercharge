@@ -268,53 +268,6 @@ const GAMEPLAY = {
     rectMode(CENTER);
   },
 
-  renderUI: function () {
-    // scores
-    noStroke();
-    textSize(20);
-    fill(250);
-    text("WHITE: " + this.meta.white.score, 80, 560);
-    text("BLACK: " + this.meta.black.score, 250, 560);
-
-    // moves left
-    for (let i = 0; i < this.meta.white.energy; i++) {
-      square(70 + i * 20, 580, 12, 2);
-    }
-    for (let i = 0; i < this.meta.black.energy; i++) {
-      square(240 + i * 20, 580, 12, 2);
-    }
-
-    // turn indicator
-    if (!this.meta.gameover) {
-      fill(255, 255, 255, frameCount % 60 > 30 ? 0 : 255);
-      if (this.meta.isWhiteTurn) {
-        triangle(15, 563, 15, 553, 25, 558);
-      } else {
-        triangle(185, 563, 185, 553, 195, 558);
-      }
-    }
-
-    // round text
-    fill(250);
-    if (this.meta.round > CONSTANTS.MAX_ROUND - 2 && !this.meta.gameover) {
-      fill(cos(frameCount * 6) * 80 + 150);
-    }
-    const roundText = this.meta.gameover
-      ? "Gameover"
-      : "ROUND " + this.meta.round + "/8";
-    textSize(24);
-    text(roundText, 160, 525);
-
-    // bot options ////
-    fill(60);
-    rect(410, 530, 170, 30, 5);
-    rect(410, 570, 170, 30, 5);
-    fill(250);
-    textSize(16);
-    text("bot color: " + (BOT.playAsWhite ? "white" : "black"), 410, 530);
-    text("difficulty: " + (BOT.maxDepth === 1 ? "easy" : "hard"), 410, 570);
-  },
-
   renderScene: function () {
     const r = RENDER;
     background(20);
@@ -348,7 +301,7 @@ const GAMEPLAY = {
     r.renderLightnings();
     r.renderAllTargets();
 
-    // render selected piece outline
+    // render selected piece outline///
     // if (this.selectedPiecePos !== null) {
     //   const { rx, ry } = r.getRenderPos(
     //     this.selectedPiecePos.x,
@@ -360,7 +313,7 @@ const GAMEPLAY = {
     //   square(rx, ry, BOARD_INFO.sqSize);
     // }
 
-    // render possible moves outlines
+    // render possible moves outlines ///
     if (this.possibleMoves !== null) {
       noFill();
       stroke(...COLORS.primary);
@@ -372,7 +325,7 @@ const GAMEPLAY = {
       }
     }
 
-    this.renderUI();
+    r.renderUI();
 
     ///// bot arrow
     if (BOT.finalOutput !== null && frameCount % 60 > 18) {

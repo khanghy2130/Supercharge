@@ -30,13 +30,14 @@ function setup() {
 
   // set num widths
   RENDER.numHalfWidths["0"] =
-    myText("1", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
-  RENDER.numHalfWidths["1"] =
     myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
+  RENDER.numHalfWidths["1"] =
+    myText("1", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
   for (let i = 2; i < 10; i++)
     RENDER.numHalfWidths[i.toString()] = RENDER.numHalfWidths["1"];
   RENDER.numHalfWidths["4"] = RENDER.numHalfWidths["0"]; // set number 4 width to be 0
   RENDER.numHalfWidths["+"] = RENDER.numHalfWidths["1"];
+  RENDER.numHalfWidths[":"] = RENDER.numHalfWidths["0"] / 4;
 
   GAMEPLAY.initializeGame({
     white: { botDepth: 0, squad: ["R", "B", "K"] },

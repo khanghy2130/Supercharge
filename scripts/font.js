@@ -3,7 +3,7 @@ let myText = function (message, x, y, s, c) {
     ty = 0;
 
   let drawChar = function (char, x, y) {
-    push();
+    push(); ///KA
     translate(x, y);
     scale(s / 50);
 
@@ -314,7 +314,7 @@ let myText = function (message, x, y, s, c) {
         {
           noStroke();
           fill(c);
-          rect(10, -50, 10, 50);
+          quad(10, -50, 20, -50, 20, 0, 10, 0);
           quad(10, 0, 40, -50, 50, -50, 20, 0);
 
           tx += (50 * s) / 50;
@@ -324,9 +324,9 @@ let myText = function (message, x, y, s, c) {
         {
           noStroke();
           fill(c);
-          rect(10, -50, 10, 50);
+          quad(10, -50, 20, -50, 20, 0, 10, 0);
           quad(10, 0, 30, -50, 40, -50, 20, 0);
-          rect(30, -50, 10, 50);
+          quad(30, -50, 40, -50, 40, 0, 30, 0);
           quad(30, 0, 50, -50, 60, -50, 40, 0);
 
           tx += (50 * s) / 50;
@@ -697,7 +697,7 @@ let myText = function (message, x, y, s, c) {
         break;
     }
 
-    pop();
+    pop(); ///KA
   };
 
   fill(c);
