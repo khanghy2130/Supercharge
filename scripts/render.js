@@ -42,15 +42,6 @@ const RENDER = {
     for (let i = 0; i < meta.black.energy; i++) {
       square(240 + i * 20, 590, 8);
     }
-
-    // round text ///
-    fill(BOARD_INFO.color2);
-    if (meta.round > CONSTANTS.MAX_ROUND - 2 && !meta.gameover) {
-      fill(cos(frameCount * 6) * 80 + 150);
-    }
-    const roundText = meta.gameover ? "Gameover" : "ROUND " + meta.round + "/8";
-    textSize(16);
-    text(roundText, 160, 590);
     */
 
     // score bar
@@ -76,8 +67,22 @@ const RENDER = {
     myText("44:00", 350, 555, 13, color(0));
 
     // render round number
-    myText(meta.round + "", 225, 552, 30, color(BOARD_INFO.color2));
-    myText("/8", 251, 535, 13, color(BOARD_INFO.color2));
+    const roundNumberColor = color(BOARD_INFO.color2);
+
+    myText(
+      meta.round + "",
+      225,
+      552,
+      30,
+      meta.round < CONSTANTS.MAX_ROUND - 1 || meta.gameover
+        ? roundNumberColor
+        : lerpColor(
+            roundNumberColor,
+            color(255, 0, 0),
+            0.4 + cos(frameCount * 5) * 0.4
+          )
+    );
+    myText("/8", 251, 535, 13, roundNumberColor);
 
     // render moves left
     /// quad
