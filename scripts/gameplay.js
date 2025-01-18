@@ -242,6 +242,7 @@ const GAMEPLAY = {
 
     RENDER.capturedTR.progress = 1; // end animation
     RENDER.lightnings = [];
+    RENDER.targets = [];
     RENDER.updateAllTRs(true);
   },
 
@@ -258,8 +259,11 @@ const GAMEPLAY = {
   },
 
   renderScene: function () {
-    const r = RENDER;
     background(BOARD_INFO.color1);
+
+    REPLAYSYS.updateSkipping();
+
+    const r = RENDER;
     // mouse hover on square
     this.hoveredSq = null;
     if (
@@ -273,8 +277,6 @@ const GAMEPLAY = {
         y: floor(_mouseY / BOARD_INFO.sqSize),
       };
     }
-
-    REPLAYSYS.updateSkipping();
 
     r.renderUI();
     this.renderBoard();

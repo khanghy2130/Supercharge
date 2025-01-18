@@ -169,6 +169,12 @@ const REPLAYSYS = {
     // set spawning previews
     gp.spawningPositions = this.targetPreviewsPositions[gp.meta.round - 1];
 
+    // add to previous scores before setting new scores
+    RENDER.capturedTR.previousScores = [
+      gp.meta.white.score,
+      gp.meta.black.score,
+    ];
+
     // set scores
     let wScore = 0;
     let bScore = 0;

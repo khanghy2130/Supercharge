@@ -10,6 +10,9 @@ const RENDER = {
       ? 1
       : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
   },
+  easeOutExpo: function (x) {
+    return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+  },
 
   numHalfWidths: {},
 
@@ -27,48 +30,86 @@ const RENDER = {
   renderUI: function () {
     const meta = GAMEPLAY.meta;
 
-    /*
-    // scores ////
+    const whiteColor = color(240);
+    const blackColor = color(20);
     noStroke();
-    textSize(14);
-    fill(BOARD_INFO.color2);
-    text("WHITE: " + meta.white.score, 80, 580);
-    text("BLACK: " + meta.black.score, 250, 580);
 
-    // moves left ////
-    for (let i = 0; i < meta.white.energy; i++) {
-      square(70 + i * 20, 590, 8);
-    }
-    for (let i = 0; i < meta.black.energy; i++) {
-      square(240 + i * 20, 590, 8);
-    }
-    */
+    const prevScores = this.capturedTR.previousScores;
+    const prevTotalScore = prevScores[0] + prevScores[1];
+    const prevSeperationX =
+      prevTotalScore === 0 ? 250 : (500 / prevTotalScore) * prevScores[0];
 
-    // score bar
-    noStroke();
-    fill(255);
-    rect(0, 500, 250, 12);
-    fill(0);
-    rect(250, 500, 250, 12);
+    const totalScore = meta.white.score + meta.black.score;
+    const seperationX =
+      totalScore === 0 ? 250 : (500 / totalScore) * meta.white.score;
+
+    // render white & black score bars (render previous if piece moving or yellow bar still extending)
+    if (this.movement.progress < 1 || this.capturedTR.progress < 0.4) {
+      fill(whiteColor);
+      rect(0, 500, prevSeperationX, 12);
+      fill(blackColor);
+      rect(prevSeperationX, 500, 500 - prevSeperationX, 12);
+    } else {
+      fill(whiteColor);
+      rect(0, 500, seperationX, 12);
+      fill(blackColor);
+      rect(seperationX, 500, 500 - seperationX, 12);
+    }
+
+    // render animated increasing bar
+    const prg = this.capturedTR.progress;
+    if (prg < 0.8) {
+      // extend: 0 to 0.4
+      let endX =
+        prg > 0.4
+          ? seperationX
+          : map(
+              this.easeOutExpo(map(prg, 0, 0.4, 0, 1)),
+              0,
+              1,
+              prevSeperationX,
+              seperationX
+            );
+
+      // follow: 0.4 to 0.8
+      let startX =
+        prg < 0.4
+          ? prevSeperationX
+          : prg > 0.8
+          ? seperationX
+          : map(
+              this.easeOutExpo(map(prg, 0.4, 0.8, 0, 1)),
+              0,
+              1,
+              prevSeperationX,
+              seperationX
+            );
+
+      fill(50, 225, 35); // increase bar color
+      if (seperationX > prevSeperationX) {
+        rect(startX, 500, endX - startX, 12);
+      } else {
+        rect(endX, 500, startX - endX, 12);
+      }
+    }
 
     // score texts
     /// center text
-    myText("44", 10, 555, 34, color(255));
-    myText("44", 425, 555, 34, color(0));
+    myText(meta.white.score + "", 10, 555, 34, whiteColor);
+    myText(meta.black.score + "", 425, 555, 34, blackColor);
 
     // render names
     /// left/right text
-    myText("player1", 95, 535, 13, color(250));
-    myText("player2", 333, 535, 13, color(0));
+    myText("player", 95, 535, 13, whiteColor);
+    myText("player", 333, 535, 13, blackColor);
 
     // render time
     /// left/right text
-    myText("44:00", 95, 555, 13, color(255));
-    myText("44:00", 350, 555, 13, color(0));
+    myText("44:00", 95, 555, 13, whiteColor);
+    myText("44:00", 350, 555, 13, blackColor);
 
     // render round number
     const roundNumberColor = color(BOARD_INFO.color2);
-
     myText(
       meta.round + "",
       225,
@@ -85,7 +126,8 @@ const RENDER = {
     myText("/8", 251, 535, 13, roundNumberColor);
 
     // render moves left
-    /// quad
+    //// meta.white.energy
+    ///  use tilted quad
   },
 
   /*
@@ -214,6 +256,7 @@ const RENDER = {
     value: 1,
     fadingCircles: [], // {pos{rx, ry}, deg}
     progress: 1,
+    previousScores: [0, 0], // [white, black]
   },
 
   renderCapturedTarget: function () {
@@ -305,6 +348,7 @@ const RENDER = {
       this.capturedTR.pos = TR.pos;
       this.capturedTR.progress = 0;
       this.capturedTR.fadingCircles = [];
+
       // add to fadingCircles
       const randomOffsetDeg = random() * 90;
       for (let i = 0; i < TR.circles.length; i++) {
@@ -320,8 +364,6 @@ const RENDER = {
           },
         });
       }
-
-      //// trigger score bar animation
     }
 
     const index = this.targets.indexOf(this.removingTR);
