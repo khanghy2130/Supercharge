@@ -137,8 +137,9 @@ const BOT = {
       }
     }
 
-    // process amount per frame here
-    for (let i = 0; i < 10000; i++) {
+    // PROCESS AMOUNT PER FRAME
+    // increase the number 7000 below to speed up bot calculation
+    for (let i = 0; i < 7000; i++) {
       // All nodes processed ?
       if (this.stack.length === 0) {
         this.isProcessing = false;
