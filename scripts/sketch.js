@@ -42,7 +42,7 @@ function setup() {
   RENDER.numHalfWidths[":"] = RENDER.numHalfWidths["0"] / 4;
 
   GAMEPLAY.initializeGame({
-    white: { botDepth: 0, squad: ["R", "B", "K"] },
+    white: { botDepth: 3, squad: ["R", "B", "K"] },
     black: { botDepth: 3, squad: ["K", "B", "R"] },
   });
 }

@@ -244,11 +244,16 @@ const GAMEPLAY = {
     RENDER.lightnings = [];
     RENDER.targets = [];
     RENDER.updateAllTRs(true);
+
+    // set player names
+    const allNames = ["player", "easy bot", "", "hard bot"];
+    RENDER.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
   },
 
   renderBoard: function () {
     // render dark squares
     fill(BOARD_INFO.color2);
+    noStroke();
     const ss = BOARD_INFO.sqSize;
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {

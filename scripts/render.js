@@ -27,11 +27,15 @@ const RENDER = {
     return hw;
   },
 
+  playersNames: [], // [white, black]
+
   renderUI: function () {
     const meta = GAMEPLAY.meta;
 
     const whiteColor = color(240);
     const blackColor = color(20);
+    const scoringColor = color(50, 225, 35);
+    const isAnimatingMovement = this.movement.progress < 1;
     noStroke();
 
     const prevScores = this.capturedTR.previousScores;
@@ -46,7 +50,7 @@ const RENDER = {
         : (500 / (meta.white.score + meta.black.score)) * meta.white.score;
 
     // render white & black score bars (render previous if piece moving or yellow bar still extending)
-    if (this.movement.progress < 1 || this.capturedTR.progress < 0.4) {
+    if (isAnimatingMovement || this.capturedTR.progress < 0.4) {
       fill(whiteColor);
       rect(0, 500, prevSeparationX, 12);
       fill(blackColor);
@@ -60,18 +64,15 @@ const RENDER = {
 
     // render animated increasing bar
     const prg = this.capturedTR.progress;
+    const extendFactor = isAnimatingMovement
+      ? 0
+      : this.easeOutExpo(map(prg, 0, 0.4, 0, 1));
     if (prg < 0.8) {
       // extend: 0 to 0.4
       let endX =
         prg > 0.4
           ? separationX
-          : map(
-              this.easeOutExpo(map(prg, 0, 0.4, 0, 1)),
-              0,
-              1,
-              prevSeparationX,
-              separationX
-            );
+          : map(extendFactor, 0, 1, prevSeparationX, separationX);
 
       // follow: 0.4 to 0.8
       let startX =
@@ -87,7 +88,7 @@ const RENDER = {
               separationX
             );
 
-      fill(50, 225, 35); // increase bar color
+      fill(scoringColor);
       if (separationX > prevSeparationX) {
         rect(startX, 500, endX - startX, 12);
       } else {
@@ -96,26 +97,65 @@ const RENDER = {
     }
 
     // score texts
-    /// center text
-    myText(meta.white.score + "", 10, 555, 34, whiteColor);
-    myText(meta.black.score + "", 425, 555, 34, blackColor);
+    let renderWScore = meta.white.score;
+    let renderBScore = meta.black.score;
+    const whiteScored = REPLAYSYS.viewingMoveIndex % 4 < 2;
+    if (whiteScored) {
+      renderWScore =
+        prevScores[0] + round(extendFactor * (renderWScore - prevScores[0]));
+    } else {
+      renderBScore =
+        prevScores[1] + round(extendFactor * (renderBScore - prevScores[1]));
+    }
 
-    // render names
-    /// left/right text
-    myText("player", 95, 535, 13, whiteColor);
-    myText("player", 333, 535, 13, blackColor);
+    let scoreWidth = this.getNumHalfWidth(renderWScore + "", 34);
+    myText(
+      renderWScore + "",
+      38 - scoreWidth,
+      555,
+      34,
+      prg < 0.6 && whiteScored && !isAnimatingMovement
+        ? scoringColor
+        : whiteColor
+    );
 
-    // render time
-    /// left/right text
-    myText("44:00", 95, 555, 13, whiteColor);
-    myText("44:00", 350, 555, 13, blackColor);
+    scoreWidth = this.getNumHalfWidth(renderBScore + "", 34);
+    myText(
+      renderBScore + "",
+      450 - scoreWidth,
+      555,
+      34,
+      prg < 0.6 && !whiteScored && !isAnimatingMovement
+        ? scoringColor
+        : blackColor
+    );
+
+    // render white names & time
+    myText(this.playersNames[0], 90, 535, 12, whiteColor);
+    myText("44:00", 90, 555, 12, whiteColor);
+
+    // render black names & time
+    myText(
+      this.playersNames[1],
+      410 - myText(this.playersNames[1], -100, -100, 12, color(0, 0, 0, 0)),
+      535,
+      12,
+      blackColor
+    );
+    myText(
+      "44:00",
+      410 - myText("44:00", -100, -100, 12, color(0, 0, 0, 0)),
+      555,
+      12,
+      blackColor
+    );
 
     // render round number
     const roundNumberColor = color(BOARD_INFO.color2);
     myText(
       meta.round + "",
       225,
-      552,
+      555,
       30,
       meta.round < CONSTANTS.MAX_ROUND - 1 || meta.gameover
         ? roundNumberColor
@@ -125,11 +165,20 @@ const RENDER = {
             0.4 + cos(frameCount * 5) * 0.4
           )
     );
-    myText("/8", 251, 535, 13, roundNumberColor);
+    myText("/8", 251, 538, 13, roundNumberColor);
 
     // render moves left
-    //// meta.white.energy
-    ///  use tilted quad
+    strokeWeight(1.5);
+    stroke(BOARD_INFO.color2);
+    fill(BOARD_INFO.color2);
+    if (meta.black.energy < 1) noFill();
+    rect(290, 547, 16, 6);
+    if (meta.black.energy < 2) noFill();
+    rect(290, 535, 16, 6);
+    if (meta.white.energy < 1) noFill();
+    rect(195, 547, 15, 6);
+    if (meta.white.energy < 2) noFill();
+    rect(195, 535, 15, 6);
   },
 
   /*
