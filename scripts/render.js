@@ -35,25 +35,27 @@ const RENDER = {
     noStroke();
 
     const prevScores = this.capturedTR.previousScores;
-    const prevTotalScore = prevScores[0] + prevScores[1];
-    const prevSeperationX =
-      prevTotalScore === 0 ? 250 : (500 / prevTotalScore) * prevScores[0];
+    const prevSeparationX =
+      prevScores[0] === prevScores[1]
+        ? 250
+        : (500 / (prevScores[0] + prevScores[1])) * prevScores[0];
 
-    const totalScore = meta.white.score + meta.black.score;
-    const seperationX =
-      totalScore === 0 ? 250 : (500 / totalScore) * meta.white.score;
+    const separationX =
+      meta.white.score === meta.black.score
+        ? 250
+        : (500 / (meta.white.score + meta.black.score)) * meta.white.score;
 
     // render white & black score bars (render previous if piece moving or yellow bar still extending)
     if (this.movement.progress < 1 || this.capturedTR.progress < 0.4) {
       fill(whiteColor);
-      rect(0, 500, prevSeperationX, 12);
+      rect(0, 500, prevSeparationX, 12);
       fill(blackColor);
-      rect(prevSeperationX, 500, 500 - prevSeperationX, 12);
+      rect(prevSeparationX, 500, 500 - prevSeparationX, 12);
     } else {
       fill(whiteColor);
-      rect(0, 500, seperationX, 12);
+      rect(0, 500, separationX, 12);
       fill(blackColor);
-      rect(seperationX, 500, 500 - seperationX, 12);
+      rect(separationX, 500, 500 - separationX, 12);
     }
 
     // render animated increasing bar
@@ -62,31 +64,31 @@ const RENDER = {
       // extend: 0 to 0.4
       let endX =
         prg > 0.4
-          ? seperationX
+          ? separationX
           : map(
               this.easeOutExpo(map(prg, 0, 0.4, 0, 1)),
               0,
               1,
-              prevSeperationX,
-              seperationX
+              prevSeparationX,
+              separationX
             );
 
       // follow: 0.4 to 0.8
       let startX =
         prg < 0.4
-          ? prevSeperationX
+          ? prevSeparationX
           : prg > 0.8
-          ? seperationX
+          ? separationX
           : map(
               this.easeOutExpo(map(prg, 0.4, 0.8, 0, 1)),
               0,
               1,
-              prevSeperationX,
-              seperationX
+              prevSeparationX,
+              separationX
             );
 
       fill(50, 225, 35); // increase bar color
-      if (seperationX > prevSeperationX) {
+      if (separationX > prevSeparationX) {
         rect(startX, 500, endX - startX, 12);
       } else {
         rect(endX, 500, startX - endX, 12);
@@ -179,7 +181,7 @@ const RENDER = {
 
   renderLightnings: function () {
     stroke(96, 214, 235); // LIGHTING COLOR
-    strokeWeight(3.5);
+    strokeWeight(3);
     for (let i = this.lightnings.length - 1; i >= 0; i--) {
       const ln = this.lightnings[i];
 
@@ -602,14 +604,32 @@ const RENDER = {
       }
     }
 
+    // render non moving pieces
     for (let i = 0; i < pp.length; i++) {
       const piecePos = pp[i];
       const pieceData = bd[piecePos.y][piecePos.x];
       const { rx, ry } = this.getRenderPos(piecePos.x, piecePos.y);
       this.renderPiece(pieceData, rx, ry);
-      // supercharged render
-      if (pieceData.isCharged && frameCount % 25 === 0) {
-        this.spawnLightning(rx + random() * 30 - 15, ry + random() * 30 - 15);
+
+      // supercharged
+      if (pieceData.isCharged) {
+        // render charged icon
+        fill(96, 214, 235);
+        noStroke();
+        beginShape();
+        vertex(rx + 25, ry - 25);
+        vertex(rx + 12, ry - 25);
+        vertex(rx + 8, ry - 10);
+        vertex(rx + 15, ry - 10);
+        vertex(rx + 10, ry + 2);
+        vertex(rx + 25, ry - 15);
+        vertex(rx + 18, ry - 15);
+        endShape(CLOSE);
+
+        // spawn lightning occasionally
+        if (frameCount % 25 === 0) {
+          this.spawnLightning(rx + random() * 30 - 15, ry + random() * 30 - 15);
+        }
       }
     }
   },

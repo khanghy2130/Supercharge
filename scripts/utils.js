@@ -1,4 +1,8 @@
-const letters = "ABCDEFGH";
+const letters = "abcdefgh";
+
+// if you don't mind the lag, change the number below to like 20000 for the game to calculate moves faster
+const BOT_PROCESSING_AMOUNT = 8000;
+
 const COLORS = {
   primary: [233, 199, 255],
   targets: [
@@ -25,8 +29,8 @@ const CONSTANTS = {
 };
 
 const BOARD_INFO = {
-  color1: [196, 128, 242],
-  color2: [124, 69, 161],
+  color1: [195, 125, 240],
+  color2: [125, 70, 160],
   size: 500,
 };
 BOARD_INFO.sqSize = BOARD_INFO.size / 8;
