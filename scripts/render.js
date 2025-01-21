@@ -132,7 +132,7 @@ const RENDER = {
 
     // render white names & time
     myText(this.playersNames[0], 90, 535, 12, whiteColor);
-    myText("44:00", 90, 555, 12, whiteColor);
+    myText(this.getTimeStr(true, meta), 90, 555, 12, whiteColor);
 
     // render black names & time
     myText(
@@ -142,9 +142,10 @@ const RENDER = {
       12,
       blackColor
     );
+    const blackTimeStr = this.getTimeStr(false, meta);
     myText(
-      "44:00",
-      410 - myText("44:00", -100, -100, 12, color(0, 0, 0, 0)),
+      blackTimeStr,
+      410 - myText(blackTimeStr, -100, -100, 12, color(0, 0, 0, 0)),
       555,
       12,
       blackColor
@@ -190,6 +191,24 @@ const RENDER = {
       meta.black.energy === 1,
       meta.black.energy > 0
     );
+  },
+
+  getTimeStr: function (forWhite, meta) {
+    const ts = meta.timeStops;
+    let totalTime = 0;
+    for (let i = forWhite ? 0 : 1; i < ts.length; i += 2) {
+      // not last one in list?
+      if (i + 1 < ts.length) {
+        totalTime += ts[i + 1] - ts[i];
+      }
+    }
+    // not gameover & is its turn?
+    if (!meta.gameover && forWhite === (ts.length % 2 === 1)) {
+      totalTime += Date.now() - ts[ts.length - 1];
+    }
+    const minute = floor(totalTime / 60000);
+    const sec = floor((totalTime % 60000) / 1000) + "";
+    return minute + ":" + (sec.length === 1 ? "0" : "") + sec;
   },
 
   renderMoveIndicator: function (x, y, isFlashing, isFilled) {

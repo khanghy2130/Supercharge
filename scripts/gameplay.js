@@ -13,9 +13,10 @@ const GAMEPLAY = {
     latestMoveIndex: 0,
     gameover: true,
     isWhiteTurn: true,
-    white: { score: 0, energy: 2, elapsedTime: 0 },
-    black: { score: 0, energy: 2, elapsedTime: 0 },
+    white: { score: 0, energy: 2 },
+    black: { score: 0, energy: 2 },
     round: 1,
+    timeStops: [], // alternate white and black
   },
 
   isTarget: function (sqData) {
@@ -124,23 +125,30 @@ const GAMEPLAY = {
 
   // only when viewing index is the same as latest index
   makeMove: function (movePos) {
-    if (REPLAYSYS.viewingMoveIndex !== this.meta.latestMoveIndex) {
+    const meta = this.meta;
+    if (REPLAYSYS.viewingMoveIndex !== meta.latestMoveIndex) {
       print("Can't make move, viewingMoveIndex !== latestMoveIndex");
       return;
     }
 
-    this.meta.latestMoveIndex++; // next index
+    meta.latestMoveIndex++; // next index
+
+    // add to timeStops when switching turn
+    const lmiIndex = meta.latestMoveIndex % 4;
+    if (lmiIndex === 1 || lmiIndex === 3) {
+      meta.timeStops.push(Date.now());
+    }
 
     // set game over
-    if (this.meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
-      this.meta.gameover = true;
+    if (meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
+      meta.gameover = true;
     }
 
     const { x: sx, y: sy } = this.selectedPiecePos;
     const { x: ex, y: ey } = movePos;
     this.deselectPiece(); // clear this.selectedPiecePos
 
-    const moveIndexOfRound = this.meta.latestMoveIndex % 4;
+    const moveIndexOfRound = meta.latestMoveIndex % 4;
 
     // add new move
     REPLAYSYS.moves.push({
@@ -155,7 +163,7 @@ const GAMEPLAY = {
     // generate and add new targets previews (if is last move of round)
     if (moveIndexOfRound === 3) {
       // if not on last round
-      if (this.meta.latestMoveIndex < (CONSTANTS.MAX_ROUND - 2) * 4) {
+      if (meta.latestMoveIndex < (CONSTANTS.MAX_ROUND - 2) * 4) {
         REPLAYSYS.targetPreviewsPositions.push(
           this.getNewTargetsPosition(CONSTANTS.RESPAWN_TARGETS_COUNT)
         );
@@ -164,11 +172,10 @@ const GAMEPLAY = {
       }
     }
     // fix not having the new previews yet
-    this.spawningPositions =
-      REPLAYSYS.targetPreviewsPositions[this.meta.round - 1];
+    this.spawningPositions = REPLAYSYS.targetPreviewsPositions[meta.round - 1];
 
     // BOT.finalOutput = null; // clear previous bot output ////
-    // if (!this.meta.gameover) BOT.startMinimax();
+    // if (!meta.gameover) BOT.startMinimax();
   },
 
   deselectPiece: function () {
@@ -205,6 +212,7 @@ const GAMEPLAY = {
     this.meta.black.score = 0;
     this.meta.round = 1;
     this.meta.latestMoveIndex = -1;
+    this.meta.timeStops = [Date.now()];
     REPLAYSYS.initialize();
 
     // reset boardData
