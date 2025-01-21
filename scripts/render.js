@@ -170,15 +170,40 @@ const RENDER = {
     // render moves left
     strokeWeight(1.5);
     stroke(BOARD_INFO.color2);
-    fill(BOARD_INFO.color2);
-    if (meta.black.energy < 1) noFill();
-    rect(290, 547, 16, 6);
-    if (meta.black.energy < 2) noFill();
-    rect(290, 535, 16, 6);
-    if (meta.white.energy < 1) noFill();
-    rect(195, 547, 15, 6);
-    if (meta.white.energy < 2) noFill();
-    rect(195, 535, 15, 6);
+
+    this.renderMoveIndicator(195, 532, meta.white.energy === 2, false);
+    this.renderMoveIndicator(
+      195,
+      547,
+      meta.white.energy === 1,
+      meta.white.energy > 0
+    );
+    this.renderMoveIndicator(
+      295,
+      532,
+      meta.black.energy === 2 && meta.white.energy === 0,
+      meta.black.energy === 2
+    );
+    this.renderMoveIndicator(
+      295,
+      547,
+      meta.black.energy === 1,
+      meta.black.energy > 0
+    );
+  },
+
+  renderMoveIndicator: function (x, y, isFlashing, isFilled) {
+    if (isFlashing)
+      fill(
+        lerpColor(
+          BOARD_INFO.color2,
+          color(255),
+          cos(frameCount * 4) * 0.35 + 0.35
+        )
+      );
+    else if (isFilled) fill(BOARD_INFO.color2);
+    else noFill();
+    rect(x, y, 10, 8);
   },
 
   /*
