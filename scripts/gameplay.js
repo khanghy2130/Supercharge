@@ -248,6 +248,12 @@ const GAMEPLAY = {
     );
     REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
 
+    // render play scene buttons
+    for (let i = 0; i < RENDER.btns.length; i++) {
+      const b = RENDER.btns[i];
+      b.isHovered = false;
+      b.animateProgress = 1;
+    }
     RENDER.capturedTR.progress = 1; // end animation
     RENDER.lightnings = [];
     RENDER.targets = [];
@@ -359,7 +365,7 @@ const GAMEPLAY = {
       return;
 
     // bot options ////
-    if (_mouseX > 410 - 85 && _mouseX < 410 + 85) {
+    if (_mouseX > 470) {
       if (_mouseY > 530 - 15 && _mouseY < 530 + 15) {
         BOT.playAsWhite = !BOT.playAsWhite;
         BOT.finalOutput = null;
@@ -369,6 +375,12 @@ const GAMEPLAY = {
         BOT.finalOutput = null;
         BOT.startMinimax();
       }
+    }
+
+    // buttons
+    for (let i = 0; i < RENDER.btns.length; i++) {
+      const b = RENDER.btns[i];
+      if (b.isHovered) b.clicked();
     }
 
     // not hovering on a square?

@@ -29,7 +29,13 @@ const RENDER = {
 
   playersNames: [], // [white, black]
 
+  btns: [],
+
   renderUI: function () {
+    for (let i = 0; i < this.btns.length; i++) {
+      this.btns[i].render();
+    }
+
     const meta = GAMEPLAY.meta;
 
     const whiteColor = color(240);

@@ -60,6 +60,59 @@ const BISHOP_MOVES = [
   [-1, -1],
 ];
 
+class Btn {
+  constructor(x, y, w, h, renderContent, clicked) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.renderContent = renderContent;
+    this.clicked = () => {
+      this.animateProgress = 0;
+      clicked();
+    };
+    this.isHovered = false;
+    this.animateProgress = 1; // 0 to 1
+  }
+
+  render() {
+    // check hover
+    const hw = this.w / 2,
+      hh = this.h / 2;
+    if (
+      _mouseX > this.x - hw &&
+      _mouseX < this.x + hw &&
+      _mouseY > this.y - hh &&
+      _mouseY < this.y + hh
+    ) {
+      if (!this.isHovered) {
+        this.animateProgress = 0; // initial hover
+      }
+      this.isHovered = true;
+      cursor(HAND);
+    } else {
+      this.isHovered = false; // not hovered
+    }
+
+    if (this.animateProgress < 1) {
+      this.animateProgress = min(this.animateProgress + 0.015, 1);
+    }
+
+    // render button
+    push(); /// KA
+    translate(this.x, this.y);
+    let scaleFactor = RENDER.easeOutElastic(this.animateProgress);
+    if (this.animateProgress < 0.08) scaleFactor = max(1, scaleFactor);
+    scaleFactor *= 0.3; // animated range
+    scale(0.7 + scaleFactor, 1.3 - scaleFactor); // 1 - or + range
+    noStroke();
+    fill(BOARD_INFO.color2);
+    rect(-hw, -hh, this.w, this.h, 8);
+    this.renderContent();
+    pop(); /// KA
+  }
+}
+
 ///
 function getPieceImage(sd) {
   if (sd.isWhite) {

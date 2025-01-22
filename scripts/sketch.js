@@ -31,15 +31,104 @@ function setup() {
   BOARD_INFO.color2 = color(...BOARD_INFO.color2);
 
   // set num widths
-  RENDER.numHalfWidths["0"] =
+  const r = RENDER;
+  r.numHalfWidths["0"] =
     myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
-  RENDER.numHalfWidths["1"] =
+  r.numHalfWidths["1"] =
     myText("1", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
   for (let i = 2; i < 10; i++)
-    RENDER.numHalfWidths[i.toString()] = RENDER.numHalfWidths["1"];
-  RENDER.numHalfWidths["4"] = RENDER.numHalfWidths["0"]; // set number 4 width to be 0
-  RENDER.numHalfWidths["+"] = RENDER.numHalfWidths["1"];
-  RENDER.numHalfWidths[":"] = RENDER.numHalfWidths["0"] / 4;
+    r.numHalfWidths[i.toString()] = r.numHalfWidths["1"];
+  r.numHalfWidths["4"] = r.numHalfWidths["0"]; // set number 4 width to be 0
+  r.numHalfWidths["+"] = r.numHalfWidths["1"];
+  r.numHalfWidths[":"] = r.numHalfWidths["0"] / 4;
+
+  // set play scene buttons
+  r.btns = [
+    new Btn(
+      225,
+      580,
+      40,
+      28,
+      function () {
+        stroke(BOARD_INFO.color1);
+        strokeWeight(5);
+        line(3, -5, -4, 0);
+        line(3, 5, -4, 0);
+      },
+      function () {
+        REPLAYSYS.loadState(false);
+      }
+    ),
+    new Btn(
+      275,
+      580,
+      40,
+      28,
+      function () {
+        stroke(BOARD_INFO.color1);
+        strokeWeight(5);
+        line(-3, -5, 4, 0);
+        line(-3, 5, 4, 0);
+      },
+      function () {
+        REPLAYSYS.loadState(true);
+      }
+    ),
+    new Btn(
+      175,
+      580,
+      40,
+      28,
+      function () {
+        stroke(BOARD_INFO.color1);
+        strokeWeight(5);
+        line(7, -5, 0, 0);
+        line(7, 5, 0, 0);
+        line(-6, -5, -6, 5);
+      },
+      function () {
+        REPLAYSYS.setUpSkipping(false);
+      }
+    ),
+    new Btn(
+      325,
+      580,
+      40,
+      28,
+      function () {
+        stroke(BOARD_INFO.color1);
+        strokeWeight(5);
+        line(-7, -5, 0, 0);
+        line(-7, 5, 0, 0);
+        line(6, -5, 6, 5);
+      },
+      function () {
+        REPLAYSYS.setUpSkipping(true);
+      }
+    ),
+
+    new Btn(
+      60,
+      580,
+      80,
+      28,
+      function () {
+        myText("exit", -28, 8, 16, BOARD_INFO.color1);
+      },
+      function () {}
+    ),
+
+    new Btn(
+      440,
+      580,
+      80,
+      28,
+      function () {
+        myText("stats", -31, 7, 14, BOARD_INFO.color1);
+      },
+      function () {}
+    ),
+  ];
 
   GAMEPLAY.initializeGame({
     white: { botDepth: 3, squad: ["R", "B", "K"] },
