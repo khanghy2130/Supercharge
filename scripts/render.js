@@ -396,7 +396,7 @@ const RENDER = {
     const scoreGainedStr = "+" + move.scoreGained.toString();
     myText(
       scoreGainedStr,
-      -this.getNumHalfWidth(scoreGainedStr),
+      -this.getNumHalfWidth(scoreGainedStr) - 3,
       CONSTANTS.VALUE_NUM_SIZE / 2,
       CONSTANTS.VALUE_NUM_SIZE,
       color(255)

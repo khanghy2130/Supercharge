@@ -361,6 +361,13 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
+    // buttons
+    //// block buttons action
+    for (let i = 0; i < RENDER.btns.length; i++) {
+      const b = RENDER.btns[i];
+      if (b.isHovered) b.clicked();
+    }
+
     if (this.meta.gameover || BOT.isProcessing || REPLAYSYS.skipping !== null)
       return;
 
@@ -375,12 +382,6 @@ const GAMEPLAY = {
         BOT.finalOutput = null;
         BOT.startMinimax();
       }
-    }
-
-    // buttons
-    for (let i = 0; i < RENDER.btns.length; i++) {
-      const b = RENDER.btns[i];
-      if (b.isHovered) b.clicked();
     }
 
     // not hovering on a square?
