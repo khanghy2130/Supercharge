@@ -56,6 +56,7 @@ function setup() {
         line(3, 5, -4, 0);
       },
       function () {
+        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.loadState(false);
       }
     ),
@@ -71,7 +72,10 @@ function setup() {
         line(-3, 5, 4, 0);
       },
       function () {
+        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.loadState(true);
+        if (REPLAYSYS.viewingMoveIndex === GAMEPLAY.meta.latestMoveIndex)
+          GAMEPLAY.skipHintCountdown = 0; // stop hint
       }
     ),
     new Btn(
@@ -87,6 +91,7 @@ function setup() {
         line(-6, -5, -6, 5);
       },
       function () {
+        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.setUpSkipping(false);
       }
     ),
@@ -103,7 +108,9 @@ function setup() {
         line(6, -5, 6, 5);
       },
       function () {
+        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.setUpSkipping(true);
+        GAMEPLAY.skipHintCountdown = 0; // stop hint
       }
     ),
 

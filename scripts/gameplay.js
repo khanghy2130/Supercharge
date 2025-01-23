@@ -213,6 +213,7 @@ const GAMEPLAY = {
     this.meta.round = 1;
     this.meta.latestMoveIndex = -1;
     this.meta.timeStops = [Date.now()];
+    this.skipHintCountdown = 0;
     REPLAYSYS.initialize();
 
     // reset boardData
@@ -295,6 +296,7 @@ const GAMEPLAY = {
         x: floor(_mouseX / BOARD_INFO.sqSize),
         y: floor(_mouseY / BOARD_INFO.sqSize),
       };
+      // hovering on a clickable square? ////
     }
 
     r.renderUI();
@@ -337,6 +339,16 @@ const GAMEPLAY = {
       }
     }
 
+    // render skip hint arrow
+    if (this.skipHintCountdown-- > 0) {
+      stroke(255, 255, 0);
+      strokeWeight(6);
+      const bounceY = cos(frameCount * 8) * 8;
+      line(325, 550 + bounceY, 315, 540 + bounceY);
+      line(325, 550 + bounceY, 335, 540 + bounceY);
+      line(325, 550 + bounceY, 325, 500 + bounceY);
+    }
+
     ///// bot arrow
     if (BOT.finalOutput !== null && frameCount % 60 > 18) {
       const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
@@ -362,7 +374,7 @@ const GAMEPLAY = {
 
   clicked: function () {
     // buttons
-    //// block buttons action
+    //// if bot is playing then return, except for exit button
     for (let i = 0; i < RENDER.btns.length; i++) {
       const b = RENDER.btns[i];
       if (b.isHovered) b.clicked();
@@ -387,11 +399,14 @@ const GAMEPLAY = {
     // not hovering on a square?
     if (this.hoveredSq === null) return;
 
-    // currently no selected piece && viewing latest index?
-    if (
-      this.selectedPiecePos === null &&
-      this.meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex
-    ) {
+    // not viewing latest index?
+    if (this.meta.latestMoveIndex > REPLAYSYS.viewingMoveIndex) {
+      this.skipHintCountdown = 120;
+      return;
+    }
+
+    // currently no selected piece
+    if (this.selectedPiecePos === null) {
       const sqData = this.boardData[this.hoveredSq.y][this.hoveredSq.x];
       // check if is not clicking on a piece OR it has the wrong color
       if (

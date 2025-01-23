@@ -125,3 +125,30 @@ function getPieceImage(sd) {
     else if (sd.name === "B") return pieceImages.bb;
   }
 }
+
+/*
+function drawRed() {
+  strokeWeight(5);
+  stroke(0, 0, 0);
+  fill(255, 0, 0);
+  rect(130, 150, 20, 70, 10);
+  rect(150, 147, 70, 81, 10);
+  rect(150, 203, 25, 50, 10);
+  rect(195, 199, 25, 50, 10);
+  arc(185.5, 160, 70, 70, 180, 360);
+  arc(208, 240, 25, 25, 0, 180);
+  arc(163, 245, 25, 25, 0, 180);
+  fill(102, 102, 102);
+  fill(255, 0, 0);
+  noStroke();
+  rect(153, 185, 65, 41);
+  stroke(0, 0, 0);
+  fill(0, 196, 255);
+  rect(175, 150, 50, 30, 25);
+  noStroke();
+  fill(139, 209, 247);
+  rect(191, 153, 30, 20, 25);
+  fill(195, 230, 247);
+  rect(199, 153, 20, 15, 25);
+}
+*/
