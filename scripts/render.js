@@ -143,7 +143,7 @@ const RENDER = {
     // render black names & time
     myText(
       this.playersNames[1],
-      410 - myText(this.playersNames[1], -100, -100, 12, color(0, 0, 0, 0)),
+      410 - myText(this.playersNames[1], -100, -100, 12, color(0, 0)),
       535,
       12,
       blackColor
@@ -151,7 +151,7 @@ const RENDER = {
     const blackTimeStr = this.getTimeStr(false, meta);
     myText(
       blackTimeStr,
-      410 - myText(blackTimeStr, -100, -100, 12, color(0, 0, 0, 0)),
+      410 - myText(blackTimeStr, -100, -100, 12, color(0, 0)),
       555,
       12,
       blackColor
@@ -238,6 +238,7 @@ const RENDER = {
     }
   */
   lightnings: [],
+  LIGHTNING_COLOR: [96, 214, 235],
 
   bigSpawnLightings: function (rx, ry) {
     for (let i = 0; i < 10; i++) {
@@ -279,7 +280,7 @@ const RENDER = {
   },
 
   renderLightnings: function () {
-    stroke(96, 214, 235); // LIGHTING COLOR
+    stroke(this.LIGHTNING_COLOR); // LIGHTING COLOR
     strokeWeight(3);
     for (let i = this.lightnings.length - 1; i >= 0; i--) {
       const ln = this.lightnings[i];
@@ -360,6 +361,17 @@ const RENDER = {
     previousScores: [0, 0], // [white, black]
   },
 
+  TARGETS_COLORS: [
+    [243, 170, 135],
+    [240, 223, 125],
+    [178, 237, 119],
+    [116, 232, 178],
+    [125, 213, 240],
+    [125, 146, 240],
+    [238, 125, 240],
+    [240, 125, 156],
+  ],
+
   renderCapturedTarget: function () {
     if (this.capturedTR.progress >= 1) return;
     this.capturedTR.progress += 0.012; // CAPTURE ANIMATION SPEED
@@ -391,6 +403,7 @@ const RENDER = {
         : popupSizeFactor
     );
     fill(0, 0, 0, 200);
+    noStroke();
     rectMode(CENTER);
     rect(0, 0, 60, 40, 10);
     const scoreGainedStr = "+" + move.scoreGained.toString();
@@ -431,7 +444,7 @@ const RENDER = {
 
     // render inner circles
     noStroke();
-    const targetColor = color(...COLORS.targets[this.capturedTR.value - 1]);
+    const targetColor = color(this.TARGETS_COLORS[this.capturedTR.value - 1]);
     fill(targetColor);
     for (let ci = 0; ci < circlesPositions.length; ci++) {
       const { rx, ry } = circlesPositions[ci];
@@ -550,14 +563,18 @@ const RENDER = {
   },
 
   renderAllTargets: function () {
-    textSize(30); ///
     for (let i = 0; i < this.targets.length; i++) {
       const TR = this.targets[i];
       let value = TR.value;
       if (TR.delay > 0) {
         TR.delay--;
         if (value === 1) {
-          /// render spawn preview instead
+          // render spawn preview
+          stroke(this.TARGETS_COLORS[0]);
+          strokeWeight(5);
+          const { rx, ry } = this.getRenderPos(TR.pos.x, TR.pos.y);
+          line(rx, ry + 7, rx, ry - 7);
+          line(rx + 7, ry, rx - 7, ry);
           continue;
         }
         value -= 1;
@@ -592,7 +609,7 @@ const RENDER = {
 
       // render inner circles
       noStroke();
-      const targetColor = color(...COLORS.targets[value - 1]);
+      const targetColor = color(this.TARGETS_COLORS[value - 1]);
       if (TR.delay <= 0 && TR.progress < 1) {
         fill(lerpColor(color(255), targetColor, TR.progress));
       } else fill(targetColor);
@@ -707,16 +724,34 @@ const RENDER = {
     }
 
     // render non moving pieces
+    const gp = GAMEPLAY;
+    const doesCheckIfHovered =
+      !gp.meta.gameover &&
+      gp.meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex &&
+      gp.selectedPiecePos === null &&
+      gp.hoveredSq !== null;
     for (let i = 0; i < pp.length; i++) {
       const piecePos = pp[i];
       const pieceData = bd[piecePos.y][piecePos.x];
       const { rx, ry } = this.getRenderPos(piecePos.x, piecePos.y);
       this.renderPiece(pieceData, rx, ry);
 
+      // hovered render
+      if (doesCheckIfHovered && gp.meta.isWhiteTurn === pieceData.isWhite) {
+        if (gp.hoveredSq.x === piecePos.x && gp.hoveredSq.y === piecePos.y) {
+          cursor(HAND);
+          stroke(200);
+          strokeWeight(3);
+          noFill();
+          const ss = BOARD_INFO.sqSize;
+          rect(ss * piecePos.x, ss * piecePos.y, ss, ss);
+        }
+      }
+
       // supercharged
       if (pieceData.isCharged) {
         // render charged icon
-        fill(96, 214, 235);
+        fill(this.LIGHTNING_COLOR);
         noStroke();
         beginShape();
         vertex(rx + 25, ry - 25);

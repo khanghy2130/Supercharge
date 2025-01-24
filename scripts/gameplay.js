@@ -59,8 +59,8 @@ const GAMEPLAY = {
     const sqData = board[pos.y][pos.x];
     // add to moves
     if (sqData.name === "K") {
-      for (let i = 0; i < KNIGHT_MOVES.length; i++) {
-        const vel = KNIGHT_MOVES[i];
+      for (let i = 0; i < PIECES_MOVES.KNIGHT_MOVES.length; i++) {
+        const vel = PIECES_MOVES.KNIGHT_MOVES[i];
         const x = vel[0] + pos.x;
         const y = vel[1] + pos.y;
         if (this.positionIsWithinGrid(x, y)) {
@@ -68,7 +68,10 @@ const GAMEPLAY = {
         }
       }
     } else if (sqData.name === "R" || sqData.name === "B") {
-      const MOVE_VELS = sqData.name === "R" ? ROOK_MOVES : BISHOP_MOVES;
+      const MOVE_VELS =
+        sqData.name === "R"
+          ? PIECES_MOVES.ROOK_MOVES
+          : PIECES_MOVES.BISHOP_MOVES;
       for (let i = 0; i < MOVE_VELS.length; i++) {
         const vel = MOVE_VELS[i];
         let x = vel[0] + pos.x;
@@ -280,6 +283,7 @@ const GAMEPLAY = {
 
   renderScene: function () {
     background(BOARD_INFO.color1);
+    const bd = this.boardData;
 
     REPLAYSYS.updateSkipping();
 
@@ -296,48 +300,67 @@ const GAMEPLAY = {
         x: floor(_mouseX / BOARD_INFO.sqSize),
         y: floor(_mouseY / BOARD_INFO.sqSize),
       };
-      // hovering on a clickable square? ////
     }
 
     r.renderUI();
     this.renderBoard();
 
+    r.renderAllPieces(bd);
+    r.renderLightnings();
+
     // render spawn previews
-    noStroke();
-    fill(0, 0, 0, cos(frameCount * 3) * 50 + 80);
+    stroke(r.TARGETS_COLORS[0]);
+    strokeWeight(5);
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
       const { rx, ry } = r.getRenderPos(pos.x, pos.y);
-      circle(rx, ry, BOARD_INFO.sqSize * 0.4);
+      line(rx, ry + 7, rx, ry - 7);
+      line(rx + 7, ry, rx - 7, ry);
     }
 
-    r.renderAllPieces(this.boardData);
-    r.renderLightnings();
-    r.renderAllTargets();
-
-    // render selected piece outline///
-    // if (this.selectedPiecePos !== null) {
-    //   const { rx, ry } = r.getRenderPos(
-    //     this.selectedPiecePos.x,
-    //     this.selectedPiecePos.y
-    //   );
-    //   stroke(...COLORS.primary);
-    //   strokeWeight(3);
-    //   noFill();
-    //   square(rx, ry, BOARD_INFO.sqSize);
-    // }
-
-    // render possible moves outlines ///
+    // render possible moves outlines
     if (this.possibleMoves !== null) {
-      noFill();
-      stroke(...COLORS.primary);
-      strokeWeight(3);
+      const ss = BOARD_INFO.sqSize;
       for (let i = 0; i < this.possibleMoves.length; i++) {
         const pos = this.possibleMoves[i];
-        const ss = BOARD_INFO.sqSize;
+        if (
+          this.hoveredSq !== null &&
+          this.hoveredSq.x === pos.x &&
+          this.hoveredSq.y === pos.y
+        ) {
+          cursor(HAND);
+          fill(255, 50);
+        } else noFill();
+        stroke(200);
+        strokeWeight(3);
         rect(ss * pos.x, ss * pos.y, ss, ss);
+
+        // render charge icon if here is an uncharged piece
+        const sd = bd[pos.y][pos.x];
+        if (sd !== null && !this.isTarget(sd) && !sd.isCharged) {
+          const { rx, ry } = r.getRenderPos(pos.x, pos.y);
+          fill(
+            lerpColor(
+              r.LIGHTNING_COLOR,
+              color(0, 0),
+              0.2 * cos(frameCount * 12) + 0.2
+            )
+          );
+          noStroke();
+          beginShape();
+          vertex(rx + 25, ry - 25);
+          vertex(rx + 12, ry - 25);
+          vertex(rx + 8, ry - 10);
+          vertex(rx + 15, ry - 10);
+          vertex(rx + 10, ry + 2);
+          vertex(rx + 25, ry - 15);
+          vertex(rx + 18, ry - 15);
+          endShape(CLOSE);
+        }
       }
     }
+
+    r.renderAllTargets();
 
     // render skip hint arrow
     if (this.skipHintCountdown-- > 0) {

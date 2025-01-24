@@ -27,11 +27,17 @@ function setup() {
   textSize(40);
   textFont("monospace"); // textFont(createFont("monospace")); // KA
 
-  BOARD_INFO.color1 = color(...BOARD_INFO.color1);
-  BOARD_INFO.color2 = color(...BOARD_INFO.color2);
+  const r = RENDER;
+
+  // create colors
+  BOARD_INFO.color1 = color.apply(null, BOARD_INFO.color1);
+  BOARD_INFO.color2 = color.apply(null, BOARD_INFO.color2);
+  r.LIGHTNING_COLOR = color.apply(null, r.LIGHTNING_COLOR);
+  for (let i = 0; i < r.TARGETS_COLORS.length; i++) {
+    r.TARGETS_COLORS[i] = color.apply(null, r.TARGETS_COLORS[i]);
+  }
 
   // set num widths
-  const r = RENDER;
   r.numHalfWidths["0"] =
     myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
   r.numHalfWidths["1"] =

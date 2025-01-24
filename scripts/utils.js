@@ -3,20 +3,6 @@ const letters = "abcdefgh";
 // if you don't mind the lag, change the number below to like 20000 for the game to calculate moves faster
 const BOT_PROCESSING_AMOUNT = 8000;
 
-const COLORS = {
-  primary: [233, 199, 255],
-  targets: [
-    [240, 163, 125],
-    [240, 223, 125],
-    [178, 237, 119],
-    [116, 232, 178],
-    [125, 213, 240],
-    [125, 146, 240],
-    [238, 125, 240],
-    [240, 125, 156],
-  ],
-};
-
 const CONSTANTS = {
   MAX_ROUND: 8,
   CHARGED_MULT: 3,
@@ -34,30 +20,30 @@ const BOARD_INFO = {
 };
 BOARD_INFO.sqSize = BOARD_INFO.size / 8;
 
-const KNIGHT_MOVES = [
-  [-2, 1],
-  [-2, -1],
-  [-1, -2],
-  [1, -2],
-  [2, 1],
-  [2, -1],
-  [-1, 2],
-  [1, 2],
-];
-
-const ROOK_MOVES = [
-  [0, 1],
-  [0, -1],
-  [-1, 0],
-  [1, 0],
-];
-
-const BISHOP_MOVES = [
-  [1, 1],
-  [1, -1],
-  [-1, 1],
-  [-1, -1],
-];
+const PIECES_MOVES = {
+  KNIGHT_MOVES: [
+    [-2, 1],
+    [-2, -1],
+    [-1, -2],
+    [1, -2],
+    [2, 1],
+    [2, -1],
+    [-1, 2],
+    [1, 2],
+  ],
+  ROOK_MOVES: [
+    [0, 1],
+    [0, -1],
+    [-1, 0],
+    [1, 0],
+  ],
+  BISHOP_MOVES: [
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
+  ],
+};
 
 class Btn {
   constructor(x, y, w, h, renderContent, clicked) {
