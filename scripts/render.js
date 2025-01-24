@@ -666,8 +666,11 @@ const RENDER = {
           1
         );
       } else {
+        // normal piece movement speed (+= base speed - distanceBetween * slowFactor)
+        const { prevPos, pos } = this.movement.pieces[0];
+        const distanceBetween = dist(prevPos.x, prevPos.y, pos.x, pos.y);
         this.movement.progress = min(
-          this.movement.progress + CONSTANTS.MOVE_SPEED,
+          this.movement.progress + 0.15 - distanceBetween * 0.01,
           1
         );
       }
