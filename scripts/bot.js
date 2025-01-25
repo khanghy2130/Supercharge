@@ -1,7 +1,57 @@
 const BOT = {
   blackDepth: 3,
   whiteDepth: 3,
-  maxDepth: 3,
+  // cursor: {progress, speed, startPos, endPos}
+  blackCursor: {
+    progress: 1,
+    speed: 1,
+    startPos: { x: 0, y: 0 },
+    endPos: { x: 0, y: 0 },
+    currentPos: { x: 0, y: 0 },
+  },
+  whiteCursor: {
+    progress: 1,
+    speed: 1,
+    startPos: { x: 0, y: 0 },
+    endPos: { x: 0, y: 0 },
+    currentPos: { x: 0, y: 0 },
+  },
+
+  renderBotCursors: function () {
+    stroke(0);
+    strokeWeight(2);
+    fill(255);
+    if (this.whiteDepth !== 0) {
+      const pos = this.whiteCursor.endPos;
+      quad(
+        pos.x + 10,
+        pos.y + 20,
+        pos.x,
+        pos.y,
+        pos.x + 20,
+        pos.y + 10,
+        pos.x + 11,
+        pos.y + 11
+      );
+      ///
+    }
+
+    if (this.blackDepth !== 0) {
+      const pos = this.blackCursor.endPos;
+      quad(
+        pos.x + 10,
+        pos.y + 20,
+        pos.x,
+        pos.y,
+        pos.x + 20,
+        pos.y + 10,
+        pos.x + 11,
+        pos.y + 11
+      );
+      ///
+    }
+  },
+
   playAsWhite: false,
   maxProgress: null, // length of potential actions of root node
   isProcessing: false,
@@ -137,6 +187,10 @@ const BOT = {
       }
     }
 
+    const meta = GAMEPLAY.meta;
+    const maxDepth = meta.isWhiteTurn ? this.whiteDepth : this.blackDepth;
+    if (maxDepth === 0) return (this.isProcessing = false); // player turn safe exit
+
     // process bot multiple times a frame
     for (let i = 0, bpa = BOT_PROCESSING_AMOUNT; i < bpa; i++) {
       // All nodes processed ?
@@ -158,17 +212,12 @@ const BOT = {
 
       // Base case: return score to parent
       const isLastTurn =
-        GAMEPLAY.meta.round === CONSTANTS.MAX_ROUND &&
-        isMaximizing &&
-        depth > 0;
-      if (depth === this.maxDepth || isLastTurn) {
+        meta.round === CONSTANTS.MAX_ROUND && isMaximizing && depth > 0;
+      if (depth === maxDepth || isLastTurn) {
         let { scoreDiff, boardData } = this.getSimulatedData(actionsHistory);
 
         // add heuristic score if is easy bot and is not last round
-        if (
-          this.maxDepth === 1 &&
-          GAMEPLAY.meta.round !== CONSTANTS.MAX_ROUND
-        ) {
+        if (maxDepth === 1 && meta.round !== CONSTANTS.MAX_ROUND) {
           scoreDiff += this.getHeuristicScore(boardData, !isMaximizing);
         }
 
@@ -254,6 +303,7 @@ const BOT = {
   },
 
   getPotentialActions: function (boardData, isMaximizing) {
+    const gp = GAMEPLAY;
     const scoredActions = []; // {action, sortScore}
     const piecesPositions = [];
     // get pieces positions
@@ -262,7 +312,7 @@ const BOT = {
         const sqData = boardData[y][x];
         if (
           sqData !== null &&
-          !GAMEPLAY.isTarget(sqData) &&
+          !gp.isTarget(sqData) &&
           sqData.isWhite === isMaximizing
         ) {
           piecesPositions.push({ x, y });
@@ -275,7 +325,7 @@ const BOT = {
     // get all 1st moves
     for (let i = 0; i < piecesPositions.length; i++) {
       const pPos = piecesPositions[i];
-      const possibleMoves = GAMEPLAY.getPossibleMoves(pPos, boardData);
+      const possibleMoves = gp.getPossibleMoves(pPos, boardData);
       for (let pm = 0; pm < possibleMoves.length; pm++) {
         firstMoves.push([
           pPos.x,
@@ -287,7 +337,7 @@ const BOT = {
     }
 
     // if has 1 move left then only add 1st move to this action
-    const mover = isMaximizing ? GAMEPLAY.meta.white : GAMEPLAY.meta.black;
+    const mover = isMaximizing ? gp.meta.white : gp.meta.black;
     if (mover.energy === 1 && this.stack[0].potentialActions === null) {
       for (let m1 = 0; m1 < firstMoves.length; m1++) {
         scoredActions.push({
@@ -307,14 +357,14 @@ const BOT = {
         const originalEndValue = boardData[ey][ex];
 
         // apply 1st move
-        let firstMoveScoreGained = GAMEPLAY.applyMove(
+        let firstMoveScoreGained = gp.applyMove(
           { x: sx, y: sy },
           { x: ex, y: ey },
           boardData
         );
 
         // bonus score if was swapping
-        if (originalEndValue !== null && GAMEPLAY.isTarget(originalEndValue))
+        if (originalEndValue !== null && gp.isTarget(originalEndValue))
           firstMoveScoreGained += 10;
 
         // for each pieces: get all of its 2nd moves
@@ -327,7 +377,7 @@ const BOT = {
             pPos = { x: sx, y: sy }; // is now at start position
           }
 
-          const possibleMoves = GAMEPLAY.getPossibleMoves(pPos, boardData);
+          const possibleMoves = gp.getPossibleMoves(pPos, boardData);
           // for each 2nd move: add into scoredActions
           for (let m2 = 0; m2 < possibleMoves.length; m2++) {
             const { x, y } = possibleMoves[m2];
@@ -336,7 +386,7 @@ const BOT = {
 
             let secondMoveScoreGained = 0;
             // set score if capturing a target (and if is charged)
-            if (GAMEPLAY.isTarget(endValue)) {
+            if (gp.isTarget(endValue)) {
               secondMoveScoreGained = endValue;
               if (movedPiece2.isCharged) {
                 secondMoveScoreGained *= CONSTANTS.CHARGED_MULT;
@@ -344,10 +394,7 @@ const BOT = {
             }
 
             // bonus score if was swapping
-            if (
-              originalEndValue !== null &&
-              GAMEPLAY.isTarget(originalEndValue)
-            )
+            if (originalEndValue !== null && gp.isTarget(originalEndValue))
               secondMoveScoreGained += 10;
 
             // don't add this action if no capture nor swap

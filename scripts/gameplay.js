@@ -206,8 +206,13 @@ const GAMEPLAY = {
 
   // black/white: { botDepth: 0|1|3, squad: string[3]  }
   initializeGame: function ({ black, white }) {
+    // set bots
     BOT.whiteDepth = white.botDepth;
     BOT.blackDepth = black.botDepth;
+    BOT.whiteCursor.progress = 1;
+    BOT.whiteCursor.endPos = { x: 120, y: 570 };
+    BOT.blackCursor.progress = 1;
+    BOT.blackCursor.endPos = { x: 360, y: 570 };
 
     // reset meta
     this.meta.gameover = false;
@@ -329,7 +334,7 @@ const GAMEPLAY = {
           this.hoveredSq.y === pos.y
         ) {
           cursor(HAND);
-          fill(255, 50);
+          fill(255, 70);
         } else noFill();
         stroke(200);
         strokeWeight(3);
@@ -372,6 +377,8 @@ const GAMEPLAY = {
       line(325, 550 + bounceY, 325, 500 + bounceY);
     }
 
+    BOT.renderBotCursors();
+
     ///// bot arrow
     if (BOT.finalOutput !== null && frameCount % 60 > 18) {
       const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
@@ -410,10 +417,6 @@ const GAMEPLAY = {
     if (_mouseX > 470) {
       if (_mouseY > 530 - 15 && _mouseY < 530 + 15) {
         BOT.playAsWhite = !BOT.playAsWhite;
-        BOT.finalOutput = null;
-        BOT.startMinimax();
-      } else if (_mouseY > 570 - 15 && _mouseY < 570 + 15) {
-        BOT.maxDepth = BOT.maxDepth === 1 ? 3 : 1;
         BOT.finalOutput = null;
         BOT.startMinimax();
       }
