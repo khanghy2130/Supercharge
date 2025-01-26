@@ -129,10 +129,6 @@ const GAMEPLAY = {
   // only when viewing index is the same as latest index
   makeMove: function (movePos) {
     const meta = this.meta;
-    if (REPLAYSYS.viewingMoveIndex !== meta.latestMoveIndex) {
-      print("Can't make move, viewingMoveIndex !== latestMoveIndex");
-      return;
-    }
 
     meta.latestMoveIndex++; // next index
 
@@ -206,16 +202,16 @@ const GAMEPLAY = {
 
   // black/white: { botDepth: 0|1|3, squad: string[3]  }
   initializeGame: function ({ black, white }) {
-    const b = BOT;
+    const bot = BOT;
     const r = RENDER;
 
     // set bots
-    b.whiteDepth = white.botDepth;
-    b.blackDepth = black.botDepth;
-    b.whiteCursor.progress = 1;
-    b.whiteCursor.endPos = b.whiteCursor.homePos;
-    b.blackCursor.progress = 1;
-    b.blackCursor.endPos = b.blackCursor.homePos;
+    bot.whiteDepth = white.botDepth;
+    bot.blackDepth = black.botDepth;
+    bot.whiteCursor.progress = 1;
+    bot.whiteCursor.endPos = bot.whiteCursor.homePos;
+    bot.blackCursor.progress = 1;
+    bot.blackCursor.endPos = bot.blackCursor.homePos;
 
     // reset meta
     this.meta.gameover = false;
@@ -260,7 +256,7 @@ const GAMEPLAY = {
     );
     REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
 
-    // render play scene buttons
+    // reset play scene buttons
     for (let i = 0; i < r.btns.length; i++) {
       const b = r.btns[i];
       b.isHovered = false;
@@ -292,19 +288,23 @@ const GAMEPLAY = {
   renderScene: function () {
     background(BOARD_INFO.color1);
     const bd = this.boardData;
+    const bot = BOT;
+    const r = RENDER;
+    const meta = this.meta;
+    const isPlayerTurn = meta.isWhiteTurn
+      ? bot.whiteDepth === 0
+      : bot.blackDepth === 0;
 
     REPLAYSYS.updateSkipping();
 
-    const r = RENDER;
     // current cursor hover on square
     this.hoveredSq = null;
-    const cursorPos = this.meta.isWhiteTurn
-      ? BOT.whiteDepth !== 0
-        ? BOT.whiteCursor.currentPos
-        : { x: _mouseX, y: _mouseY }
-      : BOT.blackDepth !== 0
-      ? BOT.blackCursor.currentPos
-      : { x: _mouseX, y: _mouseY };
+    const cursorPos = isPlayerTurn
+      ? { x: _mouseX, y: _mouseY }
+      : meta.isWhiteTurn
+      ? bot.whiteCursor.currentPos
+      : bot.blackCursor.currentPos;
+
     if (
       cursorPos.x > 0 &&
       cursorPos.x < BOARD_INFO.size &&
@@ -387,52 +387,112 @@ const GAMEPLAY = {
       line(325, 550 + bounceY, 325, 500 + bounceY);
     }
 
-    BOT.renderBotCursors();
+    // ///// bot arrow
+    // if (bot.finalOutput !== null && frameCount % 60 > 18) {
+    //   const mover = meta.isWhiteTurn ? meta.white : meta.black;
+    //   const action = bot.finalOutput.actionsHistory[0];
+    //   const [sx, sy, ex, ey] =
+    //     action[mover.energy === 2 ? 0 : action.length - 1];
+    //   stroke(255, 50, 50);
+    //   strokeWeight(5);
+    //   const start = RENDER.getRenderPos(sx, sy);
+    //   const end = RENDER.getRenderPos(ex, ey);
+    //   line(start.rx, start.ry, end.rx, end.ry);
+    //   push();
+    //   translate(end.rx, end.ry);
+    //   rotate(atan2(end.ry - start.ry, end.rx - start.rx));
+    //   line(-10, 10, 0, 0);
+    //   line(-10, -10, 0, 0);
+    //   pop();
+    // }
 
-    ///// bot arrow
-    if (BOT.finalOutput !== null && frameCount % 60 > 18) {
-      const mover = this.meta.isWhiteTurn ? this.meta.white : this.meta.black;
-      const action = BOT.finalOutput.actionsHistory[0];
-      const [sx, sy, ex, ey] =
-        action[mover.energy === 2 ? 0 : action.length - 1];
-      stroke(255, 50, 50);
-      strokeWeight(5);
-      const start = RENDER.getRenderPos(sx, sy);
-      const end = RENDER.getRenderPos(ex, ey);
-      line(start.rx, start.ry, end.rx, end.ry);
-      push();
-      translate(end.rx, end.ry);
-      rotate(atan2(end.ry - start.ry, end.rx - start.rx));
-      line(-10, 10, 0, 0);
-      line(-10, -10, 0, 0);
-      pop();
+    bot.renderBotCursors();
+
+    // update bot turn
+    // not currently processing & not player turn & not gameover & not piece moving & not capturing
+    if (
+      !bot.isProcessing &&
+      !isPlayerTurn &&
+      !meta.gameover &&
+      r.movement.progress === 1
+    ) {
+      // no output yet?
+      if (bot.finalOutput === null) bot.startMinimax();
+      // has output?
+      else {
+        // first move or last move
+        const action = bot.finalOutput.actionsHistory[0];
+        const botCursor = meta.isWhiteTurn ? bot.whiteCursor : bot.blackCursor;
+
+        const energy = meta.isWhiteTurn ? meta.white.energy : meta.black.energy;
+        const move = energy === 2 ? action[0] : action[action.length - 1];
+
+        // move status: calculating > piece > option
+        if (bot.moveStatus === 0) {
+          bot.moveStatus = 1;
+          const pos = r.getRenderPos(move[0], move[1]);
+          bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
+        } else if (bot.moveStatus === 1) {
+          // done moving to piece? select piece
+          if (botCursor.progress === 1) {
+            bot.moveStatus = 2;
+            this.selectedPiecePos = this.hoveredSq;
+            this.possibleMoves = this.getPossibleMoves(
+              this.selectedPiecePos,
+              bd
+            );
+
+            const pos = r.getRenderPos(move[2], move[3]);
+            bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
+          }
+        } else if (bot.moveStatus === 2) {
+          // done moving to option? apply move
+          if (botCursor.progress === 1) {
+            for (let i = 0; i < this.possibleMoves.length; i++) {
+              const oPos = this.possibleMoves[i];
+              if (this.hoveredSq.x === oPos.x && this.hoveredSq.y === oPos.y) {
+                this.makeMove(this.hoveredSq);
+                break;
+              }
+            }
+            this.deselectPiece();
+
+            if (energy === 2) bot.moveStatus = 0; // repeat for next move
+            // return to home position
+            else {
+              bot.finalOutput = null;
+              bot.startBotCursorMove(botCursor, botCursor.homePos);
+            }
+          }
+        }
+      }
     }
 
-    // process bot //////
-    if (BOT.isProcessing) BOT.processMinimax();
+    // process minimax
+    if (bot.isProcessing) bot.processMinimax();
   },
 
   clicked: function () {
-    BOT.startBotCursorMove(BOT.whiteCursor, { x: _mouseX, y: _mouseY });
-
     // buttons
-    //// if bot is playing then return, except for exit button
     for (let i = 0; i < RENDER.btns.length; i++) {
       const b = RENDER.btns[i];
       if (b.isHovered) b.clicked();
     }
 
-    if (this.meta.gameover || BOT.isProcessing || REPLAYSYS.skipping !== null)
+    // not player turn?
+    if (this.meta.isWhiteTurn ? BOT.whiteDepth !== 0 : BOT.blackDepth !== 0)
       return;
 
-    // bot options ////
-    if (_mouseX > 470) {
-      if (_mouseY > 530 - 15 && _mouseY < 530 + 15) {
-        BOT.playAsWhite = !BOT.playAsWhite;
-        BOT.finalOutput = null;
-        BOT.startMinimax();
-      }
-    }
+    if (this.meta.gameover || REPLAYSYS.skipping !== null) return;
+
+    // // bot options ////
+    // if (_mouseX > 470) {
+    //   if (_mouseY > 530 - 15 && _mouseY < 530 + 15) {
+    //     BOT.playAsWhite = !BOT.playAsWhite;
+    //     BOT.finalOutput = null;
+    //     BOT.startMinimax();
+    //   }
+    // }
 
     // not hovering on a square?
     if (this.hoveredSq === null) return;

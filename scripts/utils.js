@@ -1,7 +1,7 @@
 const letters = "abcdefgh";
 
 // if you don't mind the lag, change the number below to like 20000 for the game to calculate moves faster
-const BOT_PROCESSING_AMOUNT = 8000;
+const BOT_PROCESSING_AMOUNT = 10000;
 
 const CONSTANTS = {
   MAX_ROUND: 8,

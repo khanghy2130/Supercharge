@@ -1,6 +1,7 @@
 const BOT = {
   blackDepth: 3,
   whiteDepth: 3,
+
   // cursor: {progress, speed, startPos, endPos}
   blackCursor: {
     progress: 1,
@@ -13,21 +14,28 @@ const BOT = {
   whiteCursor: {
     progress: 1,
     speed: 1,
-    homePos: { x: 120, y: 570 },
+    homePos: { x: 117, y: 570 },
     startPos: { x: 0, y: 0 },
     endPos: { x: 0, y: 0 },
     currentPos: { x: 0, y: 0 },
   },
 
-  startBotCursorMove: function (botCursor, targetPos) {
+  moveStatus: 0, // 0: calculating  1: moving to piece  2: moving to option
+  maxProgress: null, // length of potential actions of root node
+  isProcessing: false,
+  stack: [],
+  finalOutput: null, // { actionsHistory, scoreDiff }
+
+  startBotCursorMove: function (botCursor, targetPos, doesRandom) {
     botCursor.startPos = botCursor.endPos;
-    botCursor.endPos = targetPos;
-    botCursor.endPos.x += random() * 10;
-    botCursor.endPos.y += random() * 10;
+    botCursor.endPos = {
+      x: targetPos.x + (doesRandom ? random() * 10 : 0),
+      y: targetPos.y + (doesRandom ? random() * 10 : 0),
+    };
     // base speed - distance
     botCursor.speed = max(
-      0.01,
-      0.03 -
+      0.007,
+      0.022 -
         dist(
           botCursor.startPos.x,
           botCursor.startPos.y,
@@ -59,12 +67,6 @@ const BOT = {
       quad(x + 10, y + 24, x, y, x + 24, y + 10, x + 12, y + 12);
     }
   },
-
-  playAsWhite: false,
-  maxProgress: null, // length of potential actions of root node
-  isProcessing: false,
-  stack: [],
-  finalOutput: null, // { actionsHistory, scoreDiff }
 
   getSimulatedData: function (actionsHistory) {
     const white = { score: 0 };
@@ -116,16 +118,13 @@ const BOT = {
   },
 
   startMinimax: function () {
-    //// use black/white depth
-    // don't start if not bot turn
-    if (this.playAsWhite !== GAMEPLAY.meta.isWhiteTurn) return;
-
     // don't start if already has output
     if (this.finalOutput !== null) return;
 
     this.maxProgress = null;
     this.isProcessing = true;
     this.finalOutput = null;
+    this.moveStatus = 0;
     const isMaximizing = GAMEPLAY.meta.isWhiteTurn;
     this.stack = [
       {

@@ -5,7 +5,7 @@ const RENDER = {
 
   piecesPositions: [],
   movement: {
-    progress: 1, // 0 to 1
+    progress: 1,
     pieces: [], // {prevPos, pos}[]
   },
 
@@ -378,7 +378,8 @@ const RENDER = {
 
   renderCapturedTarget: function () {
     if (this.capturedTR.progress >= 1) return;
-    this.capturedTR.progress += 0.012; // CAPTURE ANIMATION SPEED
+    // CAPTURE ANIMATION SPEED
+    this.capturedTR.progress = min(1, this.capturedTR.progress + 0.012);
 
     const move = REPLAYSYS.moves[REPLAYSYS.viewingMoveIndex];
     // can't get move or no score gained?

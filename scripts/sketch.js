@@ -49,6 +49,17 @@ function setup() {
   r.numHalfWidths[":"] = r.numHalfWidths["0"] / 4;
 
   // set play scene buttons
+  const timelineBtnsAreDisabled = function () {
+    const isPlayerTurn = GAMEPLAY.meta.isWhiteTurn
+      ? BOT.whiteDepth === 0
+      : BOT.blackDepth === 0;
+    const result = !GAMEPLAY.meta.gameover && !isPlayerTurn;
+    if (result) {
+      /// can't use timeline hint
+      console.log("timeline button disabled");
+    }
+    return result;
+  };
   r.btns = [
     new Btn(
       225,
@@ -62,6 +73,7 @@ function setup() {
         line(3, 5, -4, 0);
       },
       function () {
+        if (timelineBtnsAreDisabled()) return;
         if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.loadState(false);
       }
@@ -78,6 +90,7 @@ function setup() {
         line(-3, 5, 4, 0);
       },
       function () {
+        if (timelineBtnsAreDisabled()) return;
         if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.loadState(true);
         if (REPLAYSYS.viewingMoveIndex === GAMEPLAY.meta.latestMoveIndex)
@@ -97,6 +110,7 @@ function setup() {
         line(-6, -5, -6, 5);
       },
       function () {
+        if (timelineBtnsAreDisabled()) return;
         if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.setUpSkipping(false);
       }
@@ -114,6 +128,7 @@ function setup() {
         line(6, -5, 6, 5);
       },
       function () {
+        if (timelineBtnsAreDisabled()) return;
         if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
         REPLAYSYS.setUpSkipping(true);
         GAMEPLAY.skipHintCountdown = 0; // stop hint
