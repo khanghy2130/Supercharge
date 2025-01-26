@@ -1,4 +1,51 @@
 const RENDER = {
+  numHalfWidths: {},
+  playersNames: [], // [white, black]
+  btns: [],
+
+  piecesPositions: [],
+  movement: {
+    progress: 1, // 0 to 1
+    pieces: [], // {prevPos, pos}[]
+  },
+
+  /*
+    Lightning: {
+      segments{startPos,endPos,deg,distance}, 
+      segIndex, distProgress, isAppearing
+    }
+  */
+  lightnings: [],
+  LIGHTNING_COLOR: [96, 214, 235],
+
+  /*
+    TargetRender: {
+      pos, delay, progress, value, 
+      circles {startPos, endPos, endDeg, progress} 
+    }
+  */
+  targets: [],
+  removingTR: null,
+
+  capturedTR: {
+    pos: { x: 0, y: 0 },
+    value: 1,
+    fadingCircles: [], // {pos{rx, ry}, deg}
+    progress: 1,
+    previousScores: [0, 0], // [white, black]
+  },
+
+  TARGETS_COLORS: [
+    [243, 170, 135],
+    [240, 223, 125],
+    [178, 237, 119],
+    [116, 232, 178],
+    [125, 213, 240],
+    [125, 146, 240],
+    [238, 125, 240],
+    [240, 125, 156],
+  ],
+
   easeInOutCubic: function (x) {
     return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
   },
@@ -14,8 +61,6 @@ const RENDER = {
     return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
   },
 
-  numHalfWidths: {},
-
   // takes a string with only numbers, plus sign, and colon sign
   getNumHalfWidth: function (numStr, s) {
     const arr = numStr.split("");
@@ -26,10 +71,6 @@ const RENDER = {
     if (s !== undefined) return (hw / CONSTANTS.VALUE_NUM_SIZE) * s;
     return hw;
   },
-
-  playersNames: [], // [white, black]
-
-  btns: [],
 
   renderUI: function () {
     for (let i = 0; i < this.btns.length; i++) {
@@ -231,15 +272,6 @@ const RENDER = {
     rect(x, y, 10, 8);
   },
 
-  /*
-    Lightning: {
-      segments{startPos,endPos,deg,distance}, 
-      segIndex, distProgress, isAppearing
-    }
-  */
-  lightnings: [],
-  LIGHTNING_COLOR: [96, 214, 235],
-
   bigSpawnLightings: function (rx, ry) {
     for (let i = 0; i < 10; i++) {
       // within a small square
@@ -343,34 +375,6 @@ const RENDER = {
       }
     }
   },
-
-  /*
-    TargetRender: {
-      pos, delay, progress, value, 
-      circles {startPos, endPos, endDeg, progress} 
-    }
-  */
-  targets: [],
-  removingTR: null,
-
-  capturedTR: {
-    pos: { x: 0, y: 0 },
-    value: 1,
-    fadingCircles: [], // {pos{rx, ry}, deg}
-    progress: 1,
-    previousScores: [0, 0], // [white, black]
-  },
-
-  TARGETS_COLORS: [
-    [243, 170, 135],
-    [240, 223, 125],
-    [178, 237, 119],
-    [116, 232, 178],
-    [125, 213, 240],
-    [125, 146, 240],
-    [238, 125, 240],
-    [240, 125, 156],
-  ],
 
   renderCapturedTarget: function () {
     if (this.capturedTR.progress >= 1) return;
@@ -632,12 +636,6 @@ const RENDER = {
     this.renderCapturedTarget();
   },
 
-  piecesPositions: [],
-  movement: {
-    progress: 1, // 0 to 1
-    pieces: [], // {prevPos, pos}[]
-  },
-
   setPiecesPositions: function () {
     this.piecesPositions = [];
     for (let y = 0; y < 8; y++) {
@@ -725,6 +723,10 @@ const RENDER = {
 
     // render non moving pieces
     const gp = GAMEPLAY;
+    const ss = BOARD_INFO.sqSize;
+    const isPlayerTurn = gp.meta.isWhiteTurn
+      ? BOT.whiteDepth === 0
+      : BOT.blackDepth === 0;
     const doesCheckIfHovered =
       !gp.meta.gameover &&
       gp.meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex &&
@@ -739,11 +741,10 @@ const RENDER = {
       // hovered render
       if (doesCheckIfHovered && gp.meta.isWhiteTurn === pieceData.isWhite) {
         if (gp.hoveredSq.x === piecePos.x && gp.hoveredSq.y === piecePos.y) {
-          cursor(HAND);
+          if (isPlayerTurn) cursor(HAND);
           stroke(200);
           strokeWeight(3);
           noFill();
-          const ss = BOARD_INFO.sqSize;
           rect(ss * piecePos.x, ss * piecePos.y, ss, ss);
         }
       }

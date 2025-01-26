@@ -206,13 +206,16 @@ const GAMEPLAY = {
 
   // black/white: { botDepth: 0|1|3, squad: string[3]  }
   initializeGame: function ({ black, white }) {
+    const b = BOT;
+    const r = RENDER;
+
     // set bots
-    BOT.whiteDepth = white.botDepth;
-    BOT.blackDepth = black.botDepth;
-    BOT.whiteCursor.progress = 1;
-    BOT.whiteCursor.endPos = { x: 120, y: 570 };
-    BOT.blackCursor.progress = 1;
-    BOT.blackCursor.endPos = { x: 360, y: 570 };
+    b.whiteDepth = white.botDepth;
+    b.blackDepth = black.botDepth;
+    b.whiteCursor.progress = 1;
+    b.whiteCursor.endPos = b.whiteCursor.homePos;
+    b.blackCursor.progress = 1;
+    b.blackCursor.endPos = b.blackCursor.homePos;
 
     // reset meta
     this.meta.gameover = false;
@@ -240,7 +243,7 @@ const GAMEPLAY = {
     this.boardData[4][5] = this.getPieceData(black.squad[1], false);
     this.boardData[6][6] = this.getPieceData(black.squad[2], false);
 
-    RENDER.setPiecesPositions();
+    r.setPiecesPositions();
 
     // spawn initial targets
     const targetPositions = this.getNewTargetsPosition(
@@ -258,19 +261,19 @@ const GAMEPLAY = {
     REPLAYSYS.targetPreviewsPositions = [this.spawningPositions];
 
     // render play scene buttons
-    for (let i = 0; i < RENDER.btns.length; i++) {
-      const b = RENDER.btns[i];
+    for (let i = 0; i < r.btns.length; i++) {
+      const b = r.btns[i];
       b.isHovered = false;
       b.animateProgress = 1;
     }
-    RENDER.capturedTR.progress = 1; // end animation
-    RENDER.lightnings = [];
-    RENDER.targets = [];
-    RENDER.updateAllTRs(true);
+    r.capturedTR.progress = 1; // end animation
+    r.lightnings = [];
+    r.targets = [];
+    r.updateAllTRs(true);
 
     // set player names
     const allNames = ["player", "easy bot", "", "hard bot"];
-    RENDER.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
+    r.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
   },
 
   renderBoard: function () {
@@ -293,17 +296,24 @@ const GAMEPLAY = {
     REPLAYSYS.updateSkipping();
 
     const r = RENDER;
-    // mouse hover on square
+    // current cursor hover on square
     this.hoveredSq = null;
+    const cursorPos = this.meta.isWhiteTurn
+      ? BOT.whiteDepth !== 0
+        ? BOT.whiteCursor.currentPos
+        : { x: _mouseX, y: _mouseY }
+      : BOT.blackDepth !== 0
+      ? BOT.blackCursor.currentPos
+      : { x: _mouseX, y: _mouseY };
     if (
-      _mouseX > 0 &&
-      _mouseX < BOARD_INFO.size &&
-      _mouseY > 0 &&
-      _mouseY < BOARD_INFO.size
+      cursorPos.x > 0 &&
+      cursorPos.x < BOARD_INFO.size &&
+      cursorPos.y > 0 &&
+      cursorPos.y < BOARD_INFO.size
     ) {
       this.hoveredSq = {
-        x: floor(_mouseX / BOARD_INFO.sqSize),
-        y: floor(_mouseY / BOARD_INFO.sqSize),
+        x: floor(cursorPos.x / BOARD_INFO.sqSize),
+        y: floor(cursorPos.y / BOARD_INFO.sqSize),
       };
     }
 
@@ -403,6 +413,8 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
+    BOT.startBotCursorMove(BOT.whiteCursor, { x: _mouseX, y: _mouseY });
+
     // buttons
     //// if bot is playing then return, except for exit button
     for (let i = 0; i < RENDER.btns.length; i++) {

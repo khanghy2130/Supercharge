@@ -5,6 +5,7 @@ const BOT = {
   blackCursor: {
     progress: 1,
     speed: 1,
+    homePos: { x: 360, y: 570 },
     startPos: { x: 0, y: 0 },
     endPos: { x: 0, y: 0 },
     currentPos: { x: 0, y: 0 },
@@ -12,43 +13,50 @@ const BOT = {
   whiteCursor: {
     progress: 1,
     speed: 1,
+    homePos: { x: 120, y: 570 },
     startPos: { x: 0, y: 0 },
     endPos: { x: 0, y: 0 },
     currentPos: { x: 0, y: 0 },
+  },
+
+  startBotCursorMove: function (botCursor, targetPos) {
+    botCursor.startPos = botCursor.endPos;
+    botCursor.endPos = targetPos;
+    botCursor.endPos.x += random() * 10;
+    botCursor.endPos.y += random() * 10;
+    // base speed - distance
+    botCursor.speed = max(
+      0.01,
+      0.03 -
+        dist(
+          botCursor.startPos.x,
+          botCursor.startPos.y,
+          botCursor.endPos.x,
+          botCursor.endPos.y
+        ) *
+          0.00007
+    );
+    botCursor.progress = 0;
   },
 
   renderBotCursors: function () {
     stroke(0);
     strokeWeight(2);
     fill(255);
-    if (this.whiteDepth !== 0) {
-      const pos = this.whiteCursor.endPos;
-      quad(
-        pos.x + 10,
-        pos.y + 20,
-        pos.x,
-        pos.y,
-        pos.x + 20,
-        pos.y + 10,
-        pos.x + 11,
-        pos.y + 11
-      );
-      ///
-    }
 
-    if (this.blackDepth !== 0) {
-      const pos = this.blackCursor.endPos;
-      quad(
-        pos.x + 10,
-        pos.y + 20,
-        pos.x,
-        pos.y,
-        pos.x + 20,
-        pos.y + 10,
-        pos.x + 11,
-        pos.y + 11
-      );
-      ///
+    const cursors = [this.whiteCursor, this.blackCursor];
+    if (this.whiteDepth !== 0) cursors.push(this.whiteCursor);
+    if (this.blackDepth !== 0) cursors.push(this.blackCursor);
+    for (let i = 0; i < cursors.length; i++) {
+      const botCursor = cursors[i];
+      const prg = RENDER.easeInOutCubic(botCursor.progress);
+      const x = map(prg, 0, 1, botCursor.startPos.x, botCursor.endPos.x);
+      const y = map(prg, 0, 1, botCursor.startPos.y, botCursor.endPos.y);
+      botCursor.currentPos = { x, y };
+      if (botCursor.progress < 1) {
+        botCursor.progress = min(1, botCursor.progress + botCursor.speed);
+      }
+      quad(x + 10, y + 24, x, y, x + 24, y + 10, x + 12, y + 12);
     }
   },
 
