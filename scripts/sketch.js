@@ -54,10 +54,6 @@ function setup() {
       ? BOT.whiteDepth === 0
       : BOT.blackDepth === 0;
     const result = !GAMEPLAY.meta.gameover && !isPlayerTurn;
-    if (result) {
-      /// can't use timeline hint
-      console.log("timeline button disabled");
-    }
     return result;
   };
   r.btns = [

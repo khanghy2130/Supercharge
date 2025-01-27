@@ -72,18 +72,46 @@ const RENDER = {
     return hw;
   },
 
-  renderUI: function () {
-    for (let i = 0; i < this.btns.length; i++) {
-      this.btns[i].render();
-    }
-
+  renderUI: function (isPlayerTurn) {
     const meta = GAMEPLAY.meta;
-
     const whiteColor = color(240);
     const blackColor = color(20);
     const scoringColor = color(50, 225, 35);
     const isAnimatingMovement = this.movement.progress < 1;
-    noStroke();
+
+    // render timeline buttons
+    const bot = BOT;
+    if (isPlayerTurn || meta.gameover) {
+      for (let i = 0; i < 4; i++) {
+        this.btns[i].render();
+      }
+    } else {
+      let processingProgress = null;
+      if (bot.isProcessing && bot.stack.length > 0) {
+        const root = bot.stack[0];
+        if (root.potentialActions !== null) {
+          processingProgress =
+            (1 / bot.maxProgress) *
+            (bot.maxProgress - root.potentialActions.length);
+        }
+      }
+
+      if (processingProgress === null) {
+        myText("bot playing", 171, 588.5, 17, BOARD_INFO.color2);
+      } else {
+        noFill();
+        stroke(BOARD_INFO.color2);
+        strokeWeight(2);
+        rect(170, 575, 160, 10);
+        fill(BOARD_INFO.color2);
+        noStroke();
+        rect(170, 575, 160 * processingProgress, 10);
+      }
+    }
+
+    // render other buttons
+    this.btns[4].render();
+    this.btns[5].render();
 
     const prevScores = this.capturedTR.previousScores;
     const prevSeparationX =
@@ -97,6 +125,7 @@ const RENDER = {
         : (500 / (meta.white.score + meta.black.score)) * meta.white.score;
 
     // render white & black score bars (render previous if piece moving or yellow bar still extending)
+    noStroke();
     if (isAnimatingMovement || this.capturedTR.progress < 0.4) {
       fill(whiteColor);
       rect(0, 500, prevSeparationX, 12);

@@ -105,7 +105,7 @@ const BOT = {
         );
         scorer.score += scoreGained;
         if (isWhiteTurn === GAMEPLAY.meta.isWhiteTurn) {
-          scorer.score *= 1.2; // extra incentive to gain score
+          scorer.score *= 1.25; // extra incentive to gain score
         }
       }
       isWhiteTurn = !isWhiteTurn; // flip for next iteration
@@ -120,6 +120,13 @@ const BOT = {
   startMinimax: function () {
     // don't start if already has output
     if (this.finalOutput !== null) return;
+
+    // ready to hide timeline buttons
+    for (let i = 0; i < 4; i++) {
+      const btn = RENDER.btns[i];
+      btn.isHovered = false;
+      btn.animateProgress = 1;
+    }
 
     this.maxProgress = null;
     this.isProcessing = true;
@@ -174,26 +181,6 @@ const BOT = {
   },
 
   processMinimax: function () {
-    if (this.stack.length > 0) {
-      const root = this.stack[0];
-      if (root.potentialActions !== null) {
-        fill(255);
-        stroke(0);
-        strokeWeight(5);
-        textSize(32);
-        text(
-          "Calculating " +
-            floor(
-              (100 / this.maxProgress) *
-                (this.maxProgress - root.potentialActions.length)
-            ) +
-            "%",
-          250,
-          250
-        );
-      }
-    }
-
     const meta = GAMEPLAY.meta;
     const maxDepth = meta.isWhiteTurn ? this.whiteDepth : this.blackDepth;
     if (maxDepth === 0) return (this.isProcessing = false); // player turn safe exit

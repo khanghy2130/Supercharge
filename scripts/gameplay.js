@@ -317,7 +317,7 @@ const GAMEPLAY = {
       };
     }
 
-    r.renderUI();
+    r.renderUI(isPlayerTurn);
     this.renderBoard();
 
     r.renderAllPieces(bd);
@@ -343,7 +343,7 @@ const GAMEPLAY = {
           this.hoveredSq.x === pos.x &&
           this.hoveredSq.y === pos.y
         ) {
-          cursor(HAND);
+          if (isPlayerTurn) cursor(HAND);
           fill(255, 70);
         } else noFill();
         stroke(200);
@@ -387,35 +387,12 @@ const GAMEPLAY = {
       line(325, 550 + bounceY, 325, 500 + bounceY);
     }
 
-    // ///// bot arrow
-    // if (bot.finalOutput !== null && frameCount % 60 > 18) {
-    //   const mover = meta.isWhiteTurn ? meta.white : meta.black;
-    //   const action = bot.finalOutput.actionsHistory[0];
-    //   const [sx, sy, ex, ey] =
-    //     action[mover.energy === 2 ? 0 : action.length - 1];
-    //   stroke(255, 50, 50);
-    //   strokeWeight(5);
-    //   const start = RENDER.getRenderPos(sx, sy);
-    //   const end = RENDER.getRenderPos(ex, ey);
-    //   line(start.rx, start.ry, end.rx, end.ry);
-    //   push();
-    //   translate(end.rx, end.ry);
-    //   rotate(atan2(end.ry - start.ry, end.rx - start.rx));
-    //   line(-10, 10, 0, 0);
-    //   line(-10, -10, 0, 0);
-    //   pop();
-    // }
-
     bot.renderBotCursors();
 
     // update bot turn
+    if (bot.isProcessing) bot.processMinimax();
     // not currently processing & not player turn & not gameover & not piece moving & not capturing
-    if (
-      !bot.isProcessing &&
-      !isPlayerTurn &&
-      !meta.gameover &&
-      r.movement.progress === 1
-    ) {
+    else if (!isPlayerTurn && !meta.gameover && r.movement.progress === 1) {
       // no output yet?
       if (bot.finalOutput === null) bot.startMinimax();
       // has output?
@@ -467,9 +444,6 @@ const GAMEPLAY = {
         }
       }
     }
-
-    // process minimax
-    if (bot.isProcessing) bot.processMinimax();
   },
 
   clicked: function () {
