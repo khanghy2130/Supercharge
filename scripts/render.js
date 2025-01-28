@@ -81,12 +81,17 @@ const RENDER = {
 
     // render timeline buttons
     const bot = BOT;
-    if (isPlayerTurn || meta.gameover) {
+    if (
+      isPlayerTurn ||
+      meta.gameover ||
+      meta.latestMoveIndex !== REPLAYSYS.viewingMoveIndex ||
+      REPLAYSYS.skipping !== null
+    ) {
       for (let i = 0; i < 4; i++) {
         this.btns[i].render();
       }
     } else {
-      let processingProgress = null;
+      let processingProgress = bot.finalOutput === null ? 0 : 1;
       if (bot.isProcessing && bot.stack.length > 0) {
         const root = bot.stack[0];
         if (root.potentialActions !== null) {
@@ -96,17 +101,13 @@ const RENDER = {
         }
       }
 
-      if (processingProgress === null) {
-        myText("bot playing", 171, 588.5, 17, BOARD_INFO.color2);
-      } else {
-        noFill();
-        stroke(BOARD_INFO.color2);
-        strokeWeight(2);
-        rect(170, 575, 160, 10);
-        fill(BOARD_INFO.color2);
-        noStroke();
-        rect(170, 575, 160 * processingProgress, 10);
-      }
+      noFill();
+      stroke(BOARD_INFO.color2);
+      strokeWeight(2);
+      rect(170, 575, 160, 10);
+      fill(BOARD_INFO.color2);
+      noStroke();
+      rect(170, 575, 160 * processingProgress, 10);
     }
 
     // render other buttons

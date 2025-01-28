@@ -37,6 +37,23 @@ function setup() {
     r.TARGETS_COLORS[i] = color.apply(null, r.TARGETS_COLORS[i]);
   }
 
+  // set board image
+  (function () {
+    background(BOARD_INFO.color1);
+    // render dark squares
+    fill(BOARD_INFO.color2);
+    noStroke();
+    const ss = 45;
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        if ((x + y) % 2 === 0) continue;
+        rect(ss * x, ss * y, ss, ss);
+      }
+    }
+    BOARD_INFO.boardImage = get(0, 0, ss * 8, ss * 8);
+    background(0);
+  })();
+
   // set num widths
   r.numHalfWidths["0"] =
     myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
@@ -50,10 +67,14 @@ function setup() {
 
   // set play scene buttons
   const timelineBtnsAreDisabled = function () {
-    const isPlayerTurn = GAMEPLAY.meta.isWhiteTurn
+    const meta = GAMEPLAY.meta;
+    const isPlayerTurn = meta.isWhiteTurn
       ? BOT.whiteDepth === 0
       : BOT.blackDepth === 0;
-    const result = !GAMEPLAY.meta.gameover && !isPlayerTurn;
+    const result =
+      !meta.gameover &&
+      !isPlayerTurn &&
+      meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex;
     return result;
   };
   r.btns = [
@@ -156,7 +177,7 @@ function setup() {
 
   GAMEPLAY.initializeGame({
     white: { botDepth: 3, squad: ["R", "B", "K"] },
-    black: { botDepth: 3, squad: ["K", "B", "R"] },
+    black: { botDepth: 0, squad: ["K", "B", "R"] },
   });
 }
 

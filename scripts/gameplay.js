@@ -270,19 +270,11 @@ const GAMEPLAY = {
     // set player names
     const allNames = ["player", "easy bot", "", "hard bot"];
     r.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
-  },
 
-  renderBoard: function () {
-    // render dark squares
-    fill(BOARD_INFO.color2);
-    noStroke();
-    const ss = BOARD_INFO.sqSize;
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        if ((x + y) % 2 === 0) continue;
-        rect(ss * x, ss * y, ss, ss);
-      }
-    }
+    // reset stats button
+    const statsBtn = RENDER.btns[5];
+    statsBtn.isHovered = false;
+    statsBtn.animateProgress = 0; // start animated when appears
   },
 
   renderScene: function () {
@@ -318,7 +310,9 @@ const GAMEPLAY = {
     }
 
     r.renderUI(isPlayerTurn);
-    this.renderBoard();
+
+    // render board
+    image(BOARD_INFO.boardImage, 250, 250, 500, 500);
 
     r.renderAllPieces(bd);
     r.renderLightnings();
@@ -392,7 +386,12 @@ const GAMEPLAY = {
     // update bot turn
     if (bot.isProcessing) bot.processMinimax();
     // not currently processing & not player turn & not gameover & not piece moving & not capturing
-    else if (!isPlayerTurn && !meta.gameover && r.movement.progress === 1) {
+    else if (
+      !isPlayerTurn &&
+      !meta.gameover &&
+      r.movement.progress === 1 &&
+      meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex
+    ) {
       // no output yet?
       if (bot.finalOutput === null) bot.startMinimax();
       // has output?
@@ -458,15 +457,6 @@ const GAMEPLAY = {
       return;
 
     if (this.meta.gameover || REPLAYSYS.skipping !== null) return;
-
-    // // bot options ////
-    // if (_mouseX > 470) {
-    //   if (_mouseY > 530 - 15 && _mouseY < 530 + 15) {
-    //     BOT.playAsWhite = !BOT.playAsWhite;
-    //     BOT.finalOutput = null;
-    //     BOT.startMinimax();
-    //   }
-    // }
 
     // not hovering on a square?
     if (this.hoveredSq === null) return;

@@ -125,7 +125,7 @@ const BOT = {
     for (let i = 0; i < 4; i++) {
       const btn = RENDER.btns[i];
       btn.isHovered = false;
-      btn.animateProgress = 1;
+      btn.animateProgress = 0;
     }
 
     this.maxProgress = null;
