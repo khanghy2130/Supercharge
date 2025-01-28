@@ -176,8 +176,8 @@ function setup() {
   ];
 
   GAMEPLAY.initializeGame({
-    white: { botDepth: 3, squad: ["R", "B", "K"] },
-    black: { botDepth: 0, squad: ["K", "B", "R"] },
+    white: { botDepth: random([0, 1, 3]), squad: ["R", "B", "K"] },
+    black: { botDepth: random([0, 1, 3]), squad: ["K", "B", "R"] },
   });
 }
 
