@@ -34,15 +34,15 @@ const BOT = {
     };
     // base speed - distance
     botCursor.speed = max(
-      0.007,
-      0.022 -
+      0.018,
+      0.044 -
         dist(
           botCursor.startPos.x,
           botCursor.startPos.y,
           botCursor.endPos.x,
           botCursor.endPos.y
         ) *
-          0.00007
+          0.0001
     );
     botCursor.progress = 0;
   },
@@ -52,7 +52,7 @@ const BOT = {
     strokeWeight(2);
     fill(255);
 
-    const cursors = [this.whiteCursor, this.blackCursor];
+    const cursors = [];
     if (this.whiteDepth !== 0) cursors.push(this.whiteCursor);
     if (this.blackDepth !== 0) cursors.push(this.blackCursor);
     for (let i = 0; i < cursors.length; i++) {

@@ -8,6 +8,7 @@ const RENDER = {
     progress: 1,
     pieces: [], // {prevPos, pos}[]
   },
+  selectedPieceProgress: 1,
 
   /*
     Lightning: {
@@ -678,9 +679,31 @@ const RENDER = {
     }
   },
 
+  renderChargedStatus: function (rx, ry) {
+    // render charged icon
+    fill(this.LIGHTNING_COLOR);
+    noStroke();
+    beginShape();
+    vertex(rx + 25, ry - 25);
+    vertex(rx + 12, ry - 25);
+    vertex(rx + 8, ry - 10);
+    vertex(rx + 15, ry - 10);
+    vertex(rx + 10, ry + 2);
+    vertex(rx + 25, ry - 15);
+    vertex(rx + 18, ry - 15);
+    endShape(CLOSE);
+
+    // spawn lightning occasionally
+    if (frameCount % 25 === 0) {
+      this.spawnLightning(rx + random() * 30 - 15, ry + random() * 30 - 15);
+    }
+  },
+
   renderAllPieces: function (bd) {
+    const ss = BOARD_INFO.sqSize;
+    const gp = GAMEPLAY;
     const pp = this.piecesPositions.slice();
-    // is animating pieces movement?
+    // render moving piece
     if (this.movement.progress < 1) {
       // render moving pieces
       for (let p1 = 0; p1 < this.movement.pieces.length; p1++) {
@@ -688,11 +711,12 @@ const RENDER = {
         const pieceData = bd[pos.y][pos.x];
         const { rx: rpx, ry: rpy } = this.getRenderPos(prevPos.x, prevPos.y);
         const { rx, ry } = this.getRenderPos(pos.x, pos.y);
-
-        this.renderPiece(
-          pieceData,
+        image(
+          getPieceImage(pieceData),
           rpx + (rx - rpx) * this.movement.progress,
-          rpy + (ry - rpy) * this.movement.progress
+          rpy + (ry - rpy) * this.movement.progress,
+          ss,
+          ss
         );
 
         // take out moving pieces from pp
@@ -752,9 +776,42 @@ const RENDER = {
       }
     }
 
+    // render selected piece
+    if (gp.selectedPiecePos !== null) {
+      // take out selected piece from pp
+      for (let p2 = 0; p2 < pp.length; p2++) {
+        const pos2 = pp[p2];
+        if (
+          gp.selectedPiecePos.x === pos2.x &&
+          gp.selectedPiecePos.y === pos2.y
+        ) {
+          pp.splice(p2, 1);
+          break;
+        }
+      }
+
+      const pieceData = bd[gp.selectedPiecePos.y][gp.selectedPiecePos.x];
+      const { rx, ry } = this.getRenderPos(
+        gp.selectedPiecePos.x,
+        gp.selectedPiecePos.y
+      );
+      if (this.selectedPieceProgress < 1) {
+        this.selectedPieceProgress = min(this.selectedPieceProgress + 0.015, 1);
+      }
+
+      push(); /// KA
+      translate(rx, ry);
+      let scaleFactor = this.easeOutElastic(this.selectedPieceProgress);
+      if (this.selectedPieceProgress < 0.08) scaleFactor = max(1, scaleFactor);
+      scaleFactor *= 0.5; // animated range
+      scale(0.5 + scaleFactor, 1.5 - scaleFactor); // 1 - or + range
+      image(getPieceImage(pieceData), 0, 0, ss, ss);
+      pop(); /// KA
+
+      if (pieceData.isCharged) this.renderChargedStatus(rx, ry);
+    }
+
     // render non moving pieces
-    const gp = GAMEPLAY;
-    const ss = BOARD_INFO.sqSize;
     const isPlayerTurn = gp.meta.isWhiteTurn
       ? BOT.whiteDepth === 0
       : BOT.blackDepth === 0;
@@ -767,7 +824,7 @@ const RENDER = {
       const piecePos = pp[i];
       const pieceData = bd[piecePos.y][piecePos.x];
       const { rx, ry } = this.getRenderPos(piecePos.x, piecePos.y);
-      this.renderPiece(pieceData, rx, ry);
+      image(getPieceImage(pieceData), rx, ry, ss, ss);
 
       // hovered render
       if (doesCheckIfHovered && gp.meta.isWhiteTurn === pieceData.isWhite) {
@@ -780,32 +837,8 @@ const RENDER = {
         }
       }
 
-      // supercharged
-      if (pieceData.isCharged) {
-        // render charged icon
-        fill(this.LIGHTNING_COLOR);
-        noStroke();
-        beginShape();
-        vertex(rx + 25, ry - 25);
-        vertex(rx + 12, ry - 25);
-        vertex(rx + 8, ry - 10);
-        vertex(rx + 15, ry - 10);
-        vertex(rx + 10, ry + 2);
-        vertex(rx + 25, ry - 15);
-        vertex(rx + 18, ry - 15);
-        endShape(CLOSE);
-
-        // spawn lightning occasionally
-        if (frameCount % 25 === 0) {
-          this.spawnLightning(rx + random() * 30 - 15, ry + random() * 30 - 15);
-        }
-      }
+      if (pieceData.isCharged) this.renderChargedStatus(rx, ry);
     }
-  },
-
-  renderPiece: function (sd, rx, ry) {
-    const pieceImg = getPieceImage(sd);
-    image(pieceImg, rx, ry, BOARD_INFO.sqSize, BOARD_INFO.sqSize);
   },
 
   getRenderPos: function (x, y) {

@@ -272,7 +272,7 @@ const GAMEPLAY = {
     r.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
 
     // reset stats button
-    const statsBtn = RENDER.btns[5];
+    const statsBtn = r.btns[5];
     statsBtn.isHovered = false;
     statsBtn.animateProgress = 0; // start animated when appears
   },
@@ -372,8 +372,9 @@ const GAMEPLAY = {
     r.renderAllTargets();
 
     // render skip hint arrow
-    if (this.skipHintCountdown-- > 0) {
-      stroke(255, 255, 0);
+    if (this.skipHintCountdown > 0) {
+      this.skipHintCountdown--;
+      stroke(BOARD_INFO.color2);
       strokeWeight(6);
       const bounceY = cos(frameCount * 8) * 8;
       line(325, 550 + bounceY, 315, 540 + bounceY);
@@ -382,7 +383,6 @@ const GAMEPLAY = {
     }
 
     bot.renderBotCursors();
-
     // update bot turn
     if (bot.isProcessing) bot.processMinimax();
     // not currently processing & not player turn & not gameover & not piece moving & not capturing
@@ -417,6 +417,7 @@ const GAMEPLAY = {
               this.selectedPiecePos,
               bd
             );
+            r.selectedPieceProgress = 0;
 
             const pos = r.getRenderPos(move[2], move[3]);
             bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
@@ -449,23 +450,26 @@ const GAMEPLAY = {
     // buttons
     for (let i = 0; i < RENDER.btns.length; i++) {
       const b = RENDER.btns[i];
-      if (b.isHovered) b.clicked();
+      if (b.isHovered) return b.clicked();
     }
 
-    // not player turn?
-    if (this.meta.isWhiteTurn ? BOT.whiteDepth !== 0 : BOT.blackDepth !== 0)
-      return;
-
     if (this.meta.gameover || REPLAYSYS.skipping !== null) return;
+
+    // not viewing latest index & clicked on board?
+    if (
+      this.meta.latestMoveIndex > REPLAYSYS.viewingMoveIndex &&
+      _mouseY < 500
+    ) {
+      this.skipHintCountdown = 120;
+      return;
+    }
 
     // not hovering on a square?
     if (this.hoveredSq === null) return;
 
-    // not viewing latest index?
-    if (this.meta.latestMoveIndex > REPLAYSYS.viewingMoveIndex) {
-      this.skipHintCountdown = 120;
+    // not player turn?
+    if (this.meta.isWhiteTurn ? BOT.whiteDepth !== 0 : BOT.blackDepth !== 0)
       return;
-    }
 
     // currently no selected piece
     if (this.selectedPiecePos === null) {
@@ -483,6 +487,7 @@ const GAMEPLAY = {
         this.selectedPiecePos,
         this.boardData
       );
+      RENDER.selectedPieceProgress = 0;
     }
     // already selected a piece?
     else if (this.possibleMoves !== null) {
