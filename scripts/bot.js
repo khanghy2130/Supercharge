@@ -34,7 +34,7 @@ const BOT = {
     };
     // base speed - distance
     botCursor.speed = max(
-      0.018,
+      0.1, //////0.018,
       0.044 -
         dist(
           botCursor.startPos.x,
@@ -130,7 +130,6 @@ const BOT = {
 
     this.maxProgress = null;
     this.isProcessing = true;
-    this.finalOutput = null;
     this.moveStatus = 0;
     const isMaximizing = GAMEPLAY.meta.isWhiteTurn;
     this.stack = [
@@ -186,7 +185,7 @@ const BOT = {
     if (maxDepth === 0) return (this.isProcessing = false); // player turn safe exit
 
     // process bot multiple times a frame
-    for (let i = 0, bpa = BOT_PROCESSING_AMOUNT; i < bpa; i++) {
+    for (let i = 0; i < 10000; i++) {
       // All nodes processed ?
       if (this.stack.length === 0) {
         this.isProcessing = false;

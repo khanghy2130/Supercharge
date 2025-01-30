@@ -169,13 +169,14 @@ function setup() {
       80,
       28,
       function () {
-        myText("stats", -31, 7, 14, BOARD_INFO.color1);
+        myText("help", -28, 8, 16, BOARD_INFO.color1);
       },
       function () {}
     ),
   ];
 
   GAMEPLAY.initializeGame({
+    /// random([0, 1, 3, 3])
     white: { botDepth: random([0, 1, 3, 3]), squad: ["R", "B", "K"] },
     black: { botDepth: random([0, 1, 3, 3]), squad: ["K", "B", "R"] },
   });

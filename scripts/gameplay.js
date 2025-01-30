@@ -19,6 +19,13 @@ const GAMEPLAY = {
     timeStops: [], // alternate white and black
   },
 
+  result: {
+    countDown: 0,
+    isShown: false,
+    progress: 0,
+    bgImage: null,
+  },
+
   isTarget: function (sqData) {
     return typeof sqData === "number";
   },
@@ -141,6 +148,7 @@ const GAMEPLAY = {
     // set game over
     if (meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
       meta.gameover = true;
+      this.result.countDown = 140;
     }
 
     const { x: sx, y: sy } = this.selectedPiecePos;
@@ -270,15 +278,9 @@ const GAMEPLAY = {
     // set player names
     const allNames = ["player", "easy bot", "", "hard bot"];
     r.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
-
-    // reset stats button
-    const statsBtn = r.btns[5];
-    statsBtn.isHovered = false;
-    statsBtn.animateProgress = 0; // start animated when appears
   },
 
   renderScene: function () {
-    background(BOARD_INFO.color1);
     const bd = this.boardData;
     const bot = BOT;
     const r = RENDER;
@@ -286,6 +288,94 @@ const GAMEPLAY = {
     const isPlayerTurn = meta.isWhiteTurn
       ? bot.whiteDepth === 0
       : bot.blackDepth === 0;
+
+    // update result
+    if (meta.gameover) {
+      const result = this.result;
+      if (result.countDown > 0) {
+        result.countDown--;
+        if (result.countDown === 0) {
+          result.bgImage = get(0, 0, width, height);
+          result.isShown = true;
+          result.progress = 0;
+        }
+      } else if (result.isShown) {
+        result.progress = result.progress + 0.004;
+        image(result.bgImage, width / 2, height / 2, width, height);
+        noStroke();
+        fill(0, min(220, map(result.progress, 0, 0.15, 0, 220)));
+        rect(0, 0, width, height);
+
+        // game over text
+        //// entire progress 0 to 1 (min(1, progress))
+
+        // score bars
+        if (result.progress > 0.6) {
+          const sbPrg = map(result.progress, 0.6, 1, 0, 8); // 0 to 8
+          const scores = [];
+          const moves = REPLAYSYS.moves;
+          for (let i = 0, wScore = 0, bScore = 0; i < moves.length; i++) {
+            const move = moves[i];
+            const mifr = i % 4;
+
+            if (mifr < 2) {
+              wScore += move.scoreGained;
+              if (mifr === 1) {
+                scores.push([wScore]);
+              }
+            } else {
+              bScore += move.scoreGained;
+              if (mifr === 3) {
+                scores[scores.length - 1].push(bScore);
+              }
+            }
+          }
+
+          for (let i = 0; i < scores.length; i++) {
+            if (sbPrg < i) break; // not here yet
+            const [wScore, bScore] = scores[i];
+            const totalRoundScore = wScore + bScore;
+            const gainedWScore = wScore - (i === 0 ? 0 : scores[i - 1][0]);
+            const gainedBScore = bScore - (i === 0 ? 0 : scores[i - 1][1]);
+            const selfPrg = min(1, map(sbPrg, i, i + 1, 0, 1));
+            const yValue = 220 + 35 * i;
+
+            fill(20, selfPrg * 255);
+            rect(100, yValue, 300, 35);
+            fill(240, selfPrg * 255);
+            rect(100, yValue, (300 * wScore) / totalRoundScore, 35);
+
+            myText(
+              "+" + gainedWScore,
+              40,
+              yValue + 26,
+              16,
+              color(240, selfPrg * 255)
+            );
+            myText(
+              "+" + gainedBScore,
+              415,
+              yValue + 26,
+              16,
+              color(240, selfPrg * 255)
+            );
+          }
+        }
+
+        // click to close text
+        if (result.progress > 1.2) {
+          myText(
+            "click anywhere to close",
+            110,
+            550,
+            14,
+            color(220, min(255, map(result.progress, 1.2, 1.4, 0, 255)))
+          );
+        }
+
+        return;
+      }
+    }
 
     REPLAYSYS.updateSkipping();
 
@@ -309,6 +399,7 @@ const GAMEPLAY = {
       };
     }
 
+    background(BOARD_INFO.color1);
     r.renderUI(isPlayerTurn);
 
     // render board
@@ -326,6 +417,8 @@ const GAMEPLAY = {
       line(rx, ry + 7, rx, ry - 7);
       line(rx + 7, ry, rx - 7, ry);
     }
+
+    r.renderAllTargets();
 
     // render possible moves outlines
     if (this.possibleMoves !== null) {
@@ -368,8 +461,6 @@ const GAMEPLAY = {
         }
       }
     }
-
-    r.renderAllTargets();
 
     // render skip hint arrow
     if (this.skipHintCountdown > 0) {
@@ -447,9 +538,16 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
+    // close result
+    if (this.result.isShown && this.result.progress > 1.2) {
+      this.result.isShown = false;
+      return;
+    }
+
+    const r = RENDER;
     // buttons
-    for (let i = 0; i < RENDER.btns.length; i++) {
-      const b = RENDER.btns[i];
+    for (let i = 0; i < r.btns.length; i++) {
+      const b = r.btns[i];
       if (b.isHovered) return b.clicked();
     }
 
@@ -487,7 +585,7 @@ const GAMEPLAY = {
         this.selectedPiecePos,
         this.boardData
       );
-      RENDER.selectedPieceProgress = 0;
+      r.selectedPieceProgress = 0;
     }
     // already selected a piece?
     else if (this.possibleMoves !== null) {

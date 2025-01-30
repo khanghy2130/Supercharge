@@ -799,14 +799,16 @@ const RENDER = {
         this.selectedPieceProgress = min(this.selectedPieceProgress + 0.015, 1);
       }
 
-      push(); /// KA
-      translate(rx, ry);
       let scaleFactor = this.easeOutElastic(this.selectedPieceProgress);
       if (this.selectedPieceProgress < 0.08) scaleFactor = max(1, scaleFactor);
       scaleFactor *= 0.5; // animated range
-      scale(0.5 + scaleFactor, 1.5 - scaleFactor); // 1 - or + range
-      image(getPieceImage(pieceData), 0, 0, ss, ss);
-      pop(); /// KA
+      image(
+        getPieceImage(pieceData),
+        rx,
+        ry,
+        ss * (0.5 + scaleFactor),
+        ss * (1.5 - scaleFactor)
+      );
 
       if (pieceData.isCharged) this.renderChargedStatus(rx, ry);
     }
