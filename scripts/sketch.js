@@ -7,6 +7,10 @@ function preload() {
     kb: loadImage("../images/kb.png"),
     bw: loadImage("../images/bw.png"),
     bb: loadImage("../images/bb.png"),
+    lw: loadImage("../images/lw.png"),
+    lb: loadImage("../images/lb.png"),
+    qw: loadImage("../images/qw.png"),
+    qb: loadImage("../images/qb.png"),
   };
 }
 
@@ -175,10 +179,12 @@ function setup() {
     ),
   ];
 
+  const grp = () => random(["R", "B", "K", "L", "Q"]); ///
   GAMEPLAY.initializeGame({
     /// random([0, 1, 3, 3])
-    white: { botDepth: random([0, 1, 3, 3]), squad: ["R", "B", "K"] },
-    black: { botDepth: random([0, 1, 3, 3]), squad: ["K", "B", "R"] },
+    /// random(["R", "B", "K", "L", "Q"])
+    white: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
+    black: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
   });
 }
 

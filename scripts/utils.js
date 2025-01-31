@@ -26,6 +26,26 @@ const PIECES_MOVES = {
     [-1, 2],
     [1, 2],
   ],
+  KING_MOVES: [
+    [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, -1],
+    [0, 1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+  ],
+  QUEEN_MOVES: [
+    [-2, -2],
+    [-2, 0],
+    [-2, 2],
+    [0, -2],
+    [0, 2],
+    [2, -2],
+    [2, 0],
+    [2, 2],
+  ],
   ROOK_MOVES: [
     [0, 1],
     [0, -1],
@@ -99,10 +119,14 @@ function getPieceImage(sd) {
     if (sd.name === "R") return pieceImages.rw;
     else if (sd.name === "K") return pieceImages.kw;
     else if (sd.name === "B") return pieceImages.bw;
+    else if (sd.name === "L") return pieceImages.lw;
+    else if (sd.name === "Q") return pieceImages.qw;
   } else {
     if (sd.name === "R") return pieceImages.rb;
     else if (sd.name === "K") return pieceImages.kb;
     else if (sd.name === "B") return pieceImages.bb;
+    else if (sd.name === "L") return pieceImages.lb;
+    else if (sd.name === "Q") return pieceImages.qb;
   }
 }
 

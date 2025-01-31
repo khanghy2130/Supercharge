@@ -65,16 +65,7 @@ const GAMEPLAY = {
     const moves = [];
     const sqData = board[pos.y][pos.x];
     // add to moves
-    if (sqData.name === "K") {
-      for (let i = 0; i < PIECES_MOVES.KNIGHT_MOVES.length; i++) {
-        const vel = PIECES_MOVES.KNIGHT_MOVES[i];
-        const x = vel[0] + pos.x;
-        const y = vel[1] + pos.y;
-        if (this.positionIsWithinGrid(x, y)) {
-          moves.push({ x, y });
-        }
-      }
-    } else if (sqData.name === "R" || sqData.name === "B") {
+    if (sqData.name === "R" || sqData.name === "B") {
       const MOVE_VELS =
         sqData.name === "R"
           ? PIECES_MOVES.ROOK_MOVES
@@ -89,6 +80,20 @@ const GAMEPLAY = {
           if (board[y][x] !== null) break;
           x = vel[0] + x;
           y = vel[1] + y;
+        }
+      }
+    } else {
+      let pieceMoves;
+      if (sqData.name === "K") pieceMoves = PIECES_MOVES.KNIGHT_MOVES;
+      else if (sqData.name === "Q") pieceMoves = PIECES_MOVES.QUEEN_MOVES;
+      else if (sqData.name === "L") pieceMoves = PIECES_MOVES.KING_MOVES;
+
+      for (let i = 0; i < pieceMoves.length; i++) {
+        const vel = pieceMoves[i];
+        const x = vel[0] + pos.x;
+        const y = vel[1] + pos.y;
+        if (this.positionIsWithinGrid(x, y)) {
+          moves.push({ x, y });
         }
       }
     }
@@ -300,7 +305,7 @@ const GAMEPLAY = {
           result.progress = 0;
         }
       } else if (result.isShown) {
-        result.progress = result.progress + 0.004;
+        result.progress += 0.005;
         image(result.bgImage, width / 2, height / 2, width, height);
         noStroke();
         fill(0, min(210, map(result.progress, 0, 0.15, 0, 210)));
@@ -352,8 +357,8 @@ const GAMEPLAY = {
         );
 
         // score bars
-        if (result.progress > 0.6) {
-          const sbPrg = map(result.progress, 0.6, 1, 0, 8); // 0 to 8
+        if (result.progress > 0.2) {
+          const sbPrg = map(result.progress, 0.2, 1, 0, 8); // 0 to 8
 
           for (let i = 0; i < scores.length; i++) {
             if (sbPrg < i) break; // not here yet
@@ -364,7 +369,7 @@ const GAMEPLAY = {
             const selfPrg = min(1, map(sbPrg, i, i + 1, 0, 1));
             const yValue = 180 + 35 * i + (1 - selfPrg) * 20;
 
-            fill(20, selfPrg * 255);
+            fill(40, selfPrg * 255);
             rect(100, yValue, 300, 35);
             fill(240, selfPrg * 255);
             rect(100, yValue, (300 * wScore) / totalRoundScore, 35);
@@ -433,11 +438,15 @@ const GAMEPLAY = {
     r.renderLightnings();
 
     // render spawn previews
-    stroke(r.TARGETS_COLORS[0]);
-    strokeWeight(5);
     for (let i = 0; i < this.spawningPositions.length; i++) {
       const pos = this.spawningPositions[i];
       const { rx, ry } = r.getRenderPos(pos.x, pos.y);
+      stroke(0);
+      strokeWeight(10);
+      line(rx, ry + 7, rx, ry - 7);
+      line(rx + 7, ry, rx - 7, ry);
+      stroke(r.TARGETS_COLORS[0]);
+      strokeWeight(5);
       line(rx, ry + 7, rx, ry - 7);
       line(rx + 7, ry, rx - 7, ry);
     }
@@ -447,8 +456,8 @@ const GAMEPLAY = {
     // render possible moves outlines
     if (this.possibleMoves !== null) {
       const ss = BOARD_INFO.sqSize;
-      for (let i = 0; i < this.possibleMoves.length; i++) {
-        const pos = this.possibleMoves[i];
+      for (let i = 0, pms = this.possibleMoves; i < pms.length; i++) {
+        const pos = pms[i];
         if (
           this.hoveredSq !== null &&
           this.hoveredSq.x === pos.x &&

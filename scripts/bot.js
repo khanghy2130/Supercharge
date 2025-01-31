@@ -105,7 +105,7 @@ const BOT = {
         );
         scorer.score += scoreGained;
         if (isWhiteTurn === GAMEPLAY.meta.isWhiteTurn) {
-          scorer.score *= 1.25; // extra incentive to gain score
+          scorer.score *= 1.2; // extra incentive to gain score
         }
       }
       isWhiteTurn = !isWhiteTurn; // flip for next iteration

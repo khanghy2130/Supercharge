@@ -609,9 +609,13 @@ const RENDER = {
         TR.delay--;
         if (value === 1) {
           // render spawn preview
+          const { rx, ry } = this.getRenderPos(TR.pos.x, TR.pos.y);
+          stroke(0);
+          strokeWeight(10);
+          line(rx, ry + 7, rx, ry - 7);
+          line(rx + 7, ry, rx - 7, ry);
           stroke(this.TARGETS_COLORS[0]);
           strokeWeight(5);
-          const { rx, ry } = this.getRenderPos(TR.pos.x, TR.pos.y);
           line(rx, ry + 7, rx, ry - 7);
           line(rx + 7, ry, rx - 7, ry);
           continue;
