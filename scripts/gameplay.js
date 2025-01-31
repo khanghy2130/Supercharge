@@ -148,7 +148,7 @@ const GAMEPLAY = {
     // set game over
     if (meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
       meta.gameover = true;
-      this.result.countDown = 140;
+      this.result.countDown = 120;
     }
 
     const { x: sx, y: sy } = this.selectedPiecePos;
@@ -303,33 +303,57 @@ const GAMEPLAY = {
         result.progress = result.progress + 0.004;
         image(result.bgImage, width / 2, height / 2, width, height);
         noStroke();
-        fill(0, min(220, map(result.progress, 0, 0.15, 0, 220)));
+        fill(0, min(210, map(result.progress, 0, 0.15, 0, 210)));
         rect(0, 0, width, height);
 
-        // game over text
-        //// entire progress 0 to 1 (min(1, progress))
+        const scores = [];
+        const moves = REPLAYSYS.moves;
+        let wScore = 0;
+        let bScore = 0;
+        for (let i = 0; i < moves.length; i++) {
+          const move = moves[i];
+          const mifr = i % 4;
+
+          if (mifr < 2) {
+            wScore += move.scoreGained;
+            if (mifr === 1) {
+              scores.push([wScore]);
+            }
+          } else {
+            bScore += move.scoreGained;
+            if (mifr === 3) {
+              scores[scores.length - 1].push(bScore);
+            }
+          }
+        }
+
+        let arr;
+        if (wScore === bScore) {
+          arr = ["draw", 150, color(250, 100, 220)];
+        } else if (
+          bot.whiteDepth === bot.blackDepth ||
+          (bot.whiteDepth > 0 && bot.blackDepth > 0)
+        ) {
+          arr = ["completed", 55, color(90, 160, 245)];
+        } else if (bot.whiteDepth === 0 ? wScore > bScore : bScore > wScore) {
+          arr = ["victory", 100, color(100, 245, 100)];
+        } else {
+          arr = ["defeat", 120, color(240, 80, 80)];
+        }
+
+        const t = min(1, result.progress);
+        let frequency = 22 - 12 * t; // startAmount - decreasedBy
+        myText(
+          arr[0],
+          arr[1],
+          120,
+          50,
+          lerpColor(color(255), arr[2], (cos(t * 180 * frequency) + 1) / 2)
+        );
 
         // score bars
         if (result.progress > 0.6) {
           const sbPrg = map(result.progress, 0.6, 1, 0, 8); // 0 to 8
-          const scores = [];
-          const moves = REPLAYSYS.moves;
-          for (let i = 0, wScore = 0, bScore = 0; i < moves.length; i++) {
-            const move = moves[i];
-            const mifr = i % 4;
-
-            if (mifr < 2) {
-              wScore += move.scoreGained;
-              if (mifr === 1) {
-                scores.push([wScore]);
-              }
-            } else {
-              bScore += move.scoreGained;
-              if (mifr === 3) {
-                scores[scores.length - 1].push(bScore);
-              }
-            }
-          }
 
           for (let i = 0; i < scores.length; i++) {
             if (sbPrg < i) break; // not here yet
@@ -338,7 +362,7 @@ const GAMEPLAY = {
             const gainedWScore = wScore - (i === 0 ? 0 : scores[i - 1][0]);
             const gainedBScore = bScore - (i === 0 ? 0 : scores[i - 1][1]);
             const selfPrg = min(1, map(sbPrg, i, i + 1, 0, 1));
-            const yValue = 220 + 35 * i;
+            const yValue = 180 + 35 * i + (1 - selfPrg) * 20;
 
             fill(20, selfPrg * 255);
             rect(100, yValue, 300, 35);
@@ -367,7 +391,7 @@ const GAMEPLAY = {
           myText(
             "click anywhere to close",
             110,
-            550,
+            540,
             14,
             color(220, min(255, map(result.progress, 1.2, 1.4, 0, 255)))
           );

@@ -345,8 +345,8 @@ const RENDER = {
   renderLightnings: function () {
     stroke(this.LIGHTNING_COLOR); // LIGHTING COLOR
     strokeWeight(3);
-    for (let i = this.lightnings.length - 1; i >= 0; i--) {
-      const ln = this.lightnings[i];
+    for (let lns = this.lightnings, i = lns.length - 1; i >= 0; i--) {
+      const ln = lns[i];
 
       // update distProgress
       ln.distProgress += 1.5; // LIGHTNING SPEED
@@ -398,8 +398,7 @@ const RENDER = {
               ln.segIndex++;
               ln.distProgress = 0;
               // done with disappearing?
-              if (ln.segIndex === ln.segments.length)
-                this.lightnings.splice(i, 1);
+              if (ln.segIndex === ln.segments.length) lns.splice(i, 1);
             }
           } else break;
         }
@@ -457,8 +456,12 @@ const RENDER = {
 
     // calculate circles positions
     const circlesPositions = [];
-    for (let ci = 0; ci < this.capturedTR.fadingCircles.length; ci++) {
-      const cir = this.capturedTR.fadingCircles[ci];
+    for (
+      let fcs = this.capturedTR.fadingCircles, ci = 0;
+      ci < fcs.length;
+      ci++
+    ) {
+      const cir = fcs[ci];
       // FADING CIRCLE MOVE SPEED
       cir.pos.rx += cos(cir.deg) * 0.5;
       cir.pos.ry += sin(cir.deg) * 0.5;
