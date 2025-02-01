@@ -63,25 +63,24 @@ function setup() {
       clear(); /// KA background(0,0);
     }
     const ss = 100;
-
     const whiteColor = color(240);
     const blackColor = color(20);
 
     strokeWeight(ss * 0.05);
 
     const rookShape = [
-      [ss * 0.15, ss * 0.15],
-      [ss * 0.15, ss * 0.55],
-      [ss * 0.3, ss * 0.55],
-      [ss * 0.3, ss * 0.7],
-      [ss * 0.15, ss * 0.7],
-      [ss * 0.15, ss * 0.85],
-      [ss * 0.85, ss * 0.85],
-      [ss * 0.85, ss * 0.7],
-      [ss * 0.7, ss * 0.7],
-      [ss * 0.7, ss * 0.55],
-      [ss * 0.85, ss * 0.55],
-      [ss * 0.85, ss * 0.15],
+      [0.15, 0.15],
+      [0.15, 0.55],
+      [0.3, 0.55],
+      [0.3, 0.7],
+      [0.15, 0.7],
+      [0.15, 0.85],
+      [0.85, 0.85],
+      [0.85, 0.7],
+      [0.7, 0.7],
+      [0.7, 0.55],
+      [0.85, 0.55],
+      [0.85, 0.15],
     ];
 
     _clear();
@@ -89,7 +88,7 @@ function setup() {
     fill(whiteColor);
     beginShape();
     for (let [x, y] of rookShape) {
-      vertex(x, y);
+      vertex(ss * x, ss * y);
     }
     endShape(CLOSE);
     fill(blackColor);
@@ -102,7 +101,7 @@ function setup() {
     fill(blackColor);
     beginShape();
     for (let [x, y] of rookShape) {
-      vertex(x, y);
+      vertex(ss * x, ss * y);
     }
     endShape(CLOSE);
     fill(whiteColor);
@@ -110,11 +109,61 @@ function setup() {
     rect(ss * 0.6, ss * 0.17, ss * 0.05, ss * 0.12);
     pieceImages.rb = get(0, 0, ss, ss);
 
+    const knightShape = [
+      [0, 0.85, 0.7],
+      [0, 0.85, 0.85],
+      [0, 0.15, 0.85],
+      [0, 0.15, 0.7],
+      [0, 0.25, 0.7],
+      [1, 0.35, 0.5, 0.5, 0.5, 0.5, 0.47],
+      [1, 0.05, 0.6, 0.22, 0.35, 0.37, 0.22],
+      [0, 0.35, 0.14],
+      [1, 0.85, 0, 0.9, 0.5, 0.75, 0.7],
+    ];
+
+    _clear();
+    stroke(blackColor);
+    fill(whiteColor);
+    beginShape();
+    for (let item of knightShape) {
+      if (item[0] === 0) {
+        vertex(ss * item[1], ss * item[2]);
+      } else {
+        const arr = item.slice();
+        arr.shift();
+        for (let i = 0; i < arr.length; i++) {
+          arr[i] *= ss;
+        }
+        bezierVertex.apply(null, arr);
+      }
+    }
+    endShape(CLOSE);
+    pieceImages.kw = get(0, 0, ss, ss);
+
+    _clear();
+    stroke(whiteColor);
+    fill(blackColor);
+    beginShape();
+    for (let item of knightShape) {
+      if (item[0] === 0) {
+        vertex(ss * item[1], ss * item[2]);
+      } else {
+        const arr = item.slice();
+        arr.shift();
+        for (let i = 0; i < arr.length; i++) {
+          arr[i] *= ss;
+        }
+        bezierVertex.apply(null, arr);
+      }
+    }
+    endShape(CLOSE);
+    pieceImages.kb = get(0, 0, ss, ss);
+
     // render test ///
     fill(BOARD_INFO.color1);
     noStroke();
     square(width / 2 - 150, width / 2 - 150, 300);
-    image(pieceImages.rb, width / 2, width / 2, 300, 300);
+    image(pieceImages.kw, width / 2, width / 2, 300, 300);
   })();
 
   // set num widths
@@ -238,13 +287,12 @@ function setup() {
     ),
   ];
 
-  const grp = () => "R";
-  random(["R", "B", "K", "L", "Q"]); ///
+  const grp = () => random(["R", "B", "K", "L", "Q"]); ///
   GAMEPLAY.initializeGame({
     /// random([0, 1, 3, 3])
     /// random(["R", "B", "K", "L", "Q"])
     white: { botDepth: 0, squad: [grp(), grp(), grp()] },
-    black: { botDepth: 0, squad: [grp(), grp(), grp()] },
+    black: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
   });
   // background(0);  ////
 }

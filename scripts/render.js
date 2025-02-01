@@ -689,7 +689,8 @@ const RENDER = {
   renderChargedStatus: function (rx, ry) {
     // render charged icon
     fill(this.LIGHTNING_COLOR);
-    noStroke();
+    stroke(0);
+    strokeWeight(1.5);
     beginShape();
     vertex(rx + 25, ry - 25);
     vertex(rx + 12, ry - 25);

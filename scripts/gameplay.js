@@ -481,7 +481,8 @@ const GAMEPLAY = {
               0.2 * cos(frameCount * 12) + 0.2
             )
           );
-          noStroke();
+          stroke(0);
+          strokeWeight(1.5);
           beginShape();
           vertex(rx + 25, ry - 25);
           vertex(rx + 12, ry - 25);
