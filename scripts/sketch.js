@@ -55,7 +55,66 @@ function setup() {
       }
     }
     BOARD_INFO.boardImage = get(0, 0, ss * 8, ss * 8);
-    background(0);
+  })();
+
+  // create piece images
+  (function () {
+    function _clear() {
+      clear(); /// KA background(0,0);
+    }
+    const ss = 100;
+
+    const whiteColor = color(240);
+    const blackColor = color(20);
+
+    strokeWeight(ss * 0.05);
+
+    const rookShape = [
+      [ss * 0.15, ss * 0.15],
+      [ss * 0.15, ss * 0.55],
+      [ss * 0.3, ss * 0.55],
+      [ss * 0.3, ss * 0.7],
+      [ss * 0.15, ss * 0.7],
+      [ss * 0.15, ss * 0.85],
+      [ss * 0.85, ss * 0.85],
+      [ss * 0.85, ss * 0.7],
+      [ss * 0.7, ss * 0.7],
+      [ss * 0.7, ss * 0.55],
+      [ss * 0.85, ss * 0.55],
+      [ss * 0.85, ss * 0.15],
+    ];
+
+    _clear();
+    stroke(blackColor);
+    fill(whiteColor);
+    beginShape();
+    for (let [x, y] of rookShape) {
+      vertex(x, y);
+    }
+    endShape(CLOSE);
+    fill(blackColor);
+    rect(ss * 0.35, ss * 0.17, ss * 0.05, ss * 0.12);
+    rect(ss * 0.6, ss * 0.17, ss * 0.05, ss * 0.12);
+    pieceImages.rw = get(0, 0, ss, ss);
+
+    _clear();
+    stroke(whiteColor);
+    fill(blackColor);
+    beginShape();
+    for (let [x, y] of rookShape) {
+      vertex(x, y);
+    }
+    endShape(CLOSE);
+    fill(whiteColor);
+    rect(ss * 0.35, ss * 0.17, ss * 0.05, ss * 0.12);
+    rect(ss * 0.6, ss * 0.17, ss * 0.05, ss * 0.12);
+    pieceImages.rb = get(0, 0, ss, ss);
+
+    // render test ///
+    fill(BOARD_INFO.color1);
+    noStroke();
+    square(width / 2 - 150, width / 2 - 150, 300);
+    image(pieceImages.rb, width / 2, width / 2, 300, 300);
   })();
 
   // set num widths
@@ -179,13 +238,15 @@ function setup() {
     ),
   ];
 
-  const grp = () => random(["R", "B", "K", "L", "Q"]); ///
+  const grp = () => "R";
+  random(["R", "B", "K", "L", "Q"]); ///
   GAMEPLAY.initializeGame({
     /// random([0, 1, 3, 3])
     /// random(["R", "B", "K", "L", "Q"])
-    white: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
-    black: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
+    white: { botDepth: 0, squad: [grp(), grp(), grp()] },
+    black: { botDepth: 0, squad: [grp(), grp(), grp()] },
   });
+  // background(0);  ////
 }
 
 // nKA
@@ -198,6 +259,7 @@ function windowResized() {
 let _mouseX, _mouseY;
 let touchCountdown = 0;
 function draw() {
+  // return;
   _mouseX = floor(mouseX / scaleFactor);
   _mouseY = floor(mouseY / scaleFactor);
   touchCountdown--;
