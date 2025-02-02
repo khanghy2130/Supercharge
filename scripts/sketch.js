@@ -59,51 +59,54 @@ function setup() {
 
   // create piece images
   (function () {
-    function _clear() {
-      clear(); /// KA background(0,0);
-    }
     const ss = 100;
     const whiteColor = color(240);
     const blackColor = color(20);
 
+    function renderShape(shapeArr, isWhite) {
+      clear(); /// KA background(0,0);
+      stroke(isWhite ? blackColor : whiteColor);
+      fill(isWhite ? whiteColor : blackColor);
+      beginShape();
+      for (let item of shapeArr) {
+        if (item[0] === 0) {
+          vertex(ss * item[1], ss * item[2]);
+        } else {
+          const arr = item.slice();
+          arr.shift();
+          for (let i = 0; i < arr.length; i++) {
+            arr[i] *= ss;
+          }
+          bezierVertex.apply(null, arr);
+        }
+      }
+      endShape(CLOSE);
+    }
+
     strokeWeight(ss * 0.05);
 
     const rookShape = [
-      [0.2, 0.15],
-      [0.2, 0.4],
-      [0.32, 0.5],
-      [0.32, 0.7],
-      [0.2, 0.75],
-      [0.2, 0.85],
-      [0.8, 0.85],
-      [0.8, 0.75],
-      [0.68, 0.7],
-      [0.68, 0.5],
-      [0.8, 0.4],
-      [0.8, 0.15],
+      [0, 0.2, 0.15],
+      [0, 0.2, 0.4],
+      [0, 0.32, 0.5],
+      [0, 0.32, 0.7],
+      [0, 0.2, 0.75],
+      [0, 0.2, 0.85],
+      [0, 0.8, 0.85],
+      [0, 0.8, 0.75],
+      [0, 0.68, 0.7],
+      [0, 0.68, 0.5],
+      [0, 0.8, 0.4],
+      [0, 0.8, 0.15],
     ];
 
-    _clear();
-    stroke(blackColor);
-    fill(whiteColor);
-    beginShape();
-    for (let [x, y] of rookShape) {
-      vertex(ss * x, ss * y);
-    }
-    endShape(CLOSE);
+    renderShape(rookShape, true);
     fill(blackColor);
     rect(ss * 0.37, ss * 0.17, ss * 0.04, ss * 0.12);
     rect(ss * 0.59, ss * 0.17, ss * 0.04, ss * 0.12);
     pieceImages.rw = get(0, 0, ss, ss);
 
-    _clear();
-    stroke(whiteColor);
-    fill(blackColor);
-    beginShape();
-    for (let [x, y] of rookShape) {
-      vertex(ss * x, ss * y);
-    }
-    endShape(CLOSE);
+    renderShape(rookShape, false);
     fill(whiteColor);
     rect(ss * 0.35, ss * 0.17, ss * 0.04, ss * 0.12);
     rect(ss * 0.6, ss * 0.17, ss * 0.04, ss * 0.12);
@@ -121,46 +124,12 @@ function setup() {
       [1, 0.85, 0, 0.9, 0.5, 0.7, 0.7],
     ];
 
-    _clear();
-    stroke(blackColor);
-    fill(whiteColor);
-    beginShape();
-    for (let item of knightShape) {
-      if (item[0] === 0) {
-        vertex(ss * item[1], ss * item[2]);
-      } else {
-        const arr = item.slice();
-        arr.shift();
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] *= ss;
-        }
-        bezierVertex.apply(null, arr);
-      }
-    }
-    endShape(CLOSE);
+    renderShape(knightShape, true);
     pieceImages.kw = get(0, 0, ss, ss);
-
-    _clear();
-    stroke(whiteColor);
-    fill(blackColor);
-    beginShape();
-    for (let item of knightShape) {
-      if (item[0] === 0) {
-        vertex(ss * item[1], ss * item[2]);
-      } else {
-        const arr = item.slice();
-        arr.shift();
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] *= ss;
-        }
-        bezierVertex.apply(null, arr);
-      }
-    }
-    endShape(CLOSE);
+    renderShape(knightShape, false);
     pieceImages.kb = get(0, 0, ss, ss);
 
     const bishopShape = [
-      [0, 0.7, 0.7],
       [0, 0.8, 0.75],
       [0, 0.8, 0.85],
       [0, 0.2, 0.85],
@@ -171,64 +140,82 @@ function setup() {
       [1, 0.85, 0.4, 0.85, 0.6, 0.7, 0.7],
     ];
 
-    _clear();
-    stroke(blackColor);
-    fill(whiteColor);
-    beginShape();
-    for (let item of bishopShape) {
-      if (item[0] === 0) {
-        vertex(ss * item[1], ss * item[2]);
-      } else {
-        const arr = item.slice();
-        arr.shift();
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] *= ss;
-        }
-        bezierVertex.apply(null, arr);
-      }
-    }
-    endShape();
+    renderShape(bishopShape, true);
     fill(blackColor);
     triangle(ss * 0.5, ss * 0.55, ss * 0.7, ss * 0.35, ss * 0.75, ss * 0.38);
     pieceImages.bw = get(0, 0, ss, ss);
 
-    _clear();
-    stroke(whiteColor);
-    fill(blackColor);
-    beginShape();
-    for (let item of bishopShape) {
-      if (item[0] === 0) {
-        vertex(ss * item[1], ss * item[2]);
-      } else {
-        const arr = item.slice();
-        arr.shift();
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] *= ss;
-        }
-        bezierVertex.apply(null, arr);
-      }
-    }
-    endShape();
+    renderShape(bishopShape, false);
     fill(whiteColor);
     triangle(ss * 0.5, ss * 0.55, ss * 0.7, ss * 0.35, ss * 0.75, ss * 0.4);
     pieceImages.bb = get(0, 0, ss, ss);
 
-    // render test ///
-    fill(BOARD_INFO.color1);
-    noStroke();
-    square(width / 2 - 150, width / 2 - 150, 300);
-    image(pieceImages.kw, width / 2, width / 2, 300, 300);
-
-    /*
-    const baseShape = [
+    const queenShape = [
       [0, 0.7, 0.7],
       [0, 0.8, 0.75],
       [0, 0.8, 0.85],
       [0, 0.2, 0.85],
       [0, 0.2, 0.75],
       [0, 0.3, 0.7],
+
+      [0, 0.16, 0.4],
+      [1, 0, 0.32, 0.23, 0.18, 0.22, 0.35],
+
+      [0, 0.35, 0.5], // left valley
+
+      [0, 0.35, 0.22],
+      [1, 0.25, 0.1, 0.5, 0.05, 0.43, 0.2],
+
+      [0, 0.5, 0.47], // middle valley
+
+      [0, 0.57, 0.2],
+      [1, 0.5, 0.05, 0.75, 0.1, 0.65, 0.22],
+
+      [0, 0.65, 0.5], // right valley
+
+      [0, 0.78, 0.35],
+      [1, 0.77, 0.18, 1, 0.32, 0.84, 0.4],
     ];
-    */
+    renderShape(queenShape, true);
+    pieceImages.qw = get(0, 0, ss, ss);
+    renderShape(queenShape, false);
+    pieceImages.qb = get(0, 0, ss, ss);
+
+    const kingShape = [
+      [0, 0.8, 0.75],
+      [0, 0.8, 0.85],
+      [0, 0.2, 0.85],
+      [0, 0.2, 0.75],
+      [0, 0.3, 0.7],
+      [1, 0, 0.4, 0.3, 0.18, 0.45, 0.28],
+
+      [0, 0.45, 0.25],
+      [0, 0.4, 0.25],
+      [0, 0.4, 0.15],
+      [0, 0.45, 0.15],
+
+      [0, 0.45, 0.1],
+      [0, 0.55, 0.1],
+
+      [0, 0.55, 0.15],
+      [0, 0.6, 0.15],
+      [0, 0.6, 0.25],
+      [0, 0.55, 0.25],
+      [0, 0.55, 0.28],
+      [1, 0.7, 0.18, 1, 0.4, 0.7, 0.7],
+    ];
+    renderShape(kingShape, true);
+    pieceImages.lw = get(0, 0, ss, ss);
+    renderShape(kingShape, false);
+    pieceImages.lb = get(0, 0, ss, ss);
+
+    // render test, put 'return' in draw()
+    // fill(BOARD_INFO.color1);
+    // noStroke();
+    // square(width / 2 - 150, width / 2 - 150, 300);
+    // image(pieceImages.lw, width / 2, width / 2, 300, 300);
+
+    background(0);
   })();
 
   // set num widths
@@ -359,7 +346,6 @@ function setup() {
     white: { botDepth: 0, squad: [grp(), grp(), grp()] },
     black: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
   });
-  // background(0);  ////
 }
 
 // nKA
@@ -372,7 +358,6 @@ function windowResized() {
 let _mouseX, _mouseY;
 let touchCountdown = 0;
 function draw() {
-  // return;
   _mouseX = floor(mouseX / scaleFactor);
   _mouseY = floor(mouseY / scaleFactor);
   touchCountdown--;
