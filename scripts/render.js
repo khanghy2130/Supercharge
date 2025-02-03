@@ -427,10 +427,10 @@ const RENDER = {
     } else {
       popupSizeFactor = (1 / 0.1) * (0.1 - (this.capturedTR.progress - 0.9));
     }
-    push(); // KA
+    push(); /// KA
     translate(
       targetRenderPos.rx,
-      targetRenderPos.ry + 47 * (this.capturedTR.pos.y !== 0 ? -1 : 1)
+      targetRenderPos.ry + 50 * (this.capturedTR.pos.y !== 0 ? -1 : 1)
     );
     scale(
       this.capturedTR.progress < 0.3
@@ -449,7 +449,7 @@ const RENDER = {
       CONSTANTS.VALUE_NUM_SIZE,
       color(255)
     );
-    pop(); // KA
+    pop(); /// KA
 
     const circlesProgress = this.capturedTR.progress * 2.1;
     if (circlesProgress >= 1) return; // circles already disappeared
@@ -690,7 +690,7 @@ const RENDER = {
     // render charged icon
     fill(this.LIGHTNING_COLOR);
     stroke(0);
-    strokeWeight(1.5);
+    strokeWeight(1.8);
     beginShape();
     vertex(rx + 25, ry - 25);
     vertex(rx + 12, ry - 25);
@@ -711,6 +711,7 @@ const RENDER = {
     const ss = BOARD_INFO.sqSize;
     const gp = GAMEPLAY;
     const pp = this.piecesPositions.slice();
+    const getPieceImage = this.getPieceImage;
     // render moving piece
     if (this.movement.progress < 1) {
       // render moving pieces
@@ -848,6 +849,36 @@ const RENDER = {
       }
 
       if (pieceData.isCharged) this.renderChargedStatus(rx, ry);
+    }
+  },
+
+  getPieceImage: function (sd) {
+    if (sd.isWhite) {
+      switch (sd.name) {
+        case "R":
+          return pieceImages.rw;
+        case "K":
+          return pieceImages.kw;
+        case "B":
+          return pieceImages.bw;
+        case "L":
+          return pieceImages.lw;
+        case "Q":
+          return pieceImages.qw;
+      }
+    } else {
+      switch (sd.name) {
+        case "R":
+          return pieceImages.rb;
+        case "K":
+          return pieceImages.kb;
+        case "B":
+          return pieceImages.bb;
+        case "L":
+          return pieceImages.lb;
+        case "Q":
+          return pieceImages.qb;
+      }
     }
   },
 

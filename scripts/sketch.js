@@ -1,18 +1,4 @@
-let pieceImages;
-function preload() {
-  pieceImages = {
-    rw: loadImage("../images/rw.png"),
-    rb: loadImage("../images/rb.png"),
-    kw: loadImage("../images/kw.png"),
-    kb: loadImage("../images/kb.png"),
-    bw: loadImage("../images/bw.png"),
-    bb: loadImage("../images/bb.png"),
-    lw: loadImage("../images/lw.png"),
-    lb: loadImage("../images/lb.png"),
-    qw: loadImage("../images/qw.png"),
-    qb: loadImage("../images/qb.png"),
-  };
-}
+let pieceImages = {};
 
 let scaleFactor = 1;
 let canvas;
@@ -229,123 +215,7 @@ function setup() {
   r.numHalfWidths["+"] = r.numHalfWidths["1"];
   r.numHalfWidths[":"] = r.numHalfWidths["0"] / 4;
 
-  // set play scene buttons
-  const timelineBtnsAreDisabled = function () {
-    const meta = GAMEPLAY.meta;
-    const isPlayerTurn = meta.isWhiteTurn
-      ? BOT.whiteDepth === 0
-      : BOT.blackDepth === 0;
-    const result =
-      !meta.gameover &&
-      !isPlayerTurn &&
-      meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex;
-    return result;
-  };
-  r.btns = [
-    new Btn(
-      225,
-      580,
-      40,
-      28,
-      function () {
-        stroke(BOARD_INFO.color1);
-        strokeWeight(5);
-        line(3, -5, -4, 0);
-        line(3, 5, -4, 0);
-      },
-      function () {
-        if (timelineBtnsAreDisabled()) return;
-        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
-        REPLAYSYS.loadState(false);
-      }
-    ),
-    new Btn(
-      275,
-      580,
-      40,
-      28,
-      function () {
-        stroke(BOARD_INFO.color1);
-        strokeWeight(5);
-        line(-3, -5, 4, 0);
-        line(-3, 5, 4, 0);
-      },
-      function () {
-        if (timelineBtnsAreDisabled()) return;
-        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
-        REPLAYSYS.loadState(true);
-        if (REPLAYSYS.viewingMoveIndex === GAMEPLAY.meta.latestMoveIndex)
-          GAMEPLAY.skipHintCountdown = 0; // stop hint
-      }
-    ),
-    new Btn(
-      175,
-      580,
-      40,
-      28,
-      function () {
-        stroke(BOARD_INFO.color1);
-        strokeWeight(5);
-        line(7, -5, 0, 0);
-        line(7, 5, 0, 0);
-        line(-6, -5, -6, 5);
-      },
-      function () {
-        if (timelineBtnsAreDisabled()) return;
-        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
-        REPLAYSYS.setUpSkipping(false);
-      }
-    ),
-    new Btn(
-      325,
-      580,
-      40,
-      28,
-      function () {
-        stroke(BOARD_INFO.color1);
-        strokeWeight(5);
-        line(-7, -5, 0, 0);
-        line(-7, 5, 0, 0);
-        line(6, -5, 6, 5);
-      },
-      function () {
-        if (timelineBtnsAreDisabled()) return;
-        if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
-        REPLAYSYS.setUpSkipping(true);
-        GAMEPLAY.skipHintCountdown = 0; // stop hint
-      }
-    ),
-
-    new Btn(
-      60,
-      580,
-      80,
-      28,
-      function () {
-        myText("exit", -28, 8, 16, BOARD_INFO.color1);
-      },
-      function () {}
-    ),
-
-    new Btn(
-      440,
-      580,
-      80,
-      28,
-      function () {
-        myText("help", -28, 8, 16, BOARD_INFO.color1);
-      },
-      function () {}
-    ),
-  ];
-
-  const grp = () => random(["R", "B", "K", "L", "Q"]); ///
-  GAMEPLAY.initializeGame({
-    /// random([0, 1, 3, 3])
-    /// random(["R", "B", "K", "L", "Q"])
-    white: { botDepth: 0, squad: [grp(), grp(), grp()] },
-    black: { botDepth: random([0, 1, 3, 3]), squad: [grp(), grp(), grp()] },
-  });
+  MENU.createBtns();
 }
 
 // nKA
@@ -363,13 +233,69 @@ function draw() {
   touchCountdown--;
   cursor(ARROW);
 
-  GAMEPLAY.renderScene(); ///
+  const SC = SCENE_CONTROL;
+  push(); /// KA
+  if (SC.progress < 1) {
+    SC.progress += 0.05;
+    if (SC.progress >= 1) {
+      if (SC.isClosing) {
+        SC.isClosing = false;
+        SC.currentScene = SC.targetScene;
+        SC.progress = 0;
+        RENDER.lightnings = [];
+      }
+    }
+    translate(
+      SC.isClosing
+        ? SC.progress * -200
+        : 200 - RENDER.easeOutExpo(SC.progress) * 200,
+      0
+    );
+  }
+
+  /// which scene
+  switch (SC.currentScene) {
+    case "PLAY":
+      GAMEPLAY.renderScene();
+      break;
+    case "STANDARD":
+      break;
+    case "CUSTOM":
+      break;
+    case "REPLAYS":
+      break;
+    case "MENU":
+      MENU.renderMainMenu();
+      break;
+  }
+
+  pop(); /// KA
+  if (SC.progress < 1) {
+    const alphaPrg = SC.isClosing ? SC.progress : 1 - SC.progress;
+    fill(lerpColor(color(0, 0), color(0), alphaPrg));
+    noStroke();
+    rect(0, 0, 500, 600);
+  }
 }
 
-// KA
+/// KA
 function touchEnded() {
   if (touchCountdown > 0) return;
   else touchCountdown = 5;
 
-  GAMEPLAY.clicked(); ///
+  // is changing scene
+  if (SCENE_CONTROL.progress < 1) return;
+
+  switch (SCENE_CONTROL.currentScene) {
+    case "PLAY":
+      return GAMEPLAY.clicked();
+    case "STANDARD":
+      return;
+    case "CUSTOM":
+      return;
+    case "REPLAYS":
+      return;
+    case "MENU":
+      return MENU.clicked();
+  }
 }

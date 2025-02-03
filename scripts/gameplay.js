@@ -276,7 +276,6 @@ const GAMEPLAY = {
       b.animateProgress = 1;
     }
     r.capturedTR.progress = 1; // end animation
-    r.lightnings = [];
     r.targets = [];
     r.updateAllTRs(true);
 
@@ -482,7 +481,7 @@ const GAMEPLAY = {
             )
           );
           stroke(0);
-          strokeWeight(1.5);
+          strokeWeight(1.8);
           beginShape();
           vertex(rx + 25, ry - 25);
           vertex(rx + 12, ry - 25);

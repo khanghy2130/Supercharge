@@ -69,7 +69,7 @@ class Btn {
     this.renderContent = renderContent;
     this.clicked = () => {
       this.animateProgress = 0;
-      clicked();
+      if (clicked !== null) clicked();
     };
     this.isHovered = false;
     this.animateProgress = 1; // 0 to 1
@@ -112,47 +112,3 @@ class Btn {
     pop(); /// KA
   }
 }
-
-///
-function getPieceImage(sd) {
-  if (sd.isWhite) {
-    if (sd.name === "R") return pieceImages.rw;
-    else if (sd.name === "K") return pieceImages.kw;
-    else if (sd.name === "B") return pieceImages.bw;
-    else if (sd.name === "L") return pieceImages.lw;
-    else if (sd.name === "Q") return pieceImages.qw;
-  } else {
-    if (sd.name === "R") return pieceImages.rb;
-    else if (sd.name === "K") return pieceImages.kb;
-    else if (sd.name === "B") return pieceImages.bb;
-    else if (sd.name === "L") return pieceImages.lb;
-    else if (sd.name === "Q") return pieceImages.qb;
-  }
-}
-
-/*
-function drawRed() {
-  strokeWeight(5);
-  stroke(0, 0, 0);
-  fill(255, 0, 0);
-  rect(130, 150, 20, 70, 10);
-  rect(150, 147, 70, 81, 10);
-  rect(150, 203, 25, 50, 10);
-  rect(195, 199, 25, 50, 10);
-  arc(185.5, 160, 70, 70, 180, 360);
-  arc(208, 240, 25, 25, 0, 180);
-  arc(163, 245, 25, 25, 0, 180);
-  fill(102, 102, 102);
-  fill(255, 0, 0);
-  noStroke();
-  rect(153, 185, 65, 41);
-  stroke(0, 0, 0);
-  fill(0, 196, 255);
-  rect(175, 150, 50, 30, 25);
-  noStroke();
-  fill(139, 209, 247);
-  rect(191, 153, 30, 20, 25);
-  fill(195, 230, 247);
-  rect(199, 153, 20, 15, 25);
-}
-*/
