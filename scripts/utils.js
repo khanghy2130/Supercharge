@@ -101,8 +101,8 @@ class Btn {
     // render button
     push(); /// KA
     translate(this.x, this.y);
+    if (this.animateProgress < 0.08) this.animateProgress = 0.08;
     let scaleFactor = RENDER.easeOutElastic(this.animateProgress);
-    if (this.animateProgress < 0.08) scaleFactor = max(1, scaleFactor);
     scaleFactor *= 0.3; // animated range
     scale(0.7 + scaleFactor, 1.3 - scaleFactor); // 1 - or + range
     noStroke();
@@ -112,3 +112,18 @@ class Btn {
     pop(); /// KA
   }
 }
+
+const SCENE_CONTROL = {
+  isClosing: false,
+  progress: 1,
+  // scenes: MENU, STANDARD, CUSTOM, REPLAYS, PLAY
+  targetScene: "MENU",
+  currentScene: "MENU",
+  scenesStack: [],
+
+  changeScene: function (targetScene) {
+    this.targetScene = targetScene;
+    this.isClosing = true;
+    this.progress = 0;
+  },
+};

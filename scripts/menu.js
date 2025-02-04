@@ -5,6 +5,9 @@ const MENU = {
   menuBtns: [],
   thumbnailImg: null,
 
+  reusableBackBtn: null,
+  standardBtns: [],
+
   createBtns: function () {
     // play scene buttons
     const timelineBtnsAreDisabled = function () {
@@ -101,7 +104,11 @@ const MENU = {
         function () {
           myText("exit", -28, 8, 16, BOARD_INFO.color1);
         },
-        function () {}
+        function () {
+          //// ask to confirm if !gameover & previous scene is standard
+          const SC = SCENE_CONTROL;
+          SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+        }
       ),
 
       new Btn(
@@ -145,13 +152,7 @@ const MENU = {
           80,
           80,
           function () {
-            myText(
-              letter,
-              -letterWidth / 2 - 5,
-              25,
-              50,
-              color(BOARD_INFO.color1)
-            );
+            myText(letter, -letterWidth / 2 - 5, 25, 50, BOARD_INFO.color1);
           },
           function () {
             RENDER.bigSpawnLightings(xValue, 100);
@@ -171,13 +172,7 @@ const MENU = {
           66,
           66,
           function () {
-            myText(
-              letter,
-              -letterWidth / 2 - 3,
-              20,
-              40,
-              color(BOARD_INFO.color1)
-            );
+            myText(letter, -letterWidth / 2 - 3, 20, 40, BOARD_INFO.color1);
           },
           function () {
             RENDER.bigSpawnLightings(xValue, 180);
@@ -198,20 +193,21 @@ const MENU = {
           myText("play", -52, 14, 30, BOARD_INFO.color1);
         },
         function () {
+          SCENE_CONTROL.changeScene("STANDARD");
           //// temporary start
-          const grp = () => random(["R", "B", "K", "L", "Q"]);
-          GAMEPLAY.initializeGame({
-            /// random([0, 1, 3, 3])
-            white: {
-              botDepth: random([0, 1, 3, 3]),
-              squad: [grp(), grp(), grp()],
-            },
-            black: {
-              botDepth: random([0, 1, 3, 3]),
-              squad: [grp(), grp(), grp()],
-            },
-          });
-          SCENE_CONTROL.changeScene("PLAY");
+          // const grp = () => random(["R", "B", "K", "L", "Q"]);
+          // GAMEPLAY.initializeGame({
+          //   /// random([0, 1, 3, 3])
+          //   white: {
+          //     botDepth: random([0, 1, 3, 3]),
+          //     squad: [grp(), grp(), grp()],
+          //   },
+          //   black: {
+          //     botDepth: random([0, 1, 3, 3]),
+          //     squad: [grp(), grp(), grp()],
+          //   },
+          // });
+          // SCENE_CONTROL.changeScene("PLAY");
         }
       ),
       new Btn(
@@ -227,6 +223,65 @@ const MENU = {
         }
       ),
     ];
+
+    this.reusableBackBtn = new Btn(
+      250,
+      540,
+      150,
+      50,
+      function () {
+        myText("back", -46, 12, 25, BOARD_INFO.color1);
+      },
+      function () {
+        const SC = SCENE_CONTROL;
+        SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+      }
+    );
+
+    // standard buttons
+    for (let i = 0; i < 2; i++) {
+      this.standardBtns.push(
+        new Btn(
+          i === 0 ? 123 : 377,
+          200,
+          200,
+          80,
+          function () {
+            myText("play", -50, 15, 30, BOARD_INFO.color1);
+          },
+          function () {
+            const playerIsWhite = random() > 0.5;
+            const botDepth = i === 0 ? 1 : 3;
+            GAMEPLAY.initializeGame({
+              white: {
+                botDepth: playerIsWhite ? 0 : botDepth,
+                squad: ["R", "B", "K"],
+              },
+              black: {
+                botDepth: !playerIsWhite ? 0 : botDepth,
+                squad: ["K", "B", "R"],
+              },
+            });
+            SCENE_CONTROL.changeScene("PLAY");
+          }
+        )
+      );
+      this.standardBtns.push(
+        new Btn(
+          i === 0 ? 123 : 377,
+          280,
+          200,
+          50,
+          function () {
+            myText("replays", -65, 10, 20, BOARD_INFO.color1);
+          },
+          function () {
+            REPLAYS_MENU.category = i === 0 ? "EASY" : "HARD";
+            SCENE_CONTROL.changeScene("REPLAYS");
+          }
+        )
+      );
+    }
   },
 
   renderMainMenu: function () {
@@ -304,7 +359,62 @@ const MENU = {
     pop(); /// KA
   },
 
-  clicked: function () {
+  renderCustomMenu: function () {
+    background(BOARD_INFO.color1);
+    this.reusableBackBtn.render();
+  },
+
+  renderStandardMenu: function () {
+    background(BOARD_INFO.color1);
+    stroke(BOARD_INFO.color2);
+    strokeWeight(5);
+    line(250, 0, 250, 600);
+
+    push(); /// KA
+    translate(430, 530);
+    rotate(cos(frameCount) * 10);
+    image(RENDER.getPieceImage({ isWhite: true, name: "K" }), 0, 0, 150, 150);
+    pop(); /// KA
+    push(); /// KA
+    translate(70, 530);
+    rotate(cos(frameCount) * -10);
+    image(RENDER.getPieceImage({ isWhite: true, name: "B" }), 0, 0, 150, 150);
+    pop(); /// KA
+
+    this.reusableBackBtn.render();
+    for (let i = 0; i < this.standardBtns.length; i++) {
+      this.standardBtns[i].render();
+    }
+
+    myText("easy", 40, 120, 45, BOARD_INFO.color2);
+    myText("hard", 295, 120, 45, BOARD_INFO.color2);
+
+    myText("current streak: 2", 25, 370, 14, BOARD_INFO.color2);
+    myText("best streak: 2", 25, 395, 14, BOARD_INFO.color2);
+
+    myText("current streak: 2", 275, 370, 14, BOARD_INFO.color2);
+    myText("best streak: 2", 275, 395, 14, BOARD_INFO.color2);
+  },
+
+  customClicked: function () {
+    // back button
+    if (this.reusableBackBtn.isHovered) {
+      return this.reusableBackBtn.clicked();
+    }
+  },
+
+  standardClicked: function () {
+    // back button
+    if (this.reusableBackBtn.isHovered) {
+      return this.reusableBackBtn.clicked();
+    }
+    for (let i = 0; i < this.standardBtns.length; i++) {
+      const b = this.standardBtns[i];
+      if (b.isHovered) return b.clicked();
+    }
+  },
+
+  menuClicked: function () {
     // close thumnnail
     if (this.thumbnailImg !== null) {
       this.thumbnailImg = null;

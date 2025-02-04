@@ -34,7 +34,7 @@ const BOT = {
     };
     // base speed - distance
     botCursor.speed = max(
-      0.1, //////0.018,
+      0.018, //// fast mode 0.1
       0.044 -
         dist(
           botCursor.startPos.x,

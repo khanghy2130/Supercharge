@@ -10,7 +10,7 @@ const GAMEPLAY = {
   selectedPiecePos: null, // {x,y}
   possibleMoves: null, // {x,y}[]  (only when selected a piece)
   meta: {
-    latestMoveIndex: 0,
+    latestMoveIndex: -1,
     gameover: true,
     isWhiteTurn: true,
     white: { score: 0, energy: 2 },
@@ -153,7 +153,7 @@ const GAMEPLAY = {
     // set game over
     if (meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
       meta.gameover = true;
-      this.result.countDown = 120;
+      this.result.countDown = 100;
     }
 
     const { x: sx, y: sy } = this.selectedPiecePos;
@@ -219,6 +219,8 @@ const GAMEPLAY = {
     const r = RENDER;
 
     // set bots
+    bot.isProcessing = false;
+    bot.finalOutput = null;
     bot.whiteDepth = white.botDepth;
     bot.blackDepth = black.botDepth;
     bot.whiteCursor.progress = 1;
@@ -228,8 +230,11 @@ const GAMEPLAY = {
 
     // reset meta
     this.meta.gameover = false;
+    this.meta.isWhiteTurn = true;
     this.meta.white.score = 0;
     this.meta.black.score = 0;
+    this.meta.white.energy = 2;
+    this.meta.black.energy = 2;
     this.meta.round = 1;
     this.meta.latestMoveIndex = -1;
     this.meta.timeStops = [Date.now()];

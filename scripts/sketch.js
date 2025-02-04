@@ -27,7 +27,23 @@ function setup() {
     r.TARGETS_COLORS[i] = color.apply(null, r.TARGETS_COLORS[i]);
   }
 
-  // set board image
+  // set num widths
+  r.numHalfWidths["0"] =
+    myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
+  r.numHalfWidths["1"] =
+    myText("1", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
+  for (let i = 2; i < 10; i++)
+    r.numHalfWidths[i.toString()] = r.numHalfWidths["1"];
+  r.numHalfWidths["4"] = r.numHalfWidths["0"]; // set number 4 width to be 0
+  r.numHalfWidths["+"] = r.numHalfWidths["1"];
+  r.numHalfWidths[":"] = r.numHalfWidths["0"] / 4;
+
+  createImages();
+  MENU.createBtns();
+}
+
+function createImages() {
+  // create board image
   (function () {
     background(BOARD_INFO.color1);
     // render dark squares
@@ -203,19 +219,6 @@ function setup() {
 
     background(0);
   })();
-
-  // set num widths
-  r.numHalfWidths["0"] =
-    myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
-  r.numHalfWidths["1"] =
-    myText("1", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
-  for (let i = 2; i < 10; i++)
-    r.numHalfWidths[i.toString()] = r.numHalfWidths["1"];
-  r.numHalfWidths["4"] = r.numHalfWidths["0"]; // set number 4 width to be 0
-  r.numHalfWidths["+"] = r.numHalfWidths["1"];
-  r.numHalfWidths[":"] = r.numHalfWidths["0"] / 4;
-
-  MENU.createBtns();
 }
 
 // nKA
@@ -239,10 +242,17 @@ function draw() {
     SC.progress += 0.05;
     if (SC.progress >= 1) {
       if (SC.isClosing) {
-        SC.isClosing = false;
+        // add or pop from scenes stack
+        const previousScene = SC.scenesStack[SC.scenesStack.length - 1];
+        if (previousScene === SC.targetScene) {
+          SC.scenesStack.pop();
+        } else SC.scenesStack.push(SC.currentScene);
         SC.currentScene = SC.targetScene;
         SC.progress = 0;
+        SC.isClosing = false;
         RENDER.lightnings = [];
+        // recreate images if going to menu scene
+        if (SC.targetScene === "MENU") createImages();
       }
     }
     translate(
@@ -259,10 +269,13 @@ function draw() {
       GAMEPLAY.renderScene();
       break;
     case "STANDARD":
+      MENU.renderStandardMenu();
       break;
     case "CUSTOM":
+      MENU.renderCustomMenu();
       break;
     case "REPLAYS":
+      REPLAYS_MENU.render();
       break;
     case "MENU":
       MENU.renderMainMenu();
@@ -290,12 +303,12 @@ function touchEnded() {
     case "PLAY":
       return GAMEPLAY.clicked();
     case "STANDARD":
-      return;
+      return MENU.standardClicked();
     case "CUSTOM":
-      return;
+      return MENU.customClicked();
     case "REPLAYS":
-      return;
+      return REPLAYS_MENU.clicked();
     case "MENU":
-      return MENU.clicked();
+      return MENU.menuClicked();
   }
 }

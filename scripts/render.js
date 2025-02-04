@@ -808,8 +808,8 @@ const RENDER = {
         this.selectedPieceProgress = min(this.selectedPieceProgress + 0.015, 1);
       }
 
+      if (this.selectedPieceProgress < 0.08) this.selectedPieceProgress = 0.08;
       let scaleFactor = this.easeOutElastic(this.selectedPieceProgress);
-      if (this.selectedPieceProgress < 0.08) scaleFactor = max(1, scaleFactor);
       scaleFactor *= 0.5; // animated range
       image(
         getPieceImage(pieceData),

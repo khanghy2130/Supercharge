@@ -126,7 +126,6 @@ const REPLAYSYS = {
 
     RENDER.updateAllTRs(goesForward && this.skipping === null);
     RENDER.setPiecesPositions();
-
     // SET ROUND, WHOSE TURN, AND ENERGIES
     // initial state (-1), before any move
     if (vmi === -1) {
