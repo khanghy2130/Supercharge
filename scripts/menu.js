@@ -55,7 +55,7 @@ const MENU = {
           if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
           REPLAYSYS.loadState(true);
           if (REPLAYSYS.viewingMoveIndex === GAMEPLAY.meta.latestMoveIndex)
-            GAMEPLAY.skipHintCountdown = 0; // stop hint
+            GAMEPLAY.hintArrow.countDown = 0; // stop hint
         }
       ),
       new Btn(
@@ -92,7 +92,7 @@ const MENU = {
           if (timelineBtnsAreDisabled()) return;
           if (REPLAYSYS.skipping !== null) return (REPLAYSYS.skipping = null);
           REPLAYSYS.setUpSkipping(true);
-          GAMEPLAY.skipHintCountdown = 0; // stop hint
+          GAMEPLAY.hintArrow.countDown = 0; // stop hint
         }
       ),
 

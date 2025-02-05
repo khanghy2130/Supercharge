@@ -25,6 +25,11 @@ const GAMEPLAY = {
     progress: 0,
     bgImage: null,
   },
+  hintArrow: {
+    x: 0,
+    countDown: 0,
+  },
+  isNewPlayer: true,
 
   isTarget: function (sqData) {
     return typeof sqData === "number";
@@ -240,7 +245,14 @@ const GAMEPLAY = {
     this.meta.timeStops = [Date.now()];
     this.selectedPiecePos = null;
     this.possibleMoves = null;
-    this.skipHintCountdown = 0;
+    if (this.isNewPlayer) {
+      this.hintArrow.x = r.btns[5].x;
+      this.hintArrow.countDown = 120;
+      this.isNewPlayer = false;
+      /// save isNewPlayer to local storage
+    } else {
+      this.hintArrow.countDown = 0;
+    }
     REPLAYSYS.initialize();
 
     // reset boardData
@@ -502,15 +514,16 @@ const GAMEPLAY = {
       }
     }
 
-    // render skip hint arrow
-    if (this.skipHintCountdown > 0) {
-      this.skipHintCountdown--;
-      stroke(BOARD_INFO.color2);
+    // render hint arrow
+    if (this.hintArrow.countDown > 0) {
+      this.hintArrow.countDown--;
+      stroke(r.LIGHTNING_COLOR);
       strokeWeight(6);
       const bounceY = cos(frameCount * 8) * 8;
-      line(325, 550 + bounceY, 315, 540 + bounceY);
-      line(325, 550 + bounceY, 335, 540 + bounceY);
-      line(325, 550 + bounceY, 325, 500 + bounceY);
+      const xValue = this.hintArrow.x;
+      line(xValue, 550 + bounceY, xValue - 10, 540 + bounceY);
+      line(xValue, 550 + bounceY, xValue + 10, 540 + bounceY);
+      line(xValue, 550 + bounceY, xValue, 500 + bounceY);
     }
 
     bot.renderBotCursors();
@@ -578,13 +591,16 @@ const GAMEPLAY = {
   },
 
   clicked: function () {
+    const r = RENDER;
+
     // close result
     if (this.result.isShown && this.result.progress > 1.2) {
       this.result.isShown = false;
+      this.hintArrow.x = r.btns[4].x;
+      this.hintArrow.countDown = 120;
       return;
     }
 
-    const r = RENDER;
     // buttons
     for (let i = 0; i < r.btns.length; i++) {
       const b = r.btns[i];
@@ -598,7 +614,8 @@ const GAMEPLAY = {
       this.meta.latestMoveIndex > REPLAYSYS.viewingMoveIndex &&
       _mouseY < 500
     ) {
-      this.skipHintCountdown = 120;
+      this.hintArrow.x = r.btns[3].x;
+      this.hintArrow.countDown = 120;
       return;
     }
 
