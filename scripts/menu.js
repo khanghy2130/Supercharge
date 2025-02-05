@@ -7,6 +7,20 @@ const MENU = {
 
   reusableBackBtn: null,
   standardBtns: [],
+  custom: {
+    bgImage: null,
+    isChoosingPreset: false,
+    btns: [], // preset, 2 * (bot, 3 * piece)
+    presetBtns: [],
+    white: {
+      botDepth: 0,
+      squad: ["R", "B", "K"],
+    },
+    black: {
+      botDepth: 1,
+      squad: ["K", "B", "R"],
+    },
+  },
 
   createBtns: function () {
     // play scene buttons
@@ -194,20 +208,6 @@ const MENU = {
         },
         function () {
           SCENE_CONTROL.changeScene("STANDARD");
-          //// temporary start
-          // const grp = () => random(["R", "B", "K", "L", "Q"]);
-          // GAMEPLAY.initializeGame({
-          //   /// random([0, 1, 3, 3])
-          //   white: {
-          //     botDepth: random([0, 1, 3, 3]),
-          //     squad: [grp(), grp(), grp()],
-          //   },
-          //   black: {
-          //     botDepth: random([0, 1, 3, 3]),
-          //     squad: [grp(), grp(), grp()],
-          //   },
-          // });
-          // SCENE_CONTROL.changeScene("PLAY");
         }
       ),
       new Btn(
@@ -278,6 +278,238 @@ const MENU = {
           function () {
             REPLAYS_MENU.category = i === 0 ? "EASY" : "HARD";
             SCENE_CONTROL.changeScene("REPLAYS");
+          }
+        )
+      );
+    }
+
+    // custom buttons
+    const custom = this.custom;
+    this.custom.btns = [
+      new Btn(
+        110,
+        540,
+        150,
+        50,
+        function () {
+          myText("back", -46, 12, 25, BOARD_INFO.color1);
+        },
+        function () {
+          const SC = SCENE_CONTROL;
+          SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+        }
+      ),
+      new Btn(
+        370,
+        540,
+        200,
+        50,
+        function () {
+          myText("replays", -73, 12, 25, BOARD_INFO.color1);
+        },
+        function () {
+          REPLAYS_MENU.category = "CUSTOM";
+          SCENE_CONTROL.changeScene("REPLAYS");
+        }
+      ),
+      new Btn(
+        150,
+        60,
+        240,
+        40,
+        function () {
+          myText("choose preset", -100, 10, 18, BOARD_INFO.color1);
+        },
+        function () {
+          custom.isChoosingPreset = true;
+          custom.bgImage = get(0, 0, width, height);
+          for (let i = 0; i < custom.presetBtns.length; i++) {
+            custom.presetBtns[i].animateProgress = 0;
+          }
+        }
+      ),
+      new Btn(
+        380,
+        70,
+        180,
+        60,
+        function () {
+          myText("play", -52, 15, 30, BOARD_INFO.color1);
+        },
+        function () {
+          GAMEPLAY.initializeGame({
+            white: custom.white,
+            black: custom.black,
+          });
+          SCENE_CONTROL.changeScene("PLAY");
+        }
+      ),
+      new Btn(
+        110,
+        190,
+        160,
+        40,
+        function () {
+          switch (custom.white.botDepth) {
+            case 0:
+              return myText("no bot", -50, 9, 18, BOARD_INFO.color1);
+            case 1:
+              return myText("easy bot", -62, 9, 18, BOARD_INFO.color1);
+            case 3:
+              return myText("hard bot", -65, 9, 18, BOARD_INFO.color1);
+          }
+        },
+        function () {
+          if (custom.white.botDepth === 0) custom.white.botDepth = 1;
+          else if (custom.white.botDepth === 1) custom.white.botDepth = 3;
+          else if (custom.white.botDepth === 3) custom.white.botDepth = 0;
+        }
+      ),
+      new Btn(
+        390,
+        190,
+        160,
+        40,
+        function () {
+          switch (custom.black.botDepth) {
+            case 0:
+              return myText("no bot", -50, 9, 18, BOARD_INFO.color1);
+            case 1:
+              return myText("easy bot", -62, 9, 18, BOARD_INFO.color1);
+            case 3:
+              return myText("hard bot", -65, 9, 18, BOARD_INFO.color1);
+          }
+        },
+        function () {
+          if (custom.black.botDepth === 0) custom.black.botDepth = 1;
+          else if (custom.black.botDepth === 1) custom.black.botDepth = 3;
+          else if (custom.black.botDepth === 3) custom.black.botDepth = 0;
+        }
+      ),
+    ];
+    // piece buttons
+    const pieceNames = ["R", "B", "K", "L", "Q"];
+    for (let si = 0; si < 2; si++) {
+      for (let bi = 0; bi < 3; bi++) {
+        this.custom.btns.push(
+          new Btn(
+            110 + si * 280,
+            255 + bi * 80,
+            70,
+            70,
+            function () {
+              const squad = si === 0 ? custom.white.squad : custom.black.squad;
+              const pieceImg = RENDER.getPieceImage({
+                isWhite: si === 0,
+                name: squad[bi],
+              });
+              image(pieceImg, 0, 0, 65, 65);
+            },
+            function () {
+              const squad = si === 0 ? custom.white.squad : custom.black.squad;
+              const currentIndex = pieceNames.indexOf(squad[bi]);
+              // is last piece?
+              if (currentIndex === pieceNames.length - 1) {
+                squad[bi] = pieceNames[0];
+              } else {
+                squad[bi] = pieceNames[currentIndex + 1];
+              }
+            }
+          )
+        );
+      }
+    }
+    // preset buttons
+    custom.presetBtns = [
+      new Btn(
+        250,
+        90,
+        270,
+        50,
+        function () {
+          myText("randomize pieces", -113, 8, 16, color(250, 250, 0));
+        },
+        function () {
+          const grp = function () {
+            return pieceNames[floor(random() * pieceNames.length)];
+          };
+          custom.white.squad = [grp(), grp(), grp()];
+          custom.black.squad = [grp(), grp(), grp()];
+        }
+      ),
+    ];
+    const presets = [
+      [
+        "local multiplayer",
+        {
+          botDepth: 0,
+          squad: ["R", "B", "K"],
+        },
+        {
+          botDepth: 0,
+          squad: ["K", "B", "R"],
+        },
+      ],
+      [
+        "fortress",
+        {
+          botDepth: 0,
+          squad: ["R", "B", "K"],
+        },
+        {
+          botDepth: 3,
+          squad: ["R", "R", "R"],
+        },
+      ],
+      [
+        "knightmare",
+        {
+          botDepth: 0,
+          squad: ["K", "K", "K"],
+        },
+        {
+          botDepth: 3,
+          squad: ["K", "K", "K"],
+        },
+      ],
+      [
+        "royal",
+        {
+          botDepth: 0,
+          squad: ["Q", "K", "L"],
+        },
+        {
+          botDepth: 3,
+          squad: ["L", "K", "Q"],
+        },
+      ],
+      [
+        "castle",
+        {
+          botDepth: 0,
+          squad: ["R", "L", "R"],
+        },
+        {
+          botDepth: 3,
+          squad: ["R", "L", "R"],
+        },
+      ],
+    ];
+    for (let i = 0; i < presets.length; i++) {
+      const [presetName, white, black] = presets[i];
+      const nameWidth = myText(presetName, 0, 0, 16, color(0, 0));
+      custom.presetBtns.push(
+        new Btn(
+          250,
+          150 + i * 60,
+          nameWidth + 50,
+          50,
+          function () {
+            myText(presetName, -nameWidth / 2, 8, 16, color(250));
+          },
+          function () {
+            custom.white = white;
+            custom.black = black;
           }
         )
       );
@@ -360,8 +592,24 @@ const MENU = {
   },
 
   renderCustomMenu: function () {
+    if (this.custom.isChoosingPreset) {
+      image(this.custom.bgImage, width / 2, height / 2, width, height);
+      noStroke();
+      fill(0, 200);
+      rect(0, 0, width, height);
+      for (let i = 0; i < this.custom.presetBtns.length; i++) {
+        this.custom.presetBtns[i].render();
+      }
+      return;
+    }
+
     background(BOARD_INFO.color1);
-    this.reusableBackBtn.render();
+    for (let i = 0; i < this.custom.btns.length; i++) {
+      this.custom.btns[i].render();
+    }
+
+    myText("white", 55, 160, 25, color(240));
+    myText("black", 335, 160, 25, color(20));
   },
 
   renderStandardMenu: function () {
@@ -397,9 +645,26 @@ const MENU = {
   },
 
   customClicked: function () {
-    // back button
-    if (this.reusableBackBtn.isHovered) {
-      return this.reusableBackBtn.clicked();
+    // choosing preset
+    if (this.custom.isChoosingPreset) {
+      for (let i = 0; i < this.custom.presetBtns.length; i++) {
+        const b = this.custom.presetBtns[i];
+        if (b.isHovered) {
+          b.clicked();
+          break;
+        }
+      }
+      for (let i = 4; i < this.custom.btns.length; i++) {
+        this.custom.btns[i].animateProgress = 0;
+      }
+      this.custom.btns[2].animateProgress = 1; // choose preset cancel click animation
+      this.custom.isChoosingPreset = false;
+      return;
+    }
+
+    for (let i = 0; i < this.custom.btns.length; i++) {
+      const b = this.custom.btns[i];
+      if (b.isHovered) return b.clicked();
     }
   },
 

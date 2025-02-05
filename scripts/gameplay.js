@@ -30,6 +30,7 @@ const GAMEPLAY = {
     countDown: 0,
   },
   isNewPlayer: true,
+  savedConfig: null,
 
   isTarget: function (sqData) {
     return typeof sqData === "number";
@@ -234,6 +235,7 @@ const GAMEPLAY = {
     bot.blackCursor.endPos = bot.blackCursor.homePos;
 
     // reset meta
+    this.savedConfig = { white, black };
     this.meta.gameover = false;
     this.meta.isWhiteTurn = true;
     this.meta.white.score = 0;
@@ -247,7 +249,7 @@ const GAMEPLAY = {
     this.possibleMoves = null;
     if (this.isNewPlayer) {
       this.hintArrow.x = r.btns[5].x;
-      this.hintArrow.countDown = 120;
+      this.hintArrow.countDown = 200;
       this.isNewPlayer = false;
       /// save isNewPlayer to local storage
     } else {
@@ -517,10 +519,15 @@ const GAMEPLAY = {
     // render hint arrow
     if (this.hintArrow.countDown > 0) {
       this.hintArrow.countDown--;
-      stroke(r.LIGHTNING_COLOR);
-      strokeWeight(6);
       const bounceY = cos(frameCount * 8) * 8;
       const xValue = this.hintArrow.x;
+      stroke(0);
+      strokeWeight(10);
+      line(xValue, 550 + bounceY, xValue - 10, 540 + bounceY);
+      line(xValue, 550 + bounceY, xValue + 10, 540 + bounceY);
+      line(xValue, 550 + bounceY, xValue, 500 + bounceY);
+      stroke(r.LIGHTNING_COLOR);
+      strokeWeight(5);
       line(xValue, 550 + bounceY, xValue - 10, 540 + bounceY);
       line(xValue, 550 + bounceY, xValue + 10, 540 + bounceY);
       line(xValue, 550 + bounceY, xValue, 500 + bounceY);
