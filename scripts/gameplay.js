@@ -238,6 +238,8 @@ const GAMEPLAY = {
     this.meta.round = 1;
     this.meta.latestMoveIndex = -1;
     this.meta.timeStops = [Date.now()];
+    this.selectedPiecePos = null;
+    this.possibleMoves = null;
     this.skipHintCountdown = 0;
     REPLAYSYS.initialize();
 

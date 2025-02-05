@@ -68,15 +68,15 @@ const BOT = {
     }
   },
 
-  getSimulatedData: function (actionsHistory) {
+  getSimulatedData: function (actionsHistory, gp) {
     const white = { score: 0 };
     const black = { score: 0 };
     const boardData = [];
     for (let y = 0; y < 8; y++) {
       const row = [];
       for (let x = 0; x < 8; x++) {
-        const sd = GAMEPLAY.boardData[y][x];
-        if (sd === null || GAMEPLAY.isTarget(sd)) {
+        const sd = gp.boardData[y][x];
+        if (sd === null || gp.isTarget(sd)) {
           row[x] = sd;
         } else {
           row[x] = Object.assign({}, sd); // copy of piece
@@ -86,25 +86,25 @@ const BOT = {
     }
 
     // apply actions
-    let isWhiteTurn = GAMEPLAY.meta.isWhiteTurn;
+    let isWhiteTurn = gp.meta.isWhiteTurn;
     for (let i = 0; i < actionsHistory.length; i++) {
       const moves = actionsHistory[i];
       const scorer = isWhiteTurn ? white : black;
 
       // apply target update IF is white && it is 2nd or 3rd action
       if (isWhiteTurn && i > 0 && i < 3)
-        GAMEPLAY.updateTargets(boardData, GAMEPLAY.spawningPositions);
+        gp.updateTargets(boardData, gp.spawningPositions);
 
       // for each move in this action
       for (let m = 0; m < moves.length; m++) {
         const [sx, sy, ex, ey] = moves[m];
-        const scoreGained = GAMEPLAY.applyMove(
+        const scoreGained = gp.applyMove(
           { x: sx, y: sy },
           { x: ex, y: ey },
           boardData
         );
         scorer.score += scoreGained;
-        if (isWhiteTurn === GAMEPLAY.meta.isWhiteTurn) {
+        if (isWhiteTurn === gp.meta.isWhiteTurn) {
           scorer.score *= 1.2; // extra incentive to gain score
         }
       }
@@ -122,8 +122,9 @@ const BOT = {
     if (this.finalOutput !== null) return;
 
     // ready to hide timeline buttons
+    const renderBtns = RENDER.btns;
     for (let i = 0; i < 4; i++) {
-      const btn = RENDER.btns[i];
+      const btn = renderBtns[i];
       btn.isHovered = false;
       btn.animateProgress = 0;
     }
@@ -180,7 +181,8 @@ const BOT = {
   },
 
   processMinimax: function () {
-    const meta = GAMEPLAY.meta;
+    const gp = GAMEPLAY;
+    const meta = gp.meta;
     const maxDepth = meta.isWhiteTurn ? this.whiteDepth : this.blackDepth;
     if (maxDepth === 0) return (this.isProcessing = false); // player turn safe exit
 
@@ -207,7 +209,10 @@ const BOT = {
       const isLastTurn =
         meta.round === CONSTANTS.MAX_ROUND && isMaximizing && depth > 0;
       if (depth === maxDepth || isLastTurn) {
-        let { scoreDiff, boardData } = this.getSimulatedData(actionsHistory);
+        let { scoreDiff, boardData } = this.getSimulatedData(
+          actionsHistory,
+          gp
+        );
 
         // add heuristic score if is easy bot and is not last round
         if (maxDepth === 1 && meta.round !== CONSTANTS.MAX_ROUND) {
@@ -224,7 +229,7 @@ const BOT = {
       // did not generate potential actions?
       if (potentialActions === null) {
         current.potentialActions = this.getPotentialActions(
-          this.getSimulatedData(actionsHistory).boardData,
+          this.getSimulatedData(actionsHistory, gp).boardData,
           isMaximizing
         );
         if (this.maxProgress === null)
@@ -259,6 +264,7 @@ const BOT = {
   },
 
   getHeuristicScore: function (boardData, isWhite) {
+    let gp = GAMEPLAY;
     let highestControlledValue = 0;
     const piecesPositions = [];
     // get pieces positions
@@ -267,7 +273,7 @@ const BOT = {
         const sqData = boardData[y][x];
         if (
           sqData !== null &&
-          !GAMEPLAY.isTarget(sqData) &&
+          !gp.isTarget(sqData) &&
           sqData.isWhite === isWhite
         ) {
           piecesPositions.push({ x, y });
@@ -280,10 +286,10 @@ const BOT = {
     for (let i = 0; i < piecesPositions.length; i++) {
       const pPos = piecesPositions[i];
       const pieceData = boardData[pPos.y][pPos.x];
-      const possibleMoves = GAMEPLAY.getPossibleMoves(pPos, boardData);
+      const possibleMoves = gp.getPossibleMoves(pPos, boardData);
       for (let pm = 0; pm < possibleMoves.length; pm++) {
         const sqData = boardData[possibleMoves[pm].y][possibleMoves[pm].x];
-        if (GAMEPLAY.isTarget(sqData)) {
+        if (gp.isTarget(sqData)) {
           highestControlledValue = max(
             highestControlledValue,
             sqData * (pieceData.isCharged ? CONSTANTS.CHARGED_MULT : 1)
