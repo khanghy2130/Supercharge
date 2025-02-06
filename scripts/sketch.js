@@ -6,16 +6,25 @@ function setup() {
   // nKA
   canvas = createCanvas(500, 600, document.getElementById("game-canvas"));
   windowResized();
+  (function () {
+    const savedEasy = localStorage.getItem("easy");
+    if (savedEasy !== null) {
+      MENU.streak.easy = JSON.parse(savedEasy);
+    }
+    const saveHard = localStorage.getItem("hard");
+    if (saveHard !== null) {
+      MENU.streak.hard = JSON.parse(saveHard);
+    }
+    GAMEPLAY.isNewPlayer =
+      localStorage.getItem("isNewPlayer") === "1" ? true : false;
+  })();
 
   // configs
   // frameRate(1); /////
   pixelDensity(1); // nKA
   angleMode(DEGREES); // KA
   imageMode(CENTER);
-  textAlign(CENTER, CENTER);
   strokeJoin(ROUND);
-  textSize(40);
-  textFont("monospace"); // textFont(createFont("monospace")); // KA
 
   const r = RENDER;
 

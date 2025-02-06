@@ -31,6 +31,10 @@ const GAMEPLAY = {
   },
   isNewPlayer: true,
   savedConfig: null,
+  exitWarning: {
+    btns: [],
+    isShown: false,
+  },
 
   isTarget: function (sqData) {
     return typeof sqData === "number";
@@ -158,8 +162,8 @@ const GAMEPLAY = {
 
     // set game over
     if (meta.latestMoveIndex === CONSTANTS.MAX_ROUND * 4 - 1) {
-      meta.gameover = true;
       this.result.countDown = 100;
+      meta.gameover = true;
     }
 
     const { x: sx, y: sy } = this.selectedPiecePos;
@@ -192,8 +196,27 @@ const GAMEPLAY = {
     // fix not having the new previews yet
     this.spawningPositions = REPLAYSYS.targetPreviewsPositions[meta.round - 1];
 
-    // BOT.finalOutput = null; // clear previous bot output ////
-    // if (!meta.gameover) BOT.startMinimax();
+    // handle streak
+    const SS = SCENE_CONTROL.scenesStack;
+    if (SS[SS.length - 1] === "STANDARD" && meta.gameover) {
+      const bot = BOT;
+      const playerIsWhite = bot.whiteDepth === 0;
+      const botIsHard = bot.whiteDepth === 3 || bot.blackDepth === 3;
+      const playerScore = playerIsWhite ? meta.white.score : meta.black.score;
+      const botScore = playerIsWhite ? meta.black.score : meta.white.score;
+      const streakArr = botIsHard ? MENU.streak.hard : MENU.streak.easy;
+      if (playerScore > botScore) {
+        streakArr[0]++;
+        if (streakArr[0] > streakArr[1]) streakArr[1] = streakArr[0];
+      } else if (botScore > playerScore) {
+        streakArr[0] = 0;
+      }
+      // save to storage /// KA
+      localStorage.setItem(
+        botIsHard ? "hard" : "easy",
+        JSON.stringify(streakArr)
+      );
+    }
   },
 
   deselectPiece: function () {
@@ -251,7 +274,8 @@ const GAMEPLAY = {
       this.hintArrow.x = r.btns[5].x;
       this.hintArrow.countDown = 200;
       this.isNewPlayer = false;
-      /// save isNewPlayer to local storage
+      // save to storage /// KA
+      localStorage.setItem("isNewPlayer", "1");
     } else {
       this.hintArrow.countDown = 0;
     }
@@ -595,10 +619,36 @@ const GAMEPLAY = {
         }
       }
     }
+
+    // render exit warning
+    if (this.exitWarning.isShown) {
+      noStroke();
+      fill(0, 200);
+      rect(0, 0, 500, 600);
+      myText(
+        "quitting will stop win\nstreak, continue?",
+        65,
+        200,
+        20,
+        color(250)
+      );
+      for (let i = 0; i < this.exitWarning.btns.length; i++) {
+        this.exitWarning.btns[i].render();
+      }
+    }
   },
 
   clicked: function () {
     const r = RENDER;
+
+    // showing exit warning?
+    if (this.exitWarning.isShown) {
+      for (let i = 0; i < this.exitWarning.btns.length; i++) {
+        const b = this.exitWarning.btns[i];
+        if (b.isHovered) return b.clicked();
+      }
+      return;
+    }
 
     // close result
     if (this.result.isShown && this.result.progress > 1.2) {

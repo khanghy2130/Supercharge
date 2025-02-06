@@ -22,6 +22,11 @@ const MENU = {
     },
   },
 
+  streak: {
+    easy: [0, 0], // current, best
+    hard: [0, 0],
+  },
+
   createBtns: function () {
     // play scene buttons
     const timelineBtnsAreDisabled = function () {
@@ -119,9 +124,18 @@ const MENU = {
           myText("exit", -28, 8, 16, BOARD_INFO.color1);
         },
         function () {
-          //// ask to confirm if !gameover & previous scene is standard
           const SC = SCENE_CONTROL;
-          SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+          const lastScene = SC.scenesStack[SC.scenesStack.length - 1];
+          // ask to confirm
+          if (!GAMEPLAY.meta.gameover && lastScene === "STANDARD") {
+            const ew = GAMEPLAY.exitWarning;
+            ew.isShown = true;
+            for (let i = 0; i < ew.btns.length; i++) {
+              ew.btns[i].animateProgress = 1;
+            }
+            return;
+          }
+          SC.changeScene(lastScene);
         }
       ),
 
@@ -134,6 +148,43 @@ const MENU = {
           myText("help", -28, 8, 16, BOARD_INFO.color1);
         },
         function () {}
+      ),
+    ];
+    GAMEPLAY.exitWarning.btns = [
+      new Btn(
+        150,
+        320,
+        140,
+        50,
+        function () {
+          myText("yes", -30, 12, 24, color(250));
+        },
+        function () {
+          const botIsHard = BOT.whiteDepth === 3 || BOT.blackDepth === 3;
+          const streakArr = botIsHard ? MENU.streak.hard : MENU.streak.easy;
+          streakArr[0] = 0;
+          // save to storage /// KA
+          localStorage.setItem(
+            botIsHard ? "hard" : "easy",
+            JSON.stringify(streakArr)
+          );
+
+          GAMEPLAY.exitWarning.isShown = false;
+          const SC = SCENE_CONTROL;
+          SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+        }
+      ),
+      new Btn(
+        350,
+        320,
+        140,
+        50,
+        function () {
+          myText("no", -20, 12, 24, color(250));
+        },
+        function () {
+          GAMEPLAY.exitWarning.isShown = false;
+        }
       ),
     ];
 
@@ -508,8 +559,14 @@ const MENU = {
             myText(presetName, -nameWidth / 2, 8, 16, color(250));
           },
           function () {
-            custom.white = white;
-            custom.black = black;
+            custom.white = {
+              botDepth: white.botDepth,
+              squad: white.squad.slice(),
+            };
+            custom.black = {
+              botDepth: black.botDepth,
+              squad: black.squad.slice(),
+            };
           }
         )
       );
@@ -613,8 +670,9 @@ const MENU = {
   },
 
   renderStandardMenu: function () {
+    const color2 = BOARD_INFO.color2;
     background(BOARD_INFO.color1);
-    stroke(BOARD_INFO.color2);
+    stroke(color2);
     strokeWeight(5);
     line(250, 0, 250, 600);
 
@@ -634,14 +692,18 @@ const MENU = {
       this.standardBtns[i].render();
     }
 
-    myText("easy", 40, 120, 45, BOARD_INFO.color2);
-    myText("hard", 295, 120, 45, BOARD_INFO.color2);
+    myText("easy", 40, 120, 45, color2);
+    myText("hard", 295, 120, 45, color2);
 
-    myText("current streak: 2", 25, 370, 14, BOARD_INFO.color2);
-    myText("best streak: 2", 25, 395, 14, BOARD_INFO.color2);
-
-    myText("current streak: 2", 275, 370, 14, BOARD_INFO.color2);
-    myText("best streak: 2", 275, 395, 14, BOARD_INFO.color2);
+    const whiteColor = color(255, 255, 255);
+    myText("current streak:", 25, 370, 14, color2);
+    myText("best streak:", 25, 395, 14, color2);
+    myText("current streak:", 275, 370, 14, color2);
+    myText("best streak:", 275, 395, 14, color2);
+    myText(this.streak.easy[0] + "", 205, 370, 14, whiteColor);
+    myText(this.streak.easy[1] + "", 170, 395, 14, whiteColor);
+    myText(this.streak.hard[0] + "", 455, 370, 14, whiteColor);
+    myText(this.streak.hard[1] + "", 420, 395, 14, whiteColor);
   },
 
   customClicked: function () {
