@@ -559,61 +559,70 @@ const GAMEPLAY = {
 
     bot.renderBotCursors();
     // update bot turn
-    if (bot.isProcessing) bot.processMinimax();
-    // not currently processing & not player turn & not gameover & not piece moving & not capturing
-    else if (
-      !isPlayerTurn &&
-      !meta.gameover &&
-      r.movement.progress === 1 &&
-      meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex
-    ) {
-      // no output yet?
-      if (bot.finalOutput === null) bot.startMinimax();
-      // has output?
-      else {
-        // first move or last move
-        const action = bot.finalOutput.actionsHistory[0];
-        const botCursor = meta.isWhiteTurn ? bot.whiteCursor : bot.blackCursor;
+    if (SCENE_CONTROL.progress >= 1) {
+      if (bot.isProcessing) bot.processMinimax();
+      // not currently processing & not player turn & not gameover & not piece moving & not capturing
+      else if (
+        !isPlayerTurn &&
+        !meta.gameover &&
+        r.movement.progress === 1 &&
+        meta.latestMoveIndex === REPLAYSYS.viewingMoveIndex
+      ) {
+        // no output yet?
+        if (bot.finalOutput === null) bot.startMinimax();
+        // has output?
+        else {
+          // first move or last move
+          const action = bot.finalOutput.actionsHistory[0];
+          const botCursor = meta.isWhiteTurn
+            ? bot.whiteCursor
+            : bot.blackCursor;
 
-        const energy = meta.isWhiteTurn ? meta.white.energy : meta.black.energy;
-        const move = energy === 2 ? action[0] : action[action.length - 1];
+          const energy = meta.isWhiteTurn
+            ? meta.white.energy
+            : meta.black.energy;
+          const move = energy === 2 ? action[0] : action[action.length - 1];
 
-        // move status: calculating > piece > option
-        if (bot.moveStatus === 0) {
-          bot.moveStatus = 1;
-          const pos = r.getRenderPos(move[0], move[1]);
-          bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
-        } else if (bot.moveStatus === 1) {
-          // done moving to piece? select piece
-          if (botCursor.progress === 1) {
-            bot.moveStatus = 2;
-            this.selectedPiecePos = this.hoveredSq;
-            this.possibleMoves = this.getPossibleMoves(
-              this.selectedPiecePos,
-              bd
-            );
-            r.selectedPieceProgress = 0;
-
-            const pos = r.getRenderPos(move[2], move[3]);
+          // move status: calculating > piece > option
+          if (bot.moveStatus === 0) {
+            bot.moveStatus = 1;
+            const pos = r.getRenderPos(move[0], move[1]);
             bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
-          }
-        } else if (bot.moveStatus === 2) {
-          // done moving to option? apply move
-          if (botCursor.progress === 1) {
-            for (let i = 0; i < this.possibleMoves.length; i++) {
-              const oPos = this.possibleMoves[i];
-              if (this.hoveredSq.x === oPos.x && this.hoveredSq.y === oPos.y) {
-                this.makeMove(this.hoveredSq);
-                break;
-              }
-            }
-            this.deselectPiece();
+          } else if (bot.moveStatus === 1) {
+            // done moving to piece? select piece
+            if (botCursor.progress === 1) {
+              bot.moveStatus = 2;
+              this.selectedPiecePos = this.hoveredSq;
+              this.possibleMoves = this.getPossibleMoves(
+                this.selectedPiecePos,
+                bd
+              );
+              r.selectedPieceProgress = 0;
 
-            if (energy === 2) bot.moveStatus = 0; // repeat for next move
-            // return to home position
-            else {
-              bot.finalOutput = null;
-              bot.startBotCursorMove(botCursor, botCursor.homePos);
+              const pos = r.getRenderPos(move[2], move[3]);
+              bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
+            }
+          } else if (bot.moveStatus === 2) {
+            // done moving to option? apply move
+            if (botCursor.progress === 1) {
+              for (let i = 0; i < this.possibleMoves.length; i++) {
+                const oPos = this.possibleMoves[i];
+                if (
+                  this.hoveredSq.x === oPos.x &&
+                  this.hoveredSq.y === oPos.y
+                ) {
+                  this.makeMove(this.hoveredSq);
+                  break;
+                }
+              }
+              this.deselectPiece();
+
+              if (energy === 2) bot.moveStatus = 0; // repeat for next move
+              // return to home position
+              else {
+                bot.finalOutput = null;
+                bot.startBotCursorMove(botCursor, botCursor.homePos);
+              }
             }
           }
         }

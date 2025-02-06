@@ -129,16 +129,14 @@ const RENDER = {
 
     // render white & black score bars (render previous if piece moving or yellow bar still extending)
     noStroke();
+    fill(blackColor);
+    rect(0, 500, 500, 12);
     if (isAnimatingMovement || this.capturedTR.progress < 0.4) {
       fill(whiteColor);
       rect(0, 500, prevSeparationX, 12);
-      fill(blackColor);
-      rect(prevSeparationX, 500, 500 - prevSeparationX, 12);
     } else {
       fill(whiteColor);
       rect(0, 500, separationX, 12);
-      fill(blackColor);
-      rect(separationX, 500, 500 - separationX, 12);
     }
 
     // render animated increasing bar
