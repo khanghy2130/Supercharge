@@ -667,6 +667,11 @@ const MENU = {
 
     myText("white", 55, 160, 25, color(240));
     myText("black", 335, 160, 25, color(20));
+
+    stroke(BOARD_INFO.color2);
+    strokeWeight(3);
+    noFill();
+    rect(10, 115, 480, 360, 10);
   },
 
   renderStandardMenu: function () {

@@ -77,6 +77,7 @@ const RENDER = {
     const meta = GAMEPLAY.meta;
     const whiteColor = color(240);
     const blackColor = color(20);
+    const boardColor2 = BOARD_INFO.color2;
     const scoringColor = color(50, 225, 35);
     const isAnimatingMovement = this.movement.progress < 1;
 
@@ -103,10 +104,10 @@ const RENDER = {
       }
 
       noFill();
-      stroke(BOARD_INFO.color2);
+      stroke(boardColor2);
       strokeWeight(2);
       rect(170, 575, 160, 10);
-      fill(BOARD_INFO.color2);
+      fill(boardColor2);
       noStroke();
       rect(170, 575, 160 * processingProgress, 10);
     }
@@ -230,7 +231,7 @@ const RENDER = {
     );
 
     // render round number
-    const roundNumberColor = color(BOARD_INFO.color2);
+    const roundNumberColor = color(boardColor2);
     myText(
       meta.round + "",
       225,
@@ -248,7 +249,7 @@ const RENDER = {
 
     // render moves left
     strokeWeight(1.5);
-    stroke(BOARD_INFO.color2);
+    stroke(boardColor2);
 
     this.renderMoveIndicator(195, 532, meta.white.energy === 2, false);
     this.renderMoveIndicator(
