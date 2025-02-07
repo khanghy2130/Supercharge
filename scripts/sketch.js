@@ -49,6 +49,7 @@ function setup() {
 }
 
 function createImages() {
+  strokeJoin(ROUND);
   // create board image
   (function () {
     background(BOARD_INFO.color1);
@@ -228,6 +229,7 @@ function createImages() {
 }
 
 function createHelpImages() {
+  strokeJoin(ROUND);
   clear(); /// KA background(0,0);
 
   // highlights
@@ -308,7 +310,7 @@ function createHelpImages() {
   ];
   const offsetY = 530;
   const circleSize = CONSTANTS.CIRCLE_SIZE;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     const offsetX = 120 + i * 50;
     // render circles outlines
     noFill();
