@@ -18,6 +18,11 @@ const GAMEPLAY = {
     round: 1,
     timeStops: [], // alternate white and black
   },
+  help: {
+    images: [],
+    isShown: false,
+    progress: 0,
+  },
 
   result: {
     countDown: 0,
@@ -629,8 +634,39 @@ const GAMEPLAY = {
       }
     }
 
+    // render help
+    if (this.help.isShown) {
+      this.help.progress += 0.005;
+      cursor(ARROW);
+      noStroke();
+      fill(0, 200);
+      rect(0, 0, 500, 600);
+      const hImgs = this.help.images;
+      for (let i = 0; i < hImgs.length; i++) {
+        push(); /// KA
+        translate(250, 100 + 185 * i);
+        const minVal = i * 0.15;
+        const maxVal = minVal + 0.4;
+        if (this.help.progress > minVal) {
+          let scaleFactor = r.easeOutElastic(
+            map(
+              constrain(this.help.progress, minVal, maxVal),
+              minVal,
+              maxVal,
+              0,
+              1
+            )
+          );
+          scaleFactor *= 0.5; // animated range
+          scale(0.5 + scaleFactor, 1.5 - scaleFactor); // 1 - or + range
+          image(hImgs[i], 0, 0, 400, 180);
+        }
+        pop(); /// KA
+      }
+    }
     // render exit warning
-    if (this.exitWarning.isShown) {
+    else if (this.exitWarning.isShown) {
+      cursor(ARROW);
       noStroke();
       fill(0, 200);
       rect(0, 0, 500, 600);
@@ -649,6 +685,12 @@ const GAMEPLAY = {
 
   clicked: function () {
     const r = RENDER;
+
+    // showing help?
+    if (this.help.isShown) {
+      this.help.isShown = false;
+      return;
+    }
 
     // showing exit warning?
     if (this.exitWarning.isShown) {

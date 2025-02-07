@@ -147,7 +147,10 @@ const MENU = {
         function () {
           myText("help", -28, 8, 16, BOARD_INFO.color1);
         },
-        function () {}
+        function () {
+          GAMEPLAY.help.isShown = true;
+          GAMEPLAY.help.progress = 0;
+        }
       ),
     ];
     GAMEPLAY.exitWarning.btns = [

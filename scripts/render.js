@@ -69,7 +69,7 @@ const RENDER = {
     for (let i = 0; i < arr.length; i++) {
       hw += this.numHalfWidths[arr[i]];
     }
-    if (s !== undefined) return (hw / CONSTANTS.VALUE_NUM_SIZE) * s;
+    if (s !== undefined) return (hw / 18) * s;
     return hw;
   },
 
@@ -444,8 +444,8 @@ const RENDER = {
     myText(
       scoreGainedStr,
       -this.getNumHalfWidth(scoreGainedStr) - 3,
-      CONSTANTS.VALUE_NUM_SIZE / 2,
-      CONSTANTS.VALUE_NUM_SIZE,
+      9,
+      18,
       color(255)
     );
     pop(); /// KA
@@ -601,6 +601,7 @@ const RENDER = {
   },
 
   renderAllTargets: function () {
+    const circleSize = CONSTANTS.CIRCLE_SIZE;
     for (let i = 0; i < this.targets.length; i++) {
       const TR = this.targets[i];
       let value = TR.value;
@@ -646,7 +647,7 @@ const RENDER = {
       strokeWeight(6);
       for (let ci = 0; ci < circlesPositions.length; ci++) {
         const { rx, ry } = circlesPositions[ci];
-        ellipse(rx, ry, CONSTANTS.CIRCLE_SIZE, CONSTANTS.CIRCLE_SIZE);
+        ellipse(rx, ry, circleSize, circleSize);
       }
 
       // render inner circles
@@ -657,7 +658,7 @@ const RENDER = {
       } else fill(targetColor);
       for (let ci = 0; ci < circlesPositions.length; ci++) {
         const { rx, ry } = circlesPositions[ci];
-        ellipse(rx, ry, CONSTANTS.CIRCLE_SIZE, CONSTANTS.CIRCLE_SIZE);
+        ellipse(rx, ry, circleSize, circleSize);
       }
 
       // render value
@@ -666,8 +667,8 @@ const RENDER = {
       myText(
         valueStr,
         rx - this.getNumHalfWidth(valueStr),
-        ry + CONSTANTS.VALUE_NUM_SIZE / 2,
-        CONSTANTS.VALUE_NUM_SIZE,
+        ry + 9,
+        18,
         color(0)
       );
     }

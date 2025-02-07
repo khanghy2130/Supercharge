@@ -20,9 +20,8 @@ function setup() {
   })();
 
   // configs
-  // frameRate(1); /////
   pixelDensity(1); // nKA
-  angleMode(DEGREES); // KA
+  angleMode(DEGREES); // KA angleMode = "degrees"
   imageMode(CENTER);
   strokeJoin(ROUND);
 
@@ -37,10 +36,8 @@ function setup() {
   }
 
   // set num widths
-  r.numHalfWidths["0"] =
-    myText("0", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
-  r.numHalfWidths["1"] =
-    myText("1", -100, -100, CONSTANTS.VALUE_NUM_SIZE, color(0, 0, 0, 0)) / 2;
+  r.numHalfWidths["0"] = myText("0", -100, -100, 18, color(0, 0, 0, 0)) / 2;
+  r.numHalfWidths["1"] = myText("1", -100, -100, 18, color(0, 0, 0, 0)) / 2;
   for (let i = 2; i < 10; i++)
     r.numHalfWidths[i.toString()] = r.numHalfWidths["1"];
   r.numHalfWidths["4"] = r.numHalfWidths["0"]; // set number 4 width to be 0
@@ -230,6 +227,123 @@ function createImages() {
   })();
 }
 
+function createHelpImages() {
+  clear(); /// KA background(0,0);
+
+  // highlights
+  noStroke();
+  fill(200, 0, 0);
+  rect(115, 38, 75, 30);
+  rect(235, 65, 95, 30);
+  rect(345, 94, 85, 30);
+  rect(146, 225, 62, 30);
+  rect(45, 254, 145, 30);
+  rect(45, 310, 77, 30);
+  rect(290, 387, 108, 30);
+  rect(302, 444, 80, 30);
+  rect(67, 472, 125, 30);
+
+  const r = RENDER;
+  const whiteColor = color(240);
+  myText(
+    "- the pieces move like in chess.\n- you can make 2 moves per turn.\n- move your piece onto a target\nto gain points.",
+    50,
+    60,
+    14,
+    whiteColor
+  );
+  myText(
+    "- move your piece onto another\npiece to swap their places and\nsupercharge the other piece.\n- a supercharged piece gains\ntriple points on its next move.",
+    50,
+    220,
+    14,
+    whiteColor
+  );
+  myText(
+    "the game ends after 8 rounds.\nat the start of each round:\n- targets increase in value.\n- plus signs become new targets.",
+    50,
+    410,
+    14,
+    whiteColor
+  );
+
+  const gpi = r.getPieceImage;
+  image(gpi({ isWhite: true, name: "K" }), 280, 160, 70, 70);
+  image(gpi({ isWhite: true, name: "R" }), 340, 160, 70, 70);
+  image(gpi({ isWhite: true, name: "B" }), 400, 160, 70, 70);
+
+  fill(r.LIGHTNING_COLOR);
+  stroke(0);
+  strokeWeight(1.8);
+  let rx = 190;
+  let ry = 372;
+  for (let i = 0; i < 3; i++) {
+    beginShape();
+    vertex(rx + 25, ry - 25);
+    vertex(rx + 12, ry - 25);
+    vertex(rx + 8, ry - 10);
+    vertex(rx + 15, ry - 10);
+    vertex(rx + 10, ry + 2);
+    vertex(rx + 25, ry - 15);
+    vertex(rx + 18, ry - 15);
+    endShape(CLOSE);
+    rx += 40;
+  }
+
+  rx = 80;
+  ry = 530;
+  stroke(0);
+  strokeWeight(10);
+  line(rx, ry + 7, rx, ry - 7);
+  line(rx + 7, ry, rx - 7, ry);
+  stroke(r.TARGETS_COLORS[0]);
+  strokeWeight(5);
+  line(rx, ry + 7, rx, ry - 7);
+  line(rx + 7, ry, rx - 7, ry);
+
+  let circlesPositions = [
+    { rx: 5, ry: -1 },
+    { rx: -3, ry: 1 },
+    { rx: 1, ry: 5 },
+  ];
+  const offsetY = 530;
+  const circleSize = CONSTANTS.CIRCLE_SIZE;
+  for (let i = 0; i < 4; i++) {
+    const offsetX = 120 + i * 50;
+    // render circles outlines
+    noFill();
+    stroke(0);
+    strokeWeight(6);
+    for (let ci = 0; ci < circlesPositions.length; ci++) {
+      const { rx, ry } = circlesPositions[ci];
+      ellipse(rx + offsetX, ry + offsetY, circleSize, circleSize);
+    }
+
+    // render inner circles
+    noStroke();
+    const targetColor = color(r.TARGETS_COLORS[i]);
+    fill(targetColor);
+    for (let ci = 0; ci < circlesPositions.length; ci++) {
+      const { rx, ry } = circlesPositions[ci];
+      ellipse(rx + offsetX, ry + offsetY, circleSize, circleSize);
+    }
+
+    // render value
+    const valueStr = i + 1 + "";
+    myText(
+      valueStr,
+      offsetX - r.getNumHalfWidth(valueStr),
+      offsetY + 9,
+      18,
+      color(0)
+    );
+  }
+
+  GAMEPLAY.help.images[0] = get(40, 10, 400, 180);
+  GAMEPLAY.help.images[1] = get(40, 200, 400, 180);
+  GAMEPLAY.help.images[2] = get(40, 382, 400, 180);
+}
+
 // nKA
 function windowResized() {
   viewportWidth = Math.min(window.innerWidth * (6 / 5), window.innerHeight);
@@ -262,6 +376,8 @@ function draw() {
         RENDER.lightnings = [];
         // recreate images if going to menu scene
         if (SC.targetScene === "MENU") createImages();
+        // recreate help images if going to play scene
+        else if (SC.targetScene === "PLAY") createHelpImages();
       }
     }
     translate(
