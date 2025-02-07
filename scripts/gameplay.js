@@ -18,11 +18,6 @@ const GAMEPLAY = {
     round: 1,
     timeStops: [], // alternate white and black
   },
-  help: {
-    images: [],
-    isShown: false,
-    progress: 0,
-  },
 
   result: {
     countDown: 0,
@@ -39,6 +34,11 @@ const GAMEPLAY = {
   exitWarning: {
     btns: [],
     isShown: false,
+  },
+  help: {
+    images: [],
+    isShown: false,
+    progress: 0,
   },
 
   isTarget: function (sqData) {
@@ -686,6 +686,16 @@ const GAMEPLAY = {
   clicked: function () {
     const r = RENDER;
 
+    // close result
+    if (this.result.isShown && this.result.progress > 1.2) {
+      this.result.isShown = false;
+      this.hintArrow.x = r.btns[4].x;
+      this.hintArrow.countDown = 120;
+      this.exitWarning.isShown = false;
+      this.help.isShown = false;
+      return;
+    }
+
     // showing help?
     if (this.help.isShown) {
       this.help.isShown = false;
@@ -698,14 +708,6 @@ const GAMEPLAY = {
         const b = this.exitWarning.btns[i];
         if (b.isHovered) return b.clicked();
       }
-      return;
-    }
-
-    // close result
-    if (this.result.isShown && this.result.progress > 1.2) {
-      this.result.isShown = false;
-      this.hintArrow.x = r.btns[4].x;
-      this.hintArrow.countDown = 120;
       return;
     }
 

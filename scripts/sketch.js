@@ -1,24 +1,9 @@
 let pieceImages = {};
 
-const sounds = {};
-function preload() {
-  sounds.gainScore = loadSound("../sounds/water-bubble.mp3");
-  /// KA sounds.name.audio.preservesPitch = false  &  sounds.name.audio.volume = x
-}
-
-function _playSound(sound) {
-  sound.stop(); /// nKA
-  /// KA sounds.audio
-  sound.currentTime = 0;
-  sound.play(); /// KA playSound()
-}
-
 let scaleFactor = 1; /// nKA
 let canvas; /// nKA
 function setup() {
   // nKA
-  sounds.gainScore.playbackRate = 1.8;
-  sounds.gainScore.setVolume(0.3);
   canvas = createCanvas(500, 600, document.getElementById("game-canvas"));
   windowResized();
   (function () {

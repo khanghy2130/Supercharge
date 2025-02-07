@@ -500,7 +500,6 @@ const RENDER = {
       this.capturedTR.pos = TR.pos;
       this.capturedTR.progress = 0;
       this.capturedTR.fadingCircles = [];
-      _playSound(sounds.gainScore);
 
       // add to fadingCircles
       const randomOffsetDeg = random() * 90;
