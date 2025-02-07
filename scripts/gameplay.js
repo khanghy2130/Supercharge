@@ -280,7 +280,7 @@ const GAMEPLAY = {
       this.hintArrow.countDown = 200;
       this.isNewPlayer = false;
       // save to storage /// KA
-      localStorage.setItem("isNewPlayer", "1");
+      localStorage.setItem("isNewPlayer", "0");
     } else {
       this.hintArrow.countDown = 0;
     }

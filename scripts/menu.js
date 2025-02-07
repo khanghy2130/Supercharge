@@ -5,7 +5,6 @@ const MENU = {
   menuBtns: [],
   thumbnailImg: null,
 
-  reusableBackBtn: null,
   standardBtns: [],
   custom: {
     bgImage: null,
@@ -278,21 +277,22 @@ const MENU = {
       ),
     ];
 
-    this.reusableBackBtn = new Btn(
-      250,
-      540,
-      150,
-      50,
-      function () {
-        myText("back", -46, 12, 25, BOARD_INFO.color1);
-      },
-      function () {
-        const SC = SCENE_CONTROL;
-        SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
-      }
-    );
-
     // standard buttons
+    this.standardBtns.push(
+      new Btn(
+        250,
+        540,
+        150,
+        50,
+        function () {
+          myText("back", -46, 12, 25, BOARD_INFO.color1);
+        },
+        function () {
+          const SC = SCENE_CONTROL;
+          SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+        }
+      )
+    );
     for (let i = 0; i < 2; i++) {
       this.standardBtns.push(
         new Btn(
@@ -574,6 +574,23 @@ const MENU = {
         )
       );
     }
+
+    // replays menu buttons
+    REPLAYS_MENU.btns = [
+      new Btn(
+        110,
+        540,
+        150,
+        50,
+        function () {
+          myText("back", -46, 12, 25, BOARD_INFO.color1);
+        },
+        function () {
+          const SC = SCENE_CONTROL;
+          SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
+        }
+      ),
+    ];
   },
 
   renderMainMenu: function () {
@@ -695,7 +712,6 @@ const MENU = {
     image(RENDER.getPieceImage({ isWhite: true, name: "B" }), 0, 0, 150, 150);
     pop(); /// KA
 
-    this.reusableBackBtn.render();
     for (let i = 0; i < this.standardBtns.length; i++) {
       this.standardBtns[i].render();
     }
@@ -739,10 +755,6 @@ const MENU = {
   },
 
   standardClicked: function () {
-    // back button
-    if (this.reusableBackBtn.isHovered) {
-      return this.reusableBackBtn.clicked();
-    }
     for (let i = 0; i < this.standardBtns.length; i++) {
       const b = this.standardBtns[i];
       if (b.isHovered) return b.clicked();

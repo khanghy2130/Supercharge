@@ -18,15 +18,19 @@ const REPLAYS_MENU = {
     },
   },
   category: "EASY", // EASY, HARD, CUSTOM
+  btns: [],
 
   render: function () {
     background(BOARD_INFO.color1);
-    MENU.reusableBackBtn.render();
+    for (let i = 0; i < this.btns.length; i++) {
+      this.btns[i].render();
+    }
   },
   clicked: function () {
-    // back button
-    if (MENU.reusableBackBtn.isHovered) {
-      return MENU.reusableBackBtn.clicked();
+    // button clicked
+    for (let i = 0; i < this.btns.length; i++) {
+      const b = this.btns[i];
+      if (b.isHovered) return b.clicked();
     }
   },
 };

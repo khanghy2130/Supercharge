@@ -16,7 +16,7 @@ function setup() {
       MENU.streak.hard = JSON.parse(saveHard);
     }
     GAMEPLAY.isNewPlayer =
-      localStorage.getItem("isNewPlayer") === "1" ? true : false;
+      localStorage.getItem("isNewPlayer") === "0" ? false : true;
   })();
 
   // configs
