@@ -2,17 +2,14 @@ let pieceImages = {};
 
 const sounds = {};
 function preload() {
-  sounds.click = loadSound("../sounds/hit1.mp3"); // rate:2.5   vol:0.9
-  sounds.gainScore = loadSound("../sounds/water-bubble.mp3"); // rate:0.8   vol:0.3
-  sounds.lightning = loadSound("../sounds/boom1.mp3"); // rate:0.8   vol:0.3
+  sounds.gainScore = loadSound("../sounds/water-bubble.mp3");
   /// KA sounds.name.audio.preservesPitch = false  &  sounds.name.audio.volume = x
 }
 
-function _playSound(sound, rate) {
+function _playSound(sound) {
+  sound.stop(); /// nKA
   /// KA sounds.audio
   sound.currentTime = 0;
-  sound.playbackRate = 1 + rate;
-  sound.stop(); /// nKA
   sound.play(); /// KA playSound()
 }
 
@@ -20,9 +17,8 @@ let scaleFactor = 1; /// nKA
 let canvas; /// nKA
 function setup() {
   // nKA
-  sounds.click.setVolume(0.9);
+  sounds.gainScore.playbackRate = 1.8;
   sounds.gainScore.setVolume(0.3);
-  sounds.lightning.setVolume(0.3);
   canvas = createCanvas(500, 600, document.getElementById("game-canvas"));
   windowResized();
   (function () {

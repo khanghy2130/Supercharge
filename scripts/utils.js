@@ -66,7 +66,6 @@ class Btn {
     this.renderContent = renderContent;
     this.clicked = () => {
       this.animateProgress = 0;
-      _playSound(sounds.click, 2.5);
       if (clicked !== null) clicked();
     };
     this.isHovered = false;
