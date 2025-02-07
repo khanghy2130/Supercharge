@@ -467,13 +467,13 @@ const GAMEPLAY = {
 
     if (
       cursorPos.x > 0 &&
-      cursorPos.x < BOARD_INFO.size &&
+      cursorPos.x < 500 &&
       cursorPos.y > 0 &&
-      cursorPos.y < BOARD_INFO.size
+      cursorPos.y < 500
     ) {
       this.hoveredSq = {
-        x: floor(cursorPos.x / BOARD_INFO.sqSize),
-        y: floor(cursorPos.y / BOARD_INFO.sqSize),
+        x: floor(cursorPos.x / 62.5),
+        y: floor(cursorPos.y / 62.5),
       };
     }
 
@@ -504,7 +504,7 @@ const GAMEPLAY = {
 
     // render possible moves outlines
     if (this.possibleMoves !== null) {
-      const ss = BOARD_INFO.sqSize;
+      const ss = 62.5;
       for (let i = 0, pms = this.possibleMoves; i < pms.length; i++) {
         const pos = pms[i];
         if (
@@ -603,6 +603,7 @@ const GAMEPLAY = {
                 bd
               );
               r.selectedPieceProgress = 0;
+              _playSound(sounds.click, 2.5);
 
               const pos = r.getRenderPos(move[2], move[3]);
               bot.startBotCursorMove(botCursor, { x: pos.rx, y: pos.ry }, true);
@@ -617,6 +618,7 @@ const GAMEPLAY = {
                   this.hoveredSq.y === oPos.y
                 ) {
                   this.makeMove(this.hoveredSq);
+                  _playSound(sounds.click, 2.5);
                   break;
                 }
               }
@@ -751,6 +753,7 @@ const GAMEPLAY = {
         this.boardData
       );
       r.selectedPieceProgress = 0;
+      _playSound(sounds.click, 2.5);
     }
     // already selected a piece?
     else if (this.possibleMoves !== null) {
@@ -759,6 +762,7 @@ const GAMEPLAY = {
         const pos = this.possibleMoves[i];
         if (this.hoveredSq.x === pos.x && this.hoveredSq.y === pos.y) {
           this.makeMove(this.hoveredSq);
+          _playSound(sounds.click, 2.5);
           return;
         }
       }

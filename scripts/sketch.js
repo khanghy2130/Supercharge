@@ -1,9 +1,28 @@
 let pieceImages = {};
 
-let scaleFactor = 1;
-let canvas;
+const sounds = {};
+function preload() {
+  sounds.click = loadSound("../sounds/hit1.mp3"); // rate:2.5   vol:0.9
+  sounds.gainScore = loadSound("../sounds/water-bubble.mp3"); // rate:0.8   vol:0.3
+  sounds.lightning = loadSound("../sounds/boom1.mp3"); // rate:0.8   vol:0.3
+  /// KA sounds.name.audio.preservesPitch = false  &  sounds.name.audio.volume = x
+}
+
+function _playSound(sound, rate) {
+  /// KA sounds.audio
+  sound.currentTime = 0;
+  sound.playbackRate = 1 + rate;
+  sound.stop(); /// nKA
+  sound.play(); /// KA playSound()
+}
+
+let scaleFactor = 1; /// nKA
+let canvas; /// nKA
 function setup() {
   // nKA
+  sounds.click.setVolume(0.9);
+  sounds.gainScore.setVolume(0.3);
+  sounds.lightning.setVolume(0.3);
   canvas = createCanvas(500, 600, document.getElementById("game-canvas"));
   windowResized();
   (function () {
@@ -20,8 +39,8 @@ function setup() {
   })();
 
   // configs
-  pixelDensity(1); // nKA
-  angleMode(DEGREES); // KA angleMode = "degrees"
+  pixelDensity(1); /// nKA
+  angleMode(DEGREES); /// KA angleMode = "degrees"
   imageMode(CENTER);
   strokeJoin(ROUND);
 

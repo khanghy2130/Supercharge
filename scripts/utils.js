@@ -10,9 +10,7 @@ const CONSTANTS = {
 const BOARD_INFO = {
   color1: [195, 125, 240],
   color2: [125, 70, 160],
-  size: 500,
 };
-BOARD_INFO.sqSize = BOARD_INFO.size / 8;
 
 const PIECES_MOVES = {
   KNIGHT_MOVES: [
@@ -68,6 +66,7 @@ class Btn {
     this.renderContent = renderContent;
     this.clicked = () => {
       this.animateProgress = 0;
+      _playSound(sounds.click, 2.5);
       if (clicked !== null) clicked();
     };
     this.isHovered = false;

@@ -303,6 +303,7 @@ const RENDER = {
   },
 
   bigSpawnLightings: function (rx, ry) {
+    _playSound(sounds.lightning, 0.8);
     for (let i = 0; i < 10; i++) {
       // within a small square
       this.spawnLightning(rx + random() * 50 - 25, ry + random() * 50 - 25);
@@ -500,6 +501,7 @@ const RENDER = {
       this.capturedTR.pos = TR.pos;
       this.capturedTR.progress = 0;
       this.capturedTR.fadingCircles = [];
+      _playSound(sounds.gainScore, 0.8);
 
       // add to fadingCircles
       const randomOffsetDeg = random() * 90;
@@ -708,7 +710,7 @@ const RENDER = {
   },
 
   renderAllPieces: function (bd) {
-    const ss = BOARD_INFO.sqSize;
+    const ss = 62.5;
     const gp = GAMEPLAY;
     const pp = this.piecesPositions.slice();
     const getPieceImage = this.getPieceImage;
@@ -884,8 +886,8 @@ const RENDER = {
 
   getRenderPos: function (x, y) {
     return {
-      rx: BOARD_INFO.sqSize * (x + 0.5),
-      ry: BOARD_INFO.sqSize * (y + 0.5),
+      rx: 62.5 * (x + 0.5),
+      ry: 62.5 * (y + 0.5),
     };
   },
 };
