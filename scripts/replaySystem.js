@@ -186,10 +186,10 @@ const REPLAYSYS = {
     let wScore = 0;
     let bScore = 0;
     for (let i = 0; i < this.viewingMoveIndex + 1; i++) {
-      const move = this.moves[i];
+      const scoreGained = this.moves[i].scoreGained;
       const mifr = i % 4;
-      if (mifr < 2) wScore += move.scoreGained;
-      else bScore += move.scoreGained;
+      if (mifr < 2) wScore += scoreGained;
+      else bScore += scoreGained;
     }
     gp.meta.white.score = wScore;
     gp.meta.black.score = bScore;
@@ -230,52 +230,145 @@ const REPLAYSYS = {
       targetsStr += "" + x + y;
     }
 
-    console.log(movesStr);
-    console.log(targetsStr);
+    const { white, black } = GAMEPLAY.savedConfig;
+    let squadCode;
+    const scenesStack = SCENE_CONTROL.scenesStack;
+    if (scenesStack[scenesStack.length - 1] === "STANDARD") {
+      squadCode = floor(random() * 10) + "";
+    } else {
+      const pieceNames = ["R", "B", "K", "L", "Q"];
+      squadCode = white.squad
+        .concat(black.squad)
+        .map(function (pieceName) {
+          return pieceNames.indexOf(pieceName);
+        })
+        .join("");
+    }
+    const botCode = white.botDepth + "" + black.botDepth;
+
+    let wScore = 0;
+    let bScore = 0;
+    for (let i = 0; i < this.moves.length; i++) {
+      const scoreGained = this.moves[i].scoreGained;
+      const mifr = i % 4;
+
+      if (mifr < 2) {
+        wScore += scoreGained;
+      } else {
+        bScore += scoreGained;
+      }
+    }
+
+    let wTotalTime = 0;
+    let bTotalTime = 0;
+    const ts = GAMEPLAY.meta.timeStops;
+    for (let i = 0; i < ts.length; i += 2) {
+      if (i + 1 < ts.length) {
+        wTotalTime += ts[i + 1] - ts[i];
+      }
+      if (i + 2 < ts.length) {
+        bTotalTime += ts[i + 2] - ts[i + 1];
+      }
+    }
+    const wTimeMod = wTotalTime % totalSum;
+    const bTimeMod = bTotalTime % totalSum;
+
+    const arr = [
+      movesStr,
+      targetsStr,
+      squadCode,
+      botCode,
+      totalSum.toString(),
+      wScore.toString(),
+      wTotalTime.toString(),
+      wTimeMod.toString(),
+      bScore.toString(),
+      bTotalTime.toString(),
+      bTimeMod.toString(),
+    ];
+
+    function convertStr(str) {
+      return str
+        .split("")
+        .map((num) => String.fromCharCode(100 + Number(num)))
+        .join("");
+    }
+
+    const finalStr = arr.map(convertStr).join("x");
+    console.log(finalStr);
   },
 
-  loadingReplayFailed: function (msg) {
-    console.log(msg);
+  unpackReplayStr(replayStr) {
+    const arr = replayStr.split("x");
+    return arr.map(function (item) {
+      return item
+        .split("")
+        .map((char) => char.charCodeAt(0) - 100)
+        .join("");
+    });
   },
 
-  /* raw replay data has: 
-    movesStr, targetsStr, sum, 
-    squads OR just a random digit(standard),
-    2 digits of bot depths (w&b),
-    
-    (w)
-    score, time, time mod sum,
-    (b)
-    score, time, time mod sum
+  loadReplay: function (replayStr) {
+    let arr = this.unpackReplayStr(replayStr);
+    if (arr.length !== 11) {
+      return console.log("not right replay data array length");
+    }
 
-    loadReplay() needs movesStr, targetsStr, bot depths, squads (or standard), w&b times
-  */
-  loadReplay: function () {
-    //// load this
-    const moveStr =
-      "11412341625462402325251554665434251741323474667415051705667676741757575674044004322156264060603026252521304004402516210140044041";
-    const targetsStr = "764025415734175660167432210105253026537371417563476270";
+    const [movesStr, targetsStr, squadCode, botCode] = arr;
+    const totalSum = Number(arr[4]);
+    const wTotalTime = Number(arr[6]);
+    const wTimeMod = Number(arr[7]);
+    const bTotalTime = Number(arr[9]);
+    const bTimeMod = Number(arr[10]);
 
-    ///// load this
-    const white = {
-      botDepth: 1,
-      squad: ["R", "B", "K"],
-    };
-    const black = {
-      botDepth: 1,
-      squad: ["K", "B", "R"],
-    };
-
-    ///// load this
-    const whiteTotalTime = 50000;
-    const blackTotalTime = 20000;
-
-    // validate data
-    if (moveStr.length !== 128) {
-      return this.loadingReplayFailed("not right movesStr length");
+    if (movesStr.length !== 128) {
+      return console.log("not right movesStr length");
     }
     if (targetsStr.length !== 54) {
-      return this.loadingReplayFailed("not right targetsStr length");
+      return console.log("not right targetsStr length");
+    }
+    if (wTotalTime % totalSum !== wTimeMod) {
+      return console.log("not right white time");
+    }
+    if (bTotalTime % totalSum !== bTimeMod) {
+      return console.log("not right black time");
+    }
+    if (botCode.length !== 2) {
+      return console.log("not right botCode length");
+    }
+
+    let white, black;
+    if (squadCode.length === 1) {
+      // standard
+      white = {
+        botDepth: Number(botCode[0]),
+        squad: ["R", "B", "K"],
+      };
+      black = {
+        botDepth: Number(botCode[1]),
+        squad: ["K", "B", "R"],
+      };
+    } else if (squadCode.length === 6) {
+      // custom
+      const pieceNames = ["R", "B", "K", "L", "Q"];
+      white = {
+        botDepth: Number(botCode[0]),
+        squad: [
+          pieceNames[Number(squadCode[0])],
+          pieceNames[Number(squadCode[1])],
+          pieceNames[Number(squadCode[2])],
+        ],
+      };
+      black = {
+        botDepth: Number(botCode[1]),
+        squad: [
+          pieceNames[Number(squadCode[3])],
+          pieceNames[Number(squadCode[4])],
+          pieceNames[Number(squadCode[5])],
+        ],
+      };
+    } else {
+      return console.log("not right squadCode length");
     }
 
     const gp = GAMEPLAY;
@@ -304,7 +397,7 @@ const REPLAYSYS = {
     gp.selectedPiecePos = null;
     gp.possibleMoves = null;
     gp.hintArrow.countDown = 0;
-    gp.meta.timeStops = [0, whiteTotalTime, whiteTotalTime + blackTotalTime];
+    gp.meta.timeStops = [0, wTotalTime, wTotalTime + bTotalTime];
     this.initialize();
 
     // reset boardData
@@ -355,10 +448,10 @@ const REPLAYSYS = {
     for (let i = 0; i < 128; i += 4) {
       this.moves.push({
         lastMove: {
-          sx: Number(moveStr[i]),
-          sy: Number(moveStr[i + 1]),
-          ex: Number(moveStr[i + 2]),
-          ey: Number(moveStr[i + 3]),
+          sx: Number(movesStr[i]),
+          sy: Number(movesStr[i + 1]),
+          ex: Number(movesStr[i + 2]),
+          ey: Number(movesStr[i + 3]),
         },
         scoreGained: 0,
       });
@@ -376,6 +469,7 @@ const REPLAYSYS = {
     for (let i = 0; i < 6; i++) {
       const pos = allTargetsPositions[i];
       gp.boardData[pos.y][pos.x] = 1;
+      this.initialTargetsPositions.push(pos); // unnecessary but to fill in
     }
     // set remaining target spawns
     for (let i = 6; i < allTargetsPositions.length; i += 3) {

@@ -387,16 +387,16 @@ const GAMEPLAY = {
         let wScore = 0;
         let bScore = 0;
         for (let i = 0; i < moves.length; i++) {
-          const move = moves[i];
+          const scoreGained = moves[i].scoreGained;
           const mifr = i % 4;
 
           if (mifr < 2) {
-            wScore += move.scoreGained;
+            wScore += scoreGained;
             if (mifr === 1) {
               scores.push([wScore]);
             }
           } else {
-            bScore += move.scoreGained;
+            bScore += scoreGained;
             if (mifr === 3) {
               scores[scores.length - 1].push(bScore);
             }

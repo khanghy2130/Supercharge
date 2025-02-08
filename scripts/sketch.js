@@ -3,6 +3,8 @@ let pieceImages = {};
 let scaleFactor = 1; /// nKA
 let canvas; /// nKA
 function setup() {
+  /// KA convert console.log
+
   // nKA
   canvas = createCanvas(500, 600, document.getElementById("game-canvas"));
   windowResized();
