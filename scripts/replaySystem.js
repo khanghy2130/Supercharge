@@ -12,12 +12,14 @@ const REPLAYSYS = {
   moves: [],
   viewingMoveIndex: -1,
   targetPreviewsPositions: [], // pos[3][8]
+  initialTargetsPositions: [],
 
   initialize: function () {
     this.lastLoadIsForward = true;
     this.moves = [];
     this.viewingMoveIndex = -1;
     this.targetPreviewsPositions = [];
+    this.initialTargetsPositions = [];
 
     RENDER.movement = {
       progress: 1,
@@ -47,10 +49,16 @@ const REPLAYSYS = {
     // apply move/unmove and spawn/unspawn targets
     if (goesForward) {
       const move = this.moves[vmi];
+      const { sx, sy, ex, ey } = move.lastMove;
+
+      // save data before applying move
+      move.startData = gp.copySqData(gp.boardData[sy][sx]);
+      move.endData = gp.copySqData(gp.boardData[ey][ex]);
+
       // apply current move, set scoreGained at the same time
       move.scoreGained = gp.applyMove(
-        { x: move.lastMove.sx, y: move.lastMove.sy },
-        { x: move.lastMove.ex, y: move.lastMove.ey },
+        { x: sx, y: sy },
+        { x: ex, y: ey },
         gp.boardData
       );
 
@@ -64,16 +72,16 @@ const REPLAYSYS = {
         progress: 0,
         pieces: [
           {
-            pos: { x: move.lastMove.ex, y: move.lastMove.ey },
-            prevPos: { x: move.lastMove.sx, y: move.lastMove.sy },
+            pos: { x: ex, y: ey },
+            prevPos: { x: sx, y: sy },
           },
         ],
       };
       // add second piece moving
       if (move.endData !== null && !gp.isTarget(move.endData)) {
         RENDER.movement.pieces.push({
-          pos: { x: move.lastMove.sx, y: move.lastMove.sy },
-          prevPos: { x: move.lastMove.ex, y: move.lastMove.ey },
+          pos: { x: sx, y: sy },
+          prevPos: { x: ex, y: ey },
         });
       }
     }
@@ -197,5 +205,202 @@ const REPLAYSYS = {
 
   setUpSkipping: function (goesForward) {
     this.skipping = goesForward;
+  },
+
+  saveReplay: function () {
+    let totalSum = 0;
+    let movesStr = "";
+    for (let i = 0, moves = this.moves; i < moves.length; i++) {
+      const { sx, sy, ex, ey } = moves[i].lastMove;
+      totalSum += sx + sy + ex + ey;
+      movesStr += "" + sx + sy + ex + ey;
+    }
+
+    let targetsStr = "";
+    for (
+      let i = 0,
+        positions = this.initialTargetsPositions.concat(
+          this.targetPreviewsPositions.flat()
+        );
+      i < positions.length;
+      i++
+    ) {
+      const { x, y } = positions[i];
+      totalSum += x + y;
+      targetsStr += "" + x + y;
+    }
+
+    console.log(movesStr);
+    console.log(targetsStr);
+  },
+
+  loadingReplayFailed: function (msg) {
+    console.log(msg);
+  },
+
+  /* raw replay data has: 
+    movesStr, targetsStr, sum, 
+    squads OR just a random digit(standard),
+    2 digits of bot depths (w&b),
+    
+    (w)
+    score, time, time mod sum,
+    (b)
+    score, time, time mod sum
+
+    loadReplay() needs movesStr, targetsStr, bot depths, squads (or standard), w&b times
+  */
+  loadReplay: function () {
+    //// load this
+    const moveStr =
+      "11412341625462402325251554665434251741323474667415051705667676741757575674044004322156264060603026252521304004402516210140044041";
+    const targetsStr = "764025415734175660167432210105253026537371417563476270";
+
+    ///// load this
+    const white = {
+      botDepth: 1,
+      squad: ["R", "B", "K"],
+    };
+    const black = {
+      botDepth: 1,
+      squad: ["K", "B", "R"],
+    };
+
+    ///// load this
+    const whiteTotalTime = 50000;
+    const blackTotalTime = 20000;
+
+    // validate data
+    if (moveStr.length !== 128) {
+      return this.loadingReplayFailed("not right movesStr length");
+    }
+    if (targetsStr.length !== 54) {
+      return this.loadingReplayFailed("not right targetsStr length");
+    }
+
+    const gp = GAMEPLAY;
+    const bot = BOT;
+    const r = RENDER;
+
+    // set bots
+    bot.isProcessing = false;
+    bot.finalOutput = null;
+    bot.whiteDepth = white.botDepth;
+    bot.blackDepth = black.botDepth;
+    bot.whiteCursor.progress = 1;
+    bot.whiteCursor.endPos = bot.whiteCursor.homePos;
+    bot.blackCursor.progress = 1;
+    bot.blackCursor.endPos = bot.blackCursor.homePos;
+
+    // reset meta
+    gp.meta.gameover = true;
+    gp.meta.latestMoveIndex = 31;
+    gp.meta.isWhiteTurn = true;
+    gp.meta.white.score = 0;
+    gp.meta.black.score = 0;
+    gp.meta.white.energy = 2;
+    gp.meta.black.energy = 2;
+    gp.meta.round = 1;
+    gp.selectedPiecePos = null;
+    gp.possibleMoves = null;
+    gp.hintArrow.countDown = 0;
+    gp.meta.timeStops = [0, whiteTotalTime, whiteTotalTime + blackTotalTime];
+    this.initialize();
+
+    // reset boardData
+    for (let y = 0; y < 8; y++) {
+      gp.boardData[y] = [];
+      for (let x = 0; x < 8; x++) {
+        gp.boardData[y][x] = null;
+      }
+    }
+
+    // add pieces to board
+    gp.boardData[1][1] = {
+      name: white.squad[0],
+      isWhite: true,
+      isCharged: false,
+    };
+    gp.boardData[3][2] = {
+      name: white.squad[1],
+      isWhite: true,
+      isCharged: false,
+    };
+    gp.boardData[5][1] = {
+      name: white.squad[2],
+      isWhite: true,
+      isCharged: false,
+    };
+    gp.boardData[2][6] = {
+      name: black.squad[0],
+      isWhite: false,
+      isCharged: false,
+    };
+    gp.boardData[4][5] = {
+      name: black.squad[1],
+      isWhite: false,
+      isCharged: false,
+    };
+    gp.boardData[6][6] = {
+      name: black.squad[2],
+      isWhite: false,
+      isCharged: false,
+    };
+
+    // set player names
+    const allNames = ["player", "easy bot", "", "hard bot"];
+    r.playersNames = [allNames[white.botDepth], allNames[black.botDepth]];
+
+    // add to moves
+    for (let i = 0; i < 128; i += 4) {
+      this.moves.push({
+        lastMove: {
+          sx: Number(moveStr[i]),
+          sy: Number(moveStr[i + 1]),
+          ex: Number(moveStr[i + 2]),
+          ey: Number(moveStr[i + 3]),
+        },
+        scoreGained: 0,
+      });
+    }
+
+    const allTargetsPositions = [];
+    for (let i = 0; i < 54; i += 2) {
+      allTargetsPositions.push({
+        x: Number(targetsStr[i]),
+        y: Number(targetsStr[i + 1]),
+      });
+    }
+
+    // set initial targets
+    for (let i = 0; i < 6; i++) {
+      const pos = allTargetsPositions[i];
+      gp.boardData[pos.y][pos.x] = 1;
+    }
+    // set remaining target spawns
+    for (let i = 6; i < allTargetsPositions.length; i += 3) {
+      this.targetPreviewsPositions.push([
+        allTargetsPositions[i],
+        allTargetsPositions[i + 1],
+        allTargetsPositions[i + 2],
+      ]);
+    }
+    // additional 2 empty arrays
+    this.targetPreviewsPositions.push([]);
+    this.targetPreviewsPositions.push([]);
+
+    gp.spawningPositions = this.targetPreviewsPositions[0];
+
+    // reset play scene buttons
+    for (let i = 0; i < r.btns.length; i++) {
+      const b = r.btns[i];
+      b.isHovered = false;
+      b.animateProgress = 1;
+    }
+    r.setPiecesPositions();
+    r.capturedTR.progress = 1; // end animation
+    r.targets = [];
+    r.updateAllTRs(true);
+    SCENE_CONTROL.changeScene("PLAY");
   },
 };

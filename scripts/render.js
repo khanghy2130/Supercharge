@@ -676,12 +676,13 @@ const RENDER = {
   },
 
   setPiecesPositions: function () {
+    const bd = GAMEPLAY.boardData;
+    const isTarget = GAMEPLAY.isTarget;
     this.piecesPositions = [];
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
-        const sqData = GAMEPLAY.boardData[y][x];
-        if (sqData && !GAMEPLAY.isTarget(sqData))
-          this.piecesPositions.push({ x, y });
+        const sqData = bd[y][x];
+        if (sqData && !isTarget(sqData)) this.piecesPositions.push({ x, y });
       }
     }
   },

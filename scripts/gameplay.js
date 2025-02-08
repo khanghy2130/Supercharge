@@ -45,9 +45,6 @@ const GAMEPLAY = {
     return typeof sqData === "number";
   },
 
-  getPieceData: function (name, isWhite) {
-    return { name: name, isWhite: isWhite, isCharged: false };
-  },
   getNewTargetsPosition: function (amount) {
     const positions = []; // {x,y}[]
     let loopCount = 0; // prevent infinite loop
@@ -179,8 +176,6 @@ const GAMEPLAY = {
 
     // add new move
     REPLAYSYS.moves.push({
-      startData: this.copySqData(this.boardData[sy][sx]),
-      endData: this.copySqData(this.boardData[ey][ex]),
       lastMove: { sx, sy, ex, ey },
       scoreGained: 0,
     });
@@ -201,26 +196,31 @@ const GAMEPLAY = {
     // fix not having the new previews yet
     this.spawningPositions = REPLAYSYS.targetPreviewsPositions[meta.round - 1];
 
-    // handle streak
-    const SS = SCENE_CONTROL.scenesStack;
-    if (SS[SS.length - 1] === "STANDARD" && meta.gameover) {
-      const bot = BOT;
-      const playerIsWhite = bot.whiteDepth === 0;
-      const botIsHard = bot.whiteDepth === 3 || bot.blackDepth === 3;
-      const playerScore = playerIsWhite ? meta.white.score : meta.black.score;
-      const botScore = playerIsWhite ? meta.black.score : meta.white.score;
-      const streakArr = botIsHard ? MENU.streak.hard : MENU.streak.easy;
-      if (playerScore > botScore) {
-        streakArr[0]++;
-        if (streakArr[0] > streakArr[1]) streakArr[1] = streakArr[0];
-      } else if (botScore > playerScore) {
-        streakArr[0] = 0;
+    // gameover trigger
+    if (meta.gameover) {
+      REPLAYSYS.saveReplay(); // save replay
+
+      // handle streak
+      const SS = SCENE_CONTROL.scenesStack;
+      if (SS[SS.length - 1] === "STANDARD") {
+        const bot = BOT;
+        const playerIsWhite = bot.whiteDepth === 0;
+        const botIsHard = bot.whiteDepth === 3 || bot.blackDepth === 3;
+        const playerScore = playerIsWhite ? meta.white.score : meta.black.score;
+        const botScore = playerIsWhite ? meta.black.score : meta.white.score;
+        const streakArr = botIsHard ? MENU.streak.hard : MENU.streak.easy;
+        if (playerScore > botScore) {
+          streakArr[0]++;
+          if (streakArr[0] > streakArr[1]) streakArr[1] = streakArr[0];
+        } else if (botScore > playerScore) {
+          streakArr[0] = 0;
+        }
+        // save to storage /// KA
+        localStorage.setItem(
+          botIsHard ? "hard" : "easy",
+          JSON.stringify(streakArr)
+        );
       }
-      // save to storage /// KA
-      localStorage.setItem(
-        botIsHard ? "hard" : "easy",
-        JSON.stringify(streakArr)
-      );
     }
   },
 
@@ -295,23 +295,44 @@ const GAMEPLAY = {
     }
 
     // add pieces to board
-    this.boardData[1][1] = this.getPieceData(white.squad[0], true);
-    this.boardData[3][2] = this.getPieceData(white.squad[1], true);
-    this.boardData[5][1] = this.getPieceData(white.squad[2], true);
-    this.boardData[2][6] = this.getPieceData(black.squad[0], false);
-    this.boardData[4][5] = this.getPieceData(black.squad[1], false);
-    this.boardData[6][6] = this.getPieceData(black.squad[2], false);
-
-    r.setPiecesPositions();
+    this.boardData[1][1] = {
+      name: white.squad[0],
+      isWhite: true,
+      isCharged: false,
+    };
+    this.boardData[3][2] = {
+      name: white.squad[1],
+      isWhite: true,
+      isCharged: false,
+    };
+    this.boardData[5][1] = {
+      name: white.squad[2],
+      isWhite: true,
+      isCharged: false,
+    };
+    this.boardData[2][6] = {
+      name: black.squad[0],
+      isWhite: false,
+      isCharged: false,
+    };
+    this.boardData[4][5] = {
+      name: black.squad[1],
+      isWhite: false,
+      isCharged: false,
+    };
+    this.boardData[6][6] = {
+      name: black.squad[2],
+      isWhite: false,
+      isCharged: false,
+    };
 
     // spawn initial targets
-    const targetPositions = this.getNewTargetsPosition(
-      CONSTANTS.INITIAL_TARGETS_COUNT
-    );
+    const targetPositions = this.getNewTargetsPosition(6); // INITIAL_TARGETS_COUNT
     for (let i = 0; i < targetPositions.length; i++) {
       const pos = targetPositions[i];
       this.boardData[pos.y][pos.x] = 1;
     }
+    REPLAYSYS.initialTargetsPositions = targetPositions;
 
     // set and add first batch of targets previews
     this.spawningPositions = this.getNewTargetsPosition(
@@ -325,6 +346,7 @@ const GAMEPLAY = {
       b.isHovered = false;
       b.animateProgress = 1;
     }
+    r.setPiecesPositions();
     r.capturedTR.progress = 1; // end animation
     r.targets = [];
     r.updateAllTRs(true);
