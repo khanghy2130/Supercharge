@@ -304,7 +304,7 @@ const MENU = {
             myText("play", -50, 15, 30, BOARD_INFO.color1);
           },
           function () {
-            const playerIsWhite = random() > 0.5;
+            const playerIsWhite = GAMEPLAY.isNewPlayer || random() > 0.5;
             const botDepth = i === 0 ? 1 : 3;
             GAMEPLAY.initializeGame({
               white: {
@@ -576,10 +576,21 @@ const MENU = {
     }
 
     // replays menu buttons
+    const selectedColor = color(240);
     REPLAYS_MENU.btns = [
       new Btn(
+        350,
+        550,
+        240,
+        50,
+        function () {
+          myText("submit replay", -100, 9, 18, BOARD_INFO.color1);
+        },
+        function () {}
+      ),
+      new Btn(
         110,
-        540,
+        550,
         150,
         50,
         function () {
@@ -589,6 +600,122 @@ const MENU = {
           const SC = SCENE_CONTROL;
           SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
         }
+      ),
+      new Btn(
+        140,
+        40,
+        200,
+        45,
+        function () {
+          myText(
+            "community",
+            -83,
+            10,
+            20,
+            REPLAYS_MENU.isAtCommunity ? selectedColor : BOARD_INFO.color1
+          );
+        },
+        function () {
+          REPLAYS_MENU.setIsAtCommunity(true);
+        }
+      ),
+      new Btn(
+        360,
+        40,
+        200,
+        45,
+        function () {
+          myText(
+            "personal",
+            -68,
+            10,
+            20,
+            REPLAYS_MENU.isAtCommunity ? BOARD_INFO.color1 : selectedColor
+          );
+        },
+        function () {
+          REPLAYS_MENU.setIsAtCommunity(false);
+        }
+      ),
+      new Btn(
+        220,
+        90,
+        100,
+        30,
+        function () {
+          myText(
+            "recent",
+            -38,
+            8,
+            16,
+            REPLAYS_MENU.sortBy === "RECENT" ? selectedColor : BOARD_INFO.color1
+          );
+        },
+        function () {
+          REPLAYS_MENU.setSortBy("RECENT");
+        }
+      ),
+      new Btn(
+        330,
+        90,
+        100,
+        30,
+        function () {
+          myText(
+            "score",
+            -35,
+            8,
+            16,
+            REPLAYS_MENU.sortBy === "SCORE" ? selectedColor : BOARD_INFO.color1
+          );
+        },
+        function () {
+          REPLAYS_MENU.setSortBy("SCORE");
+        }
+      ),
+      new Btn(
+        440,
+        90,
+        100,
+        30,
+        function () {
+          myText(
+            "time",
+            -30,
+            8,
+            16,
+            REPLAYS_MENU.sortBy === "TIME" ? selectedColor : BOARD_INFO.color1
+          );
+        },
+        function () {
+          REPLAYS_MENU.setSortBy("TIME");
+        }
+      ),
+      new Btn(
+        460,
+        160,
+        50,
+        50,
+        function () {
+          stroke(BOARD_INFO.color1);
+          strokeWeight(5);
+          line(0, -8, 10, 5);
+          line(0, -8, -10, 5);
+        },
+        function () {}
+      ),
+      new Btn(
+        460,
+        460,
+        50,
+        50,
+        function () {
+          stroke(BOARD_INFO.color1);
+          strokeWeight(5);
+          line(0, 8, 10, -5);
+          line(0, 8, -10, -5);
+        },
+        function () {}
       ),
     ];
   },
