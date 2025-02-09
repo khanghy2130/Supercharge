@@ -9,6 +9,7 @@ const CONSTANTS = {
 const BOARD_INFO = {
   color1: [195, 125, 240],
   color2: [125, 70, 160],
+  boardImage: null,
 };
 
 const PIECES_MOVES = {

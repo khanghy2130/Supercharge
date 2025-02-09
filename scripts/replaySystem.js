@@ -300,8 +300,7 @@ const REPLAYSYS = {
     console.log(finalStr);
   },
 
-  loadReplay: function (replayStr) {
-    let arr = REPLAYS_MENU.unpackReplayStr(replayStr);
+  loadReplay: function (arr) {
     if (arr.length !== 11) {
       return console.log("not right replay data array length");
     }

@@ -1,10 +1,5 @@
+// add new replay to the beginning
 const COMMUNITY_REPLAYS = [
-  {
-    from: "logix indie",
-    title: "custom 1st",
-    replay:
-      "eifgeigkjjkjihkjeeegegfgihifjfkdegghfgfeifjfkdjfgkfjghfjkdkfkjjighdefefhjikhkfkhfhghdeghkfjgjfkhdegegehejfdfjgkhghfifikdjgiiiijkxdeegghgkifkffjjikdfhhefegekhjgiifidffdkdgdgghhhdegjkddxdeffedxeexjhexjdxlligxifdxiixlhlhxeie",
-  },
   {
     from: "logix indie",
     title: "custom 2nd",
@@ -13,9 +8,45 @@ const COMMUNITY_REPLAYS = [
   },
   {
     from: "logix indie",
-    title: "easy 1st",
+    title: "custom 1st",
+    replay:
+      "eifgeigkjjkjihkjeeegegfgihifjfkdegghfgfeifjfkdjfgkfjghfjkdkfkjjighdefefhjikhkfkhfhghdeghkfjgjfkhdegegehejfdfjgkhghfifikdjgiiiijkxdeegghgkifkffjjikdfhhefegekhjgiifidffdkdgdgghhhdegjkddxdeffedxeexjhexjdxlligxifdxiixlhlhxeie",
+  },
+  {
+    from: "logix indie",
+    title: "easy 6 is very good in my big opinion",
     replay:
       "eifgeihfjfihjfkefgeefgdgihjjiheheedgeeheehkhjjkhhehfheifjjijijiihfifhfiekejfkhiiifieifdkkhkkkkekdkjeiejeekegegfgiehddgfffgegegefxkeheehijhfdgiiifiekhdkjfegkkjefeefgdhdekfgkdeehfddgeedxdxdeximmxjhxhgdijxifkxhlxlhjexki",
+  },
+  {
+    from: "logix indie",
+    title: "easy 5",
+    replay:
+      "eifgeihfjfihjfkefgeefgdgihjjiheheedgeeheehkhjjkhhehfheifjjijijiihfifhfiekejfkhiiifieifdkkhkkkkekdkjeiejeekegegfgiehddgfffgegegefxkeheehijhfdgiiifiekhdkjfegkkjefeefgdhdekfgkdeehfddgeedxdxdeximmxjhxhgdijxifkxhlxlhjexki",
+  },
+  {
+    from: "logix indie",
+    title: "easy 4",
+    replay:
+      "eifgeihfjfihjfkefgeefgdgihjjiheheedgeeheehkhjjkhhehfheifjjijijiihfifhfiekejfkhiiifieifdkkhkkkkekdkjeiejeekegegfgiehddgfffgegegefxkeheehijhfdgiiifiekhdkjfegkkjefeefgdhdekfgkdeehfddgeedxdxdeximmxjhxhgdijxifkxhlxlhjexki",
+  },
+  {
+    from: "logix indie",
+    title: "easy 3 lost",
+    replay:
+      "eifgeidhihgjjjgjfgdhfgdegjgkgkggeedeeedfgggegehededfdeefjfhejfhfefijdhfihfhghghefihhhhijhgiijjiihhgiijgijjkhhehiijhkhkgjhiiihijkxgkdfdhdehfgehhggijkhiiefgigjfijdedgefhhkfjjkkkieighjifxkxedxjhfxjexlljlxiffxiexkmdgmxkg",
+  },
+  {
+    from: "logix indie",
+    title: "easy 2",
+    replay:
+      "eifgeidhjfihjfhhfgdhfgheihjjihkhdhejheifjjkhjjjiifghghjkkhiijiiieedejkdejiikhhigjkkkejgiiiigiiggkkjkdejkgghfhfgededdddidgeiggejexikjihhdhkhhejkifejgeghkkggigidgjddehgijefkdjfihfhkiihixmxedxjmfxhlxlkmmxhmiximxifkgfxehd",
+  },
+  {
+    from: "logix indie",
+    title: "easy 1",
+    replay:
+      "eifgeigkihgjjjgjfgeefgfejjikikgifefgeefggjgigjjgeededehejfhghggihekekekfhggggggikfkhkhfhjggdggfigkfjfhjhgiiiiijijhihihidjifijikgxgkikkffedegjhegdfijgggkhjikefhhgidfjiifddjkikgkegjkjefxhxedxjlexhixekjldxjiixiexllgfjxhkk",
   },
 ];
 
@@ -25,9 +56,13 @@ const REPLAYS_MENU = {
   category: "EASY", // EASY, HARD, CUSTOM
   sortBy: "RECENT", // RECENT, SCORE, TIME
   isAtCommunity: true,
+  hoveredReplayIndex: null,
   paging: {
+    doNotReset: false,
     index: 0,
     length: 3,
+    isGoingUp: false,
+    progress: 1,
   },
   // sorted by recent, contains replay{title, from, replay(first 4 are numStrings, rest are numbers)}
   replays: {
@@ -71,6 +106,11 @@ const REPLAYS_MENU = {
   },
 
   setViewingReplays: function () {
+    // do not reset as was just watching a replay
+    if (this.paging.doNotReset) {
+      this.paging.doNotReset = false;
+      return;
+    }
     const category = this.replays[this.category];
     this.viewingReplays = this.isAtCommunity
       ? category.community
@@ -115,13 +155,11 @@ const REPLAYS_MENU = {
     }
 
     this.paging.index = 0;
-    //// set paging length after deciding how many replays to show at once (maybe 4)
+    this.paging.length = max(1, ceil(this.viewingReplays.length / 4));
   },
 
   initializeScene: function () {
     if (this.hasLoaded) {
-      this.isAtCommunity = true;
-      this.sortBy = "RECENT";
       this.setViewingReplays();
       return;
     }
@@ -151,7 +189,9 @@ const REPLAYS_MENU = {
   },
 
   render: function () {
-    background(BOARD_INFO.color1);
+    this.hoveredReplayIndex = null; // reset hover
+    const { color1, color2 } = BOARD_INFO;
+    background(color1);
     // buttons
     for (let i = 0; i < 6; i++) {
       this.btns[i].render();
@@ -159,32 +199,141 @@ const REPLAYS_MENU = {
 
     // sort render if is not at custom
     if (this.category !== "CUSTOM") {
-      myText("sort by", 60, 98, 16, BOARD_INFO.color2);
+      myText("sort by", 60, 98, 16, color2);
       for (let i = 6; i < 9; i++) {
         this.btns[i].render();
       }
     }
 
-    // 'no replay' message
-    if (this.viewingReplays.length === 0) {
-      myText("no replays found.", 90, 300, 18, BOARD_INFO.color2);
-    }
-
     // page progress
-    stroke(BOARD_INFO.color2);
+    const paging = this.paging;
+    stroke(color2);
     strokeWeight(3);
     noFill();
     rect(455, 205, 10, 230, 4); // empty bar
     noStroke();
-    fill(BOARD_INFO.color2);
-    const segLength = 230 / this.paging.length;
-    rect(455, 205 + segLength * this.paging.index, 10, segLength, 4);
+    fill(color2);
+
+    const segLength = 230 / paging.length;
+    paging.progress = min(1, paging.progress + 0.04);
+    const animatedYOffset =
+      (1 - RENDER.easeOutExpo(paging.progress)) *
+      segLength *
+      (paging.isGoingUp ? 1 : -1);
+    rect(
+      455,
+      205 + segLength * paging.index + animatedYOffset,
+      10,
+      segLength,
+      4
+    );
+
+    // 'no replay' message
+    if (this.viewingReplays.length === 0) {
+      myText("no replays found.", 100, 330, 18, color2);
+    }
+    // render replay cards
+    else {
+      const replayItems = this.viewingReplays.slice(
+        paging.index * 4,
+        paging.index * 4 + 4
+      );
+      const allNames = ["-player-", "easy bot", "", "hard bot"];
+      const whiteColor = color(240);
+      const blackColor = color(20);
+      const mouseXIsWithin = _mouseX > 50 && _mouseX < 410;
+      for (let i = 0; i < replayItems.length; i++) {
+        const item = replayItems[i];
+        const yValue = 130 + i * 98;
+
+        let frameColor = color2;
+
+        const isHovered =
+          mouseXIsWithin && _mouseY > yValue && _mouseY < yValue + 85;
+        if (isHovered) {
+          this.hoveredReplayIndex = i;
+          frameColor = lerpColor(frameColor, color(0), 0.3);
+          cursor(HAND);
+        }
+
+        // frame
+        strokeWeight(3);
+        noFill();
+        stroke(frameColor);
+        rect(50, yValue, 360, 85);
+        noStroke();
+        fill(frameColor);
+        rect(50, yValue, 360, 38);
+
+        // title & from
+        myText(item.title, 58, yValue + 16, 10, color1);
+        myText("from " + item.from, 58, yValue + 32, 10, color1);
+
+        // white score
+        myText(item.replay[5] + "", 70, yValue + 70, 26, whiteColor);
+        // white name
+        myText(
+          allNames[Number(item.replay[3][0])],
+          125,
+          yValue + 57,
+          12,
+          whiteColor
+        );
+        // white time
+        const wTotalTime = item.replay[6];
+        const wTimeSec = floor((wTotalTime % 60000) / 1000) + "";
+        myText(
+          floor(wTotalTime / 60000) +
+            ":" +
+            (wTimeSec.length === 1 ? "0" : "") +
+            wTimeSec,
+          125,
+          yValue + 77,
+          12,
+          whiteColor
+        );
+
+        // black score
+        myText(item.replay[8] + "", 250, yValue + 70, 26, blackColor);
+        // black name
+        myText(
+          allNames[Number(item.replay[3][1])],
+          305,
+          yValue + 57,
+          12,
+          blackColor
+        );
+        // black time
+        const bTotalTime = item.replay[9];
+        const bTimeSec = floor((bTotalTime % 60000) / 1000) + "";
+        myText(
+          floor(bTotalTime / 60000) +
+            ":" +
+            (bTimeSec.length === 1 ? "0" : "") +
+            bTimeSec,
+          305,
+          yValue + 77,
+          12,
+          blackColor
+        );
+      }
+    }
   },
   clicked: function () {
     // button clicked
     for (let i = 0; i < this.btns.length; i++) {
       const b = this.btns[i];
       if (b.isHovered) return b.clicked();
+    }
+
+    // replay clicked
+    if (this.hoveredReplayIndex !== null) {
+      this.paging.doNotReset = true;
+      const replayItems = this.viewingReplays.slice(
+        this.paging.index * 4,
+        this.paging.index * 4 + 4
+      );
+      REPLAYSYS.loadReplay(replayItems[this.hoveredReplayIndex].replay);
     }
   },
 };

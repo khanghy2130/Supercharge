@@ -27,6 +27,7 @@ const MENU = {
   },
 
   createBtns: function () {
+    const color1 = BOARD_INFO.color1;
     // play scene buttons
     const timelineBtnsAreDisabled = function () {
       const meta = GAMEPLAY.meta;
@@ -44,9 +45,9 @@ const MENU = {
         225,
         580,
         40,
-        28,
+        32,
         function () {
-          stroke(BOARD_INFO.color1);
+          stroke(color1);
           strokeWeight(5);
           line(3, -5, -4, 0);
           line(3, 5, -4, 0);
@@ -61,9 +62,9 @@ const MENU = {
         275,
         580,
         40,
-        28,
+        32,
         function () {
-          stroke(BOARD_INFO.color1);
+          stroke(color1);
           strokeWeight(5);
           line(-3, -5, 4, 0);
           line(-3, 5, 4, 0);
@@ -80,9 +81,9 @@ const MENU = {
         175,
         580,
         40,
-        28,
+        32,
         function () {
-          stroke(BOARD_INFO.color1);
+          stroke(color1);
           strokeWeight(5);
           line(7, -5, 0, 0);
           line(7, 5, 0, 0);
@@ -98,9 +99,9 @@ const MENU = {
         325,
         580,
         40,
-        28,
+        32,
         function () {
-          stroke(BOARD_INFO.color1);
+          stroke(color1);
           strokeWeight(5);
           line(-7, -5, 0, 0);
           line(-7, 5, 0, 0);
@@ -118,9 +119,9 @@ const MENU = {
         60,
         580,
         80,
-        28,
+        32,
         function () {
-          myText("exit", -28, 8, 16, BOARD_INFO.color1);
+          myText("exit", -28, 8, 16, color1);
         },
         function () {
           const SC = SCENE_CONTROL;
@@ -142,9 +143,9 @@ const MENU = {
         440,
         580,
         80,
-        28,
+        32,
         function () {
-          myText("help", -28, 8, 16, BOARD_INFO.color1);
+          myText("help", -28, 8, 16, color1);
         },
         function () {
           GAMEPLAY.help.isShown = true;
@@ -202,7 +203,7 @@ const MENU = {
       }
       if (arr[0] === "g" && arr[1] === "h" && arr[2] === "p") {
         arr[2] = "Z";
-        fill(BOARD_INFO.color1);
+        fill(color1);
         noStroke();
         rect(0, 400, width, 200);
         MENU.thumbnailImg = get(0, 0, width, width);
@@ -219,7 +220,7 @@ const MENU = {
           80,
           80,
           function () {
-            myText(letter, -letterWidth / 2 - 5, 25, 50, BOARD_INFO.color1);
+            myText(letter, -letterWidth / 2 - 5, 25, 50, color1);
           },
           function () {
             RENDER.bigSpawnLightings(xValue, 100);
@@ -239,7 +240,7 @@ const MENU = {
           66,
           66,
           function () {
-            myText(letter, -letterWidth / 2 - 3, 20, 40, BOARD_INFO.color1);
+            myText(letter, -letterWidth / 2 - 3, 20, 40, color1);
           },
           function () {
             RENDER.bigSpawnLightings(xValue, 180);
@@ -257,7 +258,7 @@ const MENU = {
         200,
         60,
         function () {
-          myText("play", -52, 14, 30, BOARD_INFO.color1);
+          myText("play", -52, 14, 30, color1);
         },
         function () {
           SCENE_CONTROL.changeScene("STANDARD");
@@ -269,7 +270,7 @@ const MENU = {
         320,
         60,
         function () {
-          myText("custom game", -130, 11, 25, BOARD_INFO.color1);
+          myText("custom game", -130, 11, 25, color1);
         },
         function () {
           SCENE_CONTROL.changeScene("CUSTOM");
@@ -285,7 +286,7 @@ const MENU = {
         150,
         50,
         function () {
-          myText("back", -46, 12, 25, BOARD_INFO.color1);
+          myText("back", -46, 12, 25, color1);
         },
         function () {
           const SC = SCENE_CONTROL;
@@ -301,7 +302,7 @@ const MENU = {
           200,
           80,
           function () {
-            myText("play", -50, 15, 30, BOARD_INFO.color1);
+            myText("play", -50, 15, 30, color1);
           },
           function () {
             const playerIsWhite = GAMEPLAY.isNewPlayer || random() > 0.5;
@@ -327,7 +328,7 @@ const MENU = {
           200,
           50,
           function () {
-            myText("replays", -65, 10, 20, BOARD_INFO.color1);
+            myText("replays", -65, 10, 20, color1);
           },
           function () {
             REPLAYS_MENU.category = i === 0 ? "EASY" : "HARD";
@@ -346,7 +347,7 @@ const MENU = {
         150,
         50,
         function () {
-          myText("back", -46, 12, 25, BOARD_INFO.color1);
+          myText("back", -46, 12, 25, color1);
         },
         function () {
           const SC = SCENE_CONTROL;
@@ -359,7 +360,7 @@ const MENU = {
         200,
         50,
         function () {
-          myText("replays", -73, 12, 25, BOARD_INFO.color1);
+          myText("replays", -73, 12, 25, color1);
         },
         function () {
           REPLAYS_MENU.category = "CUSTOM";
@@ -372,7 +373,7 @@ const MENU = {
         240,
         40,
         function () {
-          myText("choose preset", -100, 10, 18, BOARD_INFO.color1);
+          myText("choose preset", -100, 10, 18, color1);
         },
         function () {
           custom.isChoosingPreset = true;
@@ -388,7 +389,7 @@ const MENU = {
         180,
         60,
         function () {
-          myText("play", -52, 15, 30, BOARD_INFO.color1);
+          myText("play", -52, 15, 30, color1);
         },
         function () {
           GAMEPLAY.initializeGame({
@@ -406,11 +407,11 @@ const MENU = {
         function () {
           switch (custom.white.botDepth) {
             case 0:
-              return myText("no bot", -50, 9, 18, BOARD_INFO.color1);
+              return myText("no bot", -50, 9, 18, color1);
             case 1:
-              return myText("easy bot", -62, 9, 18, BOARD_INFO.color1);
+              return myText("easy bot", -62, 9, 18, color1);
             case 3:
-              return myText("hard bot", -65, 9, 18, BOARD_INFO.color1);
+              return myText("hard bot", -65, 9, 18, color1);
           }
         },
         function () {
@@ -427,11 +428,11 @@ const MENU = {
         function () {
           switch (custom.black.botDepth) {
             case 0:
-              return myText("no bot", -50, 9, 18, BOARD_INFO.color1);
+              return myText("no bot", -50, 9, 18, color1);
             case 1:
-              return myText("easy bot", -62, 9, 18, BOARD_INFO.color1);
+              return myText("easy bot", -62, 9, 18, color1);
             case 3:
-              return myText("hard bot", -65, 9, 18, BOARD_INFO.color1);
+              return myText("hard bot", -65, 9, 18, color1);
           }
         },
         function () {
@@ -582,9 +583,9 @@ const MENU = {
         350,
         560,
         240,
-        40,
+        50,
         function () {
-          myText("submit replay", -100, 9, 18, BOARD_INFO.color1);
+          myText("submit replay", -100, 9, 18, color1);
         },
         function () {}
       ),
@@ -592,9 +593,9 @@ const MENU = {
         110,
         560,
         150,
-        40,
+        50,
         function () {
-          myText("back", -36, 10, 20, BOARD_INFO.color1);
+          myText("back", -36, 10, 20, color1);
         },
         function () {
           const SC = SCENE_CONTROL;
@@ -612,7 +613,7 @@ const MENU = {
             -83,
             10,
             20,
-            REPLAYS_MENU.isAtCommunity ? selectedColor : BOARD_INFO.color1
+            REPLAYS_MENU.isAtCommunity ? selectedColor : color1
           );
         },
         function () {
@@ -630,7 +631,7 @@ const MENU = {
             -68,
             10,
             20,
-            REPLAYS_MENU.isAtCommunity ? BOARD_INFO.color1 : selectedColor
+            REPLAYS_MENU.isAtCommunity ? color1 : selectedColor
           );
         },
         function () {
@@ -643,14 +644,17 @@ const MENU = {
         50,
         50,
         function () {
-          stroke(BOARD_INFO.color1);
+          stroke(color1);
           strokeWeight(5);
           line(0, -8, 10, 5);
           line(0, -8, -10, 5);
         },
         function () {
           const paging = REPLAYS_MENU.paging;
-          paging.index = max(0, paging.index - 1);
+          if (paging.index < 1) return;
+          paging.index = paging.index - 1;
+          paging.progress = 0;
+          paging.isGoingUp = true;
         }
       ),
       new Btn(
@@ -659,14 +663,17 @@ const MENU = {
         50,
         50,
         function () {
-          stroke(BOARD_INFO.color1);
+          stroke(color1);
           strokeWeight(5);
           line(0, 8, 10, -5);
           line(0, 8, -10, -5);
         },
         function () {
           const paging = REPLAYS_MENU.paging;
-          paging.index = min(paging.length - 1, paging.index + 1);
+          if (paging.index >= paging.length - 1) return;
+          paging.index = paging.index + 1;
+          paging.progress = 0;
+          paging.isGoingUp = false;
         }
       ),
       new Btn(
@@ -680,7 +687,7 @@ const MENU = {
             -38,
             8,
             16,
-            REPLAYS_MENU.sortBy === "RECENT" ? selectedColor : BOARD_INFO.color1
+            REPLAYS_MENU.sortBy === "RECENT" ? selectedColor : color1
           );
         },
         function () {
@@ -698,7 +705,7 @@ const MENU = {
             -35,
             8,
             16,
-            REPLAYS_MENU.sortBy === "SCORE" ? selectedColor : BOARD_INFO.color1
+            REPLAYS_MENU.sortBy === "SCORE" ? selectedColor : color1
           );
         },
         function () {
@@ -716,7 +723,7 @@ const MENU = {
             -30,
             8,
             16,
-            REPLAYS_MENU.sortBy === "TIME" ? selectedColor : BOARD_INFO.color1
+            REPLAYS_MENU.sortBy === "TIME" ? selectedColor : color1
           );
         },
         function () {
@@ -738,17 +745,17 @@ const MENU = {
     // render pieces
     const t = frameCount;
     push(); /// KA
-    translate(330, 310);
+    translate(330, 320);
     rotate(cos(t + 30) * 20);
     image(r.getPieceImage({ isWhite: false, name: "R" }), 0, 0, 150, 150);
     pop(); /// KA
     push(); /// KA
-    translate(250, 310);
+    translate(250, 320);
     rotate(0 + cos(t) * 20);
     image(r.getPieceImage({ isWhite: false, name: "B" }), 0, 0, 150, 150);
     pop(); /// KA
     push(); /// KA
-    translate(170, 310);
+    translate(170, 320);
     rotate(cos(t - 30) * 20);
     image(r.getPieceImage({ isWhite: false, name: "K" }), 0, 0, 150, 150);
     pop(); /// KA
