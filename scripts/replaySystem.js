@@ -273,20 +273,6 @@ const REPLAYSYS = {
     const wTimeMod = wTotalTime % totalSum;
     const bTimeMod = bTotalTime % totalSum;
 
-    const arr = [
-      movesStr,
-      targetsStr,
-      squadCode,
-      botCode,
-      totalSum.toString(),
-      wScore.toString(),
-      wTotalTime.toString(),
-      wTimeMod.toString(),
-      bScore.toString(),
-      bTotalTime.toString(),
-      bTimeMod.toString(),
-    ];
-
     function convertStr(str) {
       return str
         .split("")
@@ -294,32 +280,38 @@ const REPLAYSYS = {
         .join("");
     }
 
-    const finalStr = arr.map(convertStr).join("x");
+    const finalStr = [
+      movesStr,
+      targetsStr,
+      squadCode,
+      botCode,
+      totalSum.toString(),
+
+      wScore.toString(),
+      wTotalTime.toString(),
+      wTimeMod.toString(),
+
+      bScore.toString(),
+      bTotalTime.toString(),
+      bTimeMod.toString(),
+    ]
+      .map(convertStr)
+      .join("x");
     console.log(finalStr);
   },
 
-  unpackReplayStr(replayStr) {
-    const arr = replayStr.split("x");
-    return arr.map(function (item) {
-      return item
-        .split("")
-        .map((char) => char.charCodeAt(0) - 100)
-        .join("");
-    });
-  },
-
   loadReplay: function (replayStr) {
-    let arr = this.unpackReplayStr(replayStr);
+    let arr = REPLAYS_MENU.unpackReplayStr(replayStr);
     if (arr.length !== 11) {
       return console.log("not right replay data array length");
     }
 
     const [movesStr, targetsStr, squadCode, botCode] = arr;
-    const totalSum = Number(arr[4]);
-    const wTotalTime = Number(arr[6]);
-    const wTimeMod = Number(arr[7]);
-    const bTotalTime = Number(arr[9]);
-    const bTimeMod = Number(arr[10]);
+    const totalSum = arr[4];
+    const wTotalTime = arr[6];
+    const wTimeMod = arr[7];
+    const bTotalTime = arr[9];
+    const bTimeMod = arr[10];
 
     if (movesStr.length !== 128) {
       return console.log("not right movesStr length");

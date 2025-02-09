@@ -368,7 +368,7 @@ const MENU = {
       ),
       new Btn(
         150,
-        60,
+        80,
         240,
         40,
         function () {
@@ -580,9 +580,9 @@ const MENU = {
     REPLAYS_MENU.btns = [
       new Btn(
         350,
-        550,
+        560,
         240,
-        50,
+        40,
         function () {
           myText("submit replay", -100, 9, 18, BOARD_INFO.color1);
         },
@@ -590,11 +590,11 @@ const MENU = {
       ),
       new Btn(
         110,
-        550,
+        560,
         150,
-        50,
+        40,
         function () {
-          myText("back", -46, 12, 25, BOARD_INFO.color1);
+          myText("back", -36, 10, 20, BOARD_INFO.color1);
         },
         function () {
           const SC = SCENE_CONTROL;
@@ -604,7 +604,7 @@ const MENU = {
       new Btn(
         140,
         40,
-        200,
+        220,
         45,
         function () {
           myText(
@@ -620,7 +620,7 @@ const MENU = {
         }
       ),
       new Btn(
-        360,
+        370,
         40,
         200,
         45,
@@ -635,6 +635,38 @@ const MENU = {
         },
         function () {
           REPLAYS_MENU.setIsAtCommunity(false);
+        }
+      ),
+      new Btn(
+        460,
+        170,
+        50,
+        50,
+        function () {
+          stroke(BOARD_INFO.color1);
+          strokeWeight(5);
+          line(0, -8, 10, 5);
+          line(0, -8, -10, 5);
+        },
+        function () {
+          const paging = REPLAYS_MENU.paging;
+          paging.index = max(0, paging.index - 1);
+        }
+      ),
+      new Btn(
+        460,
+        470,
+        50,
+        50,
+        function () {
+          stroke(BOARD_INFO.color1);
+          strokeWeight(5);
+          line(0, 8, 10, -5);
+          line(0, 8, -10, -5);
+        },
+        function () {
+          const paging = REPLAYS_MENU.paging;
+          paging.index = min(paging.length - 1, paging.index + 1);
         }
       ),
       new Btn(
@@ -690,32 +722,6 @@ const MENU = {
         function () {
           REPLAYS_MENU.setSortBy("TIME");
         }
-      ),
-      new Btn(
-        460,
-        160,
-        50,
-        50,
-        function () {
-          stroke(BOARD_INFO.color1);
-          strokeWeight(5);
-          line(0, -8, 10, 5);
-          line(0, -8, -10, 5);
-        },
-        function () {}
-      ),
-      new Btn(
-        460,
-        460,
-        50,
-        50,
-        function () {
-          stroke(BOARD_INFO.color1);
-          strokeWeight(5);
-          line(0, 8, 10, -5);
-          line(0, 8, -10, -5);
-        },
-        function () {}
       ),
     ];
   },

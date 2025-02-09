@@ -382,6 +382,7 @@ function draw() {
         if (SC.targetScene === "MENU") createImages();
         // recreate help images if going to play scene
         else if (SC.targetScene === "PLAY") createHelpImages();
+        else if (SC.targetScene === "REPLAYS") REPLAYS_MENU.initializeScene();
       }
     }
     translate(
@@ -392,7 +393,6 @@ function draw() {
     );
   }
 
-  /// which scene
   switch (SC.currentScene) {
     case "PLAY":
       GAMEPLAY.renderScene();
