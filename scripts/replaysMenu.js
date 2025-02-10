@@ -86,6 +86,10 @@ const REPLAYS_MENU = {
     },
   },
   viewingReplays: null,
+  alert: {
+    text: "sample text",
+    progress: 1,
+  },
 
   setIsAtCommunity: function (bool) {
     if (this.isAtCommunity === bool) return;
@@ -304,11 +308,7 @@ const REPLAYS_MENU = {
       replay: item.replay,
       isHovered: false,
       progress: 0,
-      // copy btn, delete btn
-      btns: [
-        { animateProgress: 1, isHovered: false },
-        { animateProgress: 1, isHovered: false },
-      ],
+      hoveredBtn: null, // "COPY" "DELETE"
     };
   },
 
@@ -402,6 +402,15 @@ const REPLAYS_MENU = {
       4
     );
 
+    // render alert text
+    if (this.alert.progress < 1) {
+      this.alert.progress += 0.007;
+      noStroke();
+      fill(0, 220);
+      rect(0, 0, 500, 45);
+      myText(this.alert.text, 20, 30, 15, color1);
+    }
+
     // 'no replay' message
     if (this.viewingReplays.length === 0) {
       myText("no replays found.", 100, 330, 18, color2);
@@ -428,6 +437,34 @@ const REPLAYS_MENU = {
 
         push(); /// KA
         translate(230, yValue + 42);
+
+        if (!this.isAtCommunity) {
+          card.hoveredBtn = null;
+          noStroke();
+
+          // copy button
+          if (dist(_mouseX, _mouseY, 230 - 205, yValue + 22) < 15) {
+            fill(lerpColor(color2, color(0), 0.3));
+            cursor(HAND);
+            card.hoveredBtn = "COPY";
+          } else fill(color2);
+          ellipse(-205, -20, 30, 30);
+          fill(color1);
+          triangle(-205, -10, -213, -18, -197, -18);
+          rect(-207, -28, 4, 12);
+
+          // delete button
+          if (dist(_mouseX, _mouseY, 230 - 205, yValue + 62) < 15) {
+            fill(lerpColor(color2, color(0), 0.3));
+            cursor(HAND);
+            card.hoveredBtn = "DELETE";
+          } else fill(color2);
+          ellipse(-205, 20, 30, 30);
+          fill(color1);
+          quad(-199.5, 28.5, -196.5, 25.5, -210.5, 11.5, -213.5, 14.5);
+          quad(-210.5, 28.5, -213.5, 25.5, -199.5, 11.5, -196.5, 14.5);
+        }
+
         if (card.progress < 0.08) card.progress = 0.08;
         else if (card.progress > 0.4) card.progress = 1;
         let scaleFactor = eoe(card.progress);
@@ -445,13 +482,49 @@ const REPLAYS_MENU = {
       if (b.isHovered) return b.clicked();
     }
 
-    // card clicked
+    // card clicked or card button clicked
     const cards = this.paging.cards;
     for (let i = 0; i < cards.length; i++) {
       const card = cards[i];
       if (card.isHovered) {
         REPLAYSYS.loadReplay(card.replay);
         return;
+      }
+      if (card.hoveredBtn !== null) {
+        const getRawStr = this.getRawStr;
+        const cardRawStr = getRawStr(card.replay);
+        if (card.hoveredBtn === "COPY") {
+          /// KA
+          this.alert.text = "copied data to clipboard!";
+          this.alert.progress = 0;
+          /// KA
+          navigator.clipboard.writeText("begin_" + cardRawStr + "_end");
+          return;
+        }
+        if (card.hoveredBtn === "DELETE") {
+          this.alert.text = "deleted replay.";
+          this.alert.progress = 0;
+
+          // remove from personalRawReplays /// nKA
+          this.personalRawReplays = this.personalRawReplays.filter(function (
+            rawStr
+          ) {
+            return rawStr !== cardRawStr;
+          });
+          localStorage.setItem(
+            "personalRawReplays",
+            this.personalRawReplays.join("_")
+          );
+
+          // remove from this.replays
+          const category = this.replays[this.category];
+          category.personal = category.personal.filter(function (item) {
+            return getRawStr(item.replay) !== cardRawStr;
+          });
+          this.setViewingReplays();
+
+          return;
+        }
       }
     }
   },

@@ -598,6 +598,7 @@ const MENU = {
           myText("back", -36, 10, 20, color1);
         },
         function () {
+          REPLAYS_MENU.alert.progress = 1; // stop alert
           const SC = SCENE_CONTROL;
           SC.changeScene(SC.scenesStack[SC.scenesStack.length - 1]);
         }
