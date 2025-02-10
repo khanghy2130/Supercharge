@@ -251,12 +251,8 @@ const REPLAYSYS = {
     for (let i = 0; i < this.moves.length; i++) {
       const scoreGained = this.moves[i].scoreGained;
       const mifr = i % 4;
-
-      if (mifr < 2) {
-        wScore += scoreGained;
-      } else {
-        bScore += scoreGained;
-      }
+      if (mifr < 2) wScore += scoreGained;
+      else bScore += scoreGained;
     }
 
     let wTotalTime = 0;
@@ -273,31 +269,40 @@ const REPLAYSYS = {
     const wTimeMod = wTotalTime % totalSum;
     const bTimeMod = bTotalTime % totalSum;
 
-    function convertStr(str) {
-      return str
-        .split("")
-        .map((num) => String.fromCharCode(100 + Number(num)))
-        .join("");
-    }
-
-    const finalStr = [
+    const arr = [
       movesStr,
       targetsStr,
       squadCode,
       botCode,
-      totalSum.toString(),
+      totalSum,
 
-      wScore.toString(),
-      wTotalTime.toString(),
-      wTimeMod.toString(),
+      wScore,
+      wTotalTime,
+      wTimeMod,
 
-      bScore.toString(),
-      bTotalTime.toString(),
-      bTimeMod.toString(),
-    ]
-      .map(convertStr)
-      .join("x");
-    console.log(finalStr);
+      bScore,
+      bTotalTime,
+      bTimeMod,
+    ];
+
+    const RM = REPLAYS_MENU;
+    RM.personalRawReplays.push(RM.getRawStr(arr));
+    localStorage.setItem("personalRawReplays", RM.personalRawReplays.join("_"));
+
+    const ss = SCENE_CONTROL.scenesStack;
+    let replaysCategory;
+    if (ss[ss.length - 1] === "CUSTOM") {
+      replaysCategory = RM.replays.CUSTOM;
+    } else if (botCode[0] === "3" || botCode[1] === "3") {
+      replaysCategory = RM.replays.HARD;
+    } else {
+      replaysCategory = RM.replays.EASY;
+    }
+    replaysCategory.personal.push({
+      replay: arr,
+      title: "untitled",
+      from: "you",
+    });
   },
 
   loadReplay: function (arr) {

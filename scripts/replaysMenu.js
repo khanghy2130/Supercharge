@@ -2,6 +2,24 @@
 const COMMUNITY_REPLAYS = [
   {
     from: "logix indie",
+    title: "easy 8",
+    replay:
+      "eifgfgeejjgjihgjfgjgeefgihjhgjhkjgfgjghhjhkhhkkhhhfifgfhhkikjfkhfhfifhefjfgiikfkfieifiejgiegegdfeiefeigjfkjkkhigefgfgfhfighejkjjxjhejikefgjhkfkhhjggifiegdfgjhehfjkfhhgkijjkkjiighijfgfxdxdexkdmxjexglgklxmfxigxlflmxhmd",
+  },
+  {
+    from: "logix indie",
+    title: "easy 7",
+    replay:
+      "eifgfgeejfihjfekeiggfgffihhjjjjgggffffeejgjejeeeffdejekdeeehehekgggfgfffekehekfjdeffdeddehfhfhfjffhgdddffhhfhjfkhgjfjfihfjijhfigxekdeffjegghjfjjgkdddgfehfhhgfkjgijhfidgdihjfkkdfigekgixmxdexijhxjhxegffidxfkhxhhxlflexgli",
+  },
+  {
+    from: "logix indie",
+    title: "easy 6",
+    replay:
+      "eifgeidhjjjfjfjhfgeefgggjhihjhgegghghghkihikikifhkfkfkfdifijijgjfdededeegeegegdfdhgeedgegjgfgfefeefeedfedffdjjihgeedgeiefdhfefhfxgeikdhhkfkgggjdfifjdfdkjieefjeedhfjhekijhkkiihehhieidgxixedxijgxghxllijxheexflxlgdlkxgfj",
+  },
+  {
+    from: "logix indie",
     title: "easy 5",
     replay:
       "fgefefdgjfihjfigeidgdgeeihjjihijdghghghjijigijghhjgjeegfghfgigfggffdgjjjgjikigekeidhdhffikkjfgkgjjjhjhkhekigkgigkhkikiiiigegegefxigikdgekijefghhjhggjfdkjkikgkhiidhefdjjhffkfejkdijjghexdxdexjmfxgkxfdmfixejixijxlgjkxjg",
@@ -33,6 +51,12 @@ const COMMUNITY_REPLAYS = [
 ];
 
 const REPLAYS_MENU = {
+  // list of raw replay data (string) /// nKA
+  // when finish a game, add rawStr into this. (beside add to this.replay)
+  // when delete a replay, filter. (beside remove in this.replays)
+  // after add or delete, save to local
+  personalRawReplays: [],
+
   hasLoaded: false,
   btns: [],
   category: "EASY", // EASY, HARD, CUSTOM
@@ -85,6 +109,18 @@ const REPLAYS_MENU = {
       arr[i] = Number(arr[i]);
     }
     return arr;
+  },
+
+  getRawStr: function (arr) {
+    return arr
+      .map(function (str) {
+        if (typeof str === "number") str = str.toString();
+        return str
+          .split("")
+          .map((num) => String.fromCharCode(100 + Number(num)))
+          .join("");
+      })
+      .join("x");
   },
 
   setViewingReplays: function () {
@@ -282,9 +318,30 @@ const REPLAYS_MENU = {
       return;
     }
 
-    /// unpack personal replays from local
+    // unpack personal replays
+    this.personalRawReplays = localStorage
+      .getItem("personalRawReplays")
+      .split("_");
+    for (let i = 0; i < this.personalRawReplays.length; i++) {
+      const arr = this.unpackReplayStr(this.personalRawReplays[i]);
+      let category;
+      // standard
+      if (arr[2].length === 1) {
+        const botCode = arr[3];
+        if (botCode[0] === "3" || botCode[1] === "3") {
+          category = this.replays.HARD;
+        } else category = this.replays.EASY;
+      }
+      // custom
+      else category = this.replays.CUSTOM;
+      category.personal.push({
+        replay: arr,
+        title: "untitled",
+        from: "you",
+      });
+    }
 
-    // unpack community replays (convert string into array of numStrings)
+    // unpack community replays
     const CRS = COMMUNITY_REPLAYS;
     for (let i = 0; i < CRS.length; i++) {
       const CR = CRS[i];
