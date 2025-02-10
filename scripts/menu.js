@@ -640,7 +640,7 @@ const MENU = {
       ),
       new Btn(
         460,
-        170,
+        167,
         50,
         50,
         function () {
@@ -655,11 +655,12 @@ const MENU = {
           paging.index = paging.index - 1;
           paging.progress = 0;
           paging.isGoingUp = true;
+          REPLAYS_MENU.setCards();
         }
       ),
       new Btn(
         460,
-        470,
+        467,
         50,
         50,
         function () {
@@ -674,6 +675,7 @@ const MENU = {
           paging.index = paging.index + 1;
           paging.progress = 0;
           paging.isGoingUp = false;
+          REPLAYS_MENU.setCards();
         }
       ),
       new Btn(
