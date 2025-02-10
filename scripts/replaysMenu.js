@@ -326,7 +326,10 @@ const REPLAYS_MENU = {
     // unpack personal replays
     const localPRR = localStorage.getItem("personalRawReplays");
     this.personalRawReplays =
-      typeof localPRR === "string" ? localPRR.split("_") : [];
+      typeof localPRR === "string" && localPRR.length !== 0
+        ? localPRR.split("_")
+        : [];
+
     for (let i = 0; i < this.personalRawReplays.length; i++) {
       const arr = this.unpackReplayStr(this.personalRawReplays[i]);
       let category;
