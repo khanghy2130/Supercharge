@@ -286,7 +286,7 @@ const REPLAYSYS = {
     ];
 
     const RM = REPLAYS_MENU;
-    RM.personalRawReplays.push(RM.getRawStr(arr));
+    RM.personalRawReplays.unshift(RM.getRawStr(arr));
     localStorage.setItem("personalRawReplays", RM.personalRawReplays.join("_"));
 
     const ss = SCENE_CONTROL.scenesStack;
@@ -298,7 +298,7 @@ const REPLAYSYS = {
     } else {
       replaysCategory = RM.replays.EASY;
     }
-    replaysCategory.personal.push({
+    replaysCategory.personal.unshift({
       replay: arr,
       title: "untitled",
       from: "you",
@@ -381,7 +381,7 @@ const REPLAYSYS = {
     bot.blackCursor.progress = 1;
     bot.blackCursor.endPos = bot.blackCursor.homePos;
 
-    // reset meta
+    // reset
     gp.meta.gameover = true;
     gp.meta.latestMoveIndex = 31;
     gp.meta.isWhiteTurn = true;
@@ -390,10 +390,15 @@ const REPLAYSYS = {
     gp.meta.white.energy = 2;
     gp.meta.black.energy = 2;
     gp.meta.round = 1;
+
     gp.selectedPiecePos = null;
     gp.possibleMoves = null;
     gp.hintArrow.countDown = 0;
     gp.meta.timeStops = [0, wTotalTime, wTotalTime + bTotalTime];
+
+    gp.result.countDown = 0;
+    gp.result.isShown = false;
+    gp.exitWarning.isShown = false;
     this.initialize();
 
     // reset boardData

@@ -262,7 +262,7 @@ const GAMEPLAY = {
     bot.blackCursor.progress = 1;
     bot.blackCursor.endPos = bot.blackCursor.homePos;
 
-    // reset meta
+    // reset
     this.savedConfig = { white, black };
     this.meta.gameover = false;
     this.meta.isWhiteTurn = true;
@@ -273,8 +273,13 @@ const GAMEPLAY = {
     this.meta.round = 1;
     this.meta.latestMoveIndex = -1;
     this.meta.timeStops = [Date.now()];
+
     this.selectedPiecePos = null;
     this.possibleMoves = null;
+    this.result.countDown = 0;
+    this.result.isShown = false;
+    this.exitWarning.isShown = false;
+
     if (this.isNewPlayer) {
       this.hintArrow.x = r.btns[5].x;
       this.hintArrow.countDown = 200;

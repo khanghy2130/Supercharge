@@ -319,9 +319,9 @@ const REPLAYS_MENU = {
     }
 
     // unpack personal replays
-    this.personalRawReplays = localStorage
-      .getItem("personalRawReplays")
-      .split("_");
+    const localPRR = localStorage.getItem("personalRawReplays");
+    this.personalRawReplays =
+      typeof localPRR === "string" ? localPRR.split("_") : [];
     for (let i = 0; i < this.personalRawReplays.length; i++) {
       const arr = this.unpackReplayStr(this.personalRawReplays[i]);
       let category;

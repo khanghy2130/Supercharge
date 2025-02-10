@@ -124,6 +124,11 @@ const MENU = {
           myText("exit", -28, 8, 16, color1);
         },
         function () {
+          // blocked if is counting down to show result
+          if (GAMEPLAY.result.countDown > 0 || GAMEPLAY.result.isShown) {
+            return;
+          }
+
           const SC = SCENE_CONTROL;
           const lastScene = SC.scenesStack[SC.scenesStack.length - 1];
           // ask to confirm
@@ -163,6 +168,11 @@ const MENU = {
           myText("yes", -30, 12, 24, color(250));
         },
         function () {
+          // blocked if is counting down to show result
+          if (GAMEPLAY.result.countDown > 0 || GAMEPLAY.result.isShown) {
+            return;
+          }
+
           const botIsHard = BOT.whiteDepth === 3 || BOT.blackDepth === 3;
           const streakArr = botIsHard ? MENU.streak.hard : MENU.streak.easy;
           streakArr[0] = 0;
