@@ -597,7 +597,15 @@ const MENU = {
         function () {
           myText("submit replay", -100, 9, 18, color1);
         },
-        function () {}
+        function () {
+          const s = REPLAYS_MENU.submit;
+          s.msgIndex = 0;
+          s.isShown = true;
+          noStroke();
+          fill(0, 220);
+          rect(0, 0, 500, 600);
+          s.bgImg = get(0, 0, 500, 600);
+        }
       ),
       new Btn(
         110,

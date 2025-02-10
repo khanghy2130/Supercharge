@@ -90,6 +90,11 @@ const REPLAYS_MENU = {
     text: "sample text",
     progress: 1,
   },
+  submit: {
+    isShown: false,
+    bgImage: null,
+    msgIndex: 0,
+  },
 
   setIsAtCommunity: function (bool) {
     if (this.isAtCommunity === bool) return;
@@ -365,6 +370,22 @@ const REPLAYS_MENU = {
 
   render: function () {
     const { color1, color2 } = BOARD_INFO;
+
+    // submit modal
+    if (this.submit.isShown) {
+      const s = this.submit;
+      image(s.bgImg, 250, 300, 500, 600);
+
+      const msg =
+        "if you would like to share your\nreplays for other players to see,\nplease copy the replay data and\nshare it with me. also tell me if\nyou have a name for the replay.";
+      if (s.msgIndex < msg.length) s.msgIndex += 2;
+      myText(msg.substring(0, s.msgIndex), 30, 220, 16, color(240));
+
+      myText("click anywhere to close", 130, 525, 12, color(180));
+
+      return;
+    }
+
     background(color1);
     // buttons
     for (let i = 0; i < 6; i++) {
@@ -476,6 +497,13 @@ const REPLAYS_MENU = {
     }
   },
   clicked: function () {
+    // submit close
+    if (this.submit.isShown) {
+      this.btns[0].animateProgress = 1; // reset animation for submit button
+      this.submit.isShown = false;
+      return;
+    }
+
     // button clicked
     for (let i = 0; i < this.btns.length; i++) {
       const b = this.btns[i];
