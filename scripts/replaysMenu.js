@@ -2,49 +2,49 @@
 const COMMUNITY_REPLAYS = [
   {
     from: "logix indie",
-    title: "easy 8",
+    title: "example replay 8",
     replay:
       "eifgfgeejjgjihgjfgjgeefgihjhgjhkjgfgjghhjhkhhkkhhhfifgfhhkikjfkhfhfifhefjfgiikfkfieifiejgiegegdfeiefeigjfkjkkhigefgfgfhfighejkjjxjhejikefgjhkfkhhjggifiegdfgjhehfjkfhhgkijjkkjiighijfgfxdxdexkdmxjexglgklxmfxigxlflmxhmd",
   },
   {
     from: "logix indie",
-    title: "easy 7",
+    title: "example replay 7",
     replay:
       "eifgfgeejfihjfekeiggfgffihhjjjjgggffffeejgjejeeeffdejekdeeehehekgggfgfffekehekfjdeffdeddehfhfhfjffhgdddffhhfhjfkhgjfjfihfjijhfigxekdeffjegghjfjjgkdddgfehfhhgfkjgijhfidgdihjfkkdfigekgixmxdexijhxjhxegffidxfkhxhhxlflexgli",
   },
   {
     from: "logix indie",
-    title: "easy 6",
+    title: "example replay 6",
     replay:
       "eifgeidhjjjfjfjhfgeefgggjhihjhgegghghghkihikikifhkfkfkfdifijijgjfdededeegeegegdfdhgeedgegjgfgfefeefeedfedffdjjihgeedgeiefdhfefhfxgeikdhhkfkgggjdfifjdfdkjieefjeedhfjhekijhkkiihehhieidgxixedxijgxghxllijxheexflxlgdlkxgfj",
   },
   {
     from: "logix indie",
-    title: "easy 5",
+    title: "example replay 5",
     replay:
       "fgefefdgjfihjfigeidgdgeeihjjihijdghghghjijigijghhjgjeegfghfgigfggffdgjjjgjikigekeidhdhffikkjfgkgjjjhjhkhekigkgigkhkikiiiigegegefxigikdgekijefghhjhggjfdkjkikgkhiidhefdjjhffkfejkdijjghexdxdexjmfxgkxfdmfixejixijxlgjkxjg",
   },
   {
     from: "logix indie",
-    title: "easy 4",
+    title: "example replay 4",
     replay:
       "eeeifghejfihjfhdeiefefffjjgjgjkjffifheifkjkkihgihejeifjehdegeggieedgifjfegdigihhjfjgjgjehhkkhhihjgkhjeiedifhihfhieigigggihjjfhfexkkhegjhddgkjefffgijfdijeeghhggihedkhiefegegfkfjjkgiieixgxdexjhdxhmxmkiikxfkkxgmxlgfjxj",
   },
   {
     from: "logix indie",
-    title: "easy 3",
+    title: "example replay 3",
     replay:
       "eifgeidhihgjjjgjfgdhfgdegjgkgkggeedeeedfgggegehededfdeefjfhejfhfefijdhfihfhghghefihhhhijhgiijjiihhgiijgijjkhhehiijhkhkgjhiiihijkxgkdfdhdehfgehhggijkhiiefgigjfijdedgefhhkfjjkkkieighjifxkxedxjhfxjexlljlxiffxiexkmdgmxkg",
   },
   {
     from: "logix indie",
-    title: "easy 2",
+    title: "example replay 2",
     replay:
       "eifgeidhjfihjfhhfgdhfgheihjjihkhdhejheifjjkhjjjiifghghjkkhiijiiieedejkdejiikhhigjkkkejgiiiigiiggkkjkdejkgghfhfgededdddidgeiggejexikjihhdhkhhejkifejgeghkkggigidgjddehgijefkdjfihfhkiihixmxedxjmfxhlxlkmmxhmiximxifkgfxehd",
   },
   {
     from: "logix indie",
-    title: "easy 1",
+    title: "example replay 1",
     replay:
       "eifgeigkihgjjjgjfgeefgfejjikikgifefgeefggjgigjjgeededehejfhghggihekekekfhggggggikfkhkhfhjggdggfigkfjfhjhgiiiiijijhihihidjifijikgxgkikkffedegjhegdfijgggkhjikefhhgidfjiifddjkikgkegjkjefxhxedxjlexhixekjldxjiixiexllgfjxhkk",
   },
@@ -380,9 +380,9 @@ const REPLAYS_MENU = {
       image(s.bgImg, 250, 300, 500, 600);
 
       const msg =
-        "if you would like to share your\nreplays for other players to see,\nplease copy the replay data and\nshare it with me. also tell me if\nyou have a name for the replay.";
+        "if you would like to share your\nreplays for other players to see:\n\nclick the arrow-down button next\nto your replay to copy the data.\n\nsend me the data along with a\ntitle for the replay if you'd like.";
       if (s.msgIndex < msg.length) s.msgIndex += 2;
-      myText(msg.substring(0, s.msgIndex), 30, 220, 16, color(240));
+      myText(msg.substring(0, s.msgIndex), 25, 160, 16, color(240));
 
       myText("click anywhere to close", 130, 525, 12, color(180));
 
