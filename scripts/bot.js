@@ -243,7 +243,7 @@ const BOT = {
         const newAction = potentialActions.shift();
         const newIsMaximizing = !isMaximizing;
         this.stack.push({
-          actionsHistory: [...actionsHistory, newAction],
+          actionsHistory: actionsHistory.concat([newAction]),
           potentialActions: null,
           returnValue: {
             actionsHistory: null,

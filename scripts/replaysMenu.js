@@ -220,7 +220,8 @@ const REPLAYS_MENU = {
     const frameColor = BOARD_INFO.color2;
     const color1 = BOARD_INFO.color1;
 
-    background(color1);
+    const ng = createGraphics(500, 300, P2D);
+    ng.background(color1);
 
     // result mark (if player vs bot)
     const botCodeWhite = item.replay[3][0];
@@ -232,41 +233,41 @@ const REPLAYS_MENU = {
       const wScore = item.replay[5];
       const bScore = item.replay[8];
       if (wScore === bScore) {
-        fill(250, 100, 220);
+        ng.fill(250, 100, 220);
       } else if (
         (botCodeWhite === "0" && wScore > bScore) ||
         (botCodeBlack === "0" && bScore > wScore)
       ) {
-        fill(100, 245, 100);
+        ng.fill(100, 245, 100);
       } else {
-        fill(240, 80, 80);
+        ng.fill(240, 80, 80);
       }
-      noStroke();
-      triangle(410, 215, 390, 215, 410, 195);
+      ng.noStroke();
+      ng.triangle(410, 215, 390, 215, 410, 195);
     }
 
     // frame
-    strokeWeight(6);
-    noFill();
-    stroke(frameColor);
-    rect(50, 130, 360, 85);
-    noStroke();
-    fill(frameColor);
-    rect(50, 130, 360, 38);
+    ng.strokeWeight(6);
+    ng.noFill();
+    ng.stroke(frameColor);
+    ng.rect(50, 130, 360, 85);
+    ng.noStroke();
+    ng.fill(frameColor);
+    ng.rect(50, 130, 360, 38);
 
     // title & from
-    myText(item.title, 58, 146, 10, color1);
-    myText("from " + item.from, 58, 162, 10, color1);
+    myText(item.title, 58, 146, 10, color1, ng);
+    myText("from " + item.from, 58, 162, 10, color1, ng);
 
     // white score
-    myText(item.replay[5] + "", 70, 200, 26, whiteColor);
+    myText(item.replay[5] + "", 70, 200, 26, whiteColor, ng);
     // white name
     const wName = allNames[Number(item.replay[3][0])];
-    myText(wName, 125, 187, 12, whiteColor);
+    myText(wName, 125, 187, 12, whiteColor, ng);
     if (wName === "player") {
-      stroke(whiteColor);
-      strokeWeight(2);
-      line(125, 190, 185, 190);
+      ng.stroke(whiteColor);
+      ng.strokeWeight(2);
+      ng.line(125, 190, 185, 190);
     }
     // white time
     const wTotalTime = item.replay[6];
@@ -279,18 +280,19 @@ const REPLAYS_MENU = {
       125,
       207,
       12,
-      whiteColor
+      whiteColor,
+      ng
     );
 
     // black score
-    myText(item.replay[8] + "", 250, 200, 26, blackColor);
+    myText(item.replay[8] + "", 250, 200, 26, blackColor, ng);
     // black name
     const bName = allNames[Number(item.replay[3][1])];
-    myText(bName, 305, 187, 12, blackColor);
+    myText(bName, 305, 187, 12, blackColor, ng);
     if (bName === "player") {
-      stroke(blackColor);
-      strokeWeight(2);
-      line(305, 190, 365, 190);
+      ng.stroke(blackColor);
+      ng.strokeWeight(2);
+      ng.line(305, 190, 365, 190);
     }
     // black time
     const bTotalTime = item.replay[9];
@@ -303,11 +305,12 @@ const REPLAYS_MENU = {
       305,
       207,
       12,
-      blackColor
+      blackColor,
+      ng
     );
 
     return {
-      image: get(50, 130, 360, 85),
+      image: ng.get(50, 130, 360, 85),
       title: item.title,
       from: item.from,
       replay: item.replay,

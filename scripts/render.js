@@ -440,6 +440,7 @@ const RENDER = {
     noStroke();
     rectMode(CENTER);
     rect(0, 0, 60, 40, 10);
+    rectMode(CORNER);
     const scoreGainedStr = "+" + move.scoreGained.toString();
     myText(
       scoreGainedStr,

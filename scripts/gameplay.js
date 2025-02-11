@@ -445,6 +445,7 @@ const GAMEPLAY = {
             const selfPrg = min(1, map(sbPrg, i, i + 1, 0, 1));
             const yValue = 180 + 35 * i + (1 - selfPrg) * 20;
 
+            noStroke();
             fill(40, selfPrg * 255);
             rect(100, yValue, 300, 35);
             fill(240, selfPrg * 255);

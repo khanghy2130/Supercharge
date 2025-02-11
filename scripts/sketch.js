@@ -1,6 +1,6 @@
 let pieceImages = {};
 
-let scaleFactor = 1; /// nKA
+let _scaleFactor = 1; /// nKA
 let canvas; /// nKA
 function setup() {
   /// KA convert console.log
@@ -351,15 +351,15 @@ function createHelpImages() {
 // nKA
 function windowResized() {
   viewportWidth = Math.min(window.innerWidth * (6 / 5), window.innerHeight);
-  scaleFactor = viewportWidth / 600;
-  canvas.elt.style.transform = "scale(" + scaleFactor + ")";
+  _scaleFactor = viewportWidth / 600;
+  canvas.elt.style.transform = "scale(" + _scaleFactor + ")";
 }
 
 let _mouseX, _mouseY;
 let touchCountdown = 0;
 function draw() {
-  _mouseX = floor(mouseX / scaleFactor);
-  _mouseY = floor(mouseY / scaleFactor);
+  _mouseX = floor(mouseX / _scaleFactor);
+  _mouseY = floor(mouseY / _scaleFactor);
   touchCountdown--;
   cursor(ARROW);
 
@@ -414,7 +414,7 @@ function draw() {
   pop(); /// KA
   if (SC.progress < 1) {
     const alphaPrg = SC.isClosing ? SC.progress : 1 - SC.progress;
-    fill(lerpColor(color(0, 0), color(0), alphaPrg));
+    fill(0, alphaPrg * 255);
     noStroke();
     rect(0, 0, 500, 600);
   }

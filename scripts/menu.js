@@ -365,12 +365,12 @@ const MENU = {
         }
       ),
       new Btn(
-        370,
-        540,
-        200,
-        50,
+        380,
+        80,
+        170,
+        40,
         function () {
-          myText("replays", -73, 12, 25, color1);
+          myText("replays", -55, 9, 18, color1);
         },
         function () {
           REPLAYS_MENU.category = "CUSTOM";
@@ -394,10 +394,10 @@ const MENU = {
         }
       ),
       new Btn(
-        380,
+        370,
+        540,
+        200,
         70,
-        180,
-        60,
         function () {
           myText("play", -52, 15, 30, color1);
         },
