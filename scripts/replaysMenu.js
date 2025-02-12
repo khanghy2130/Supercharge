@@ -1,6 +1,37 @@
 // add new replay to the beginning
 const COMMUNITY_REPLAYS = [
   {
+    from: "radar",
+    title: "fast win! 22 seconds!",
+    replay:
+      "eifgeijdjjjfjjkhfgeefgigjfififidigdgeedgidihidheeehehehdeehhihhhhdhfjdhfihjihhkhjdkddgfhhhfijikhkdididiijijjjjkjfhejhfgekjhjhjfjxhdhejdighhkhidjiifiikjjjfjkdfhfiejddkeidhjgedfeihgekikxgxedxjifxglxfhgidxffjxkfxffdmjxild",
+  },
+  {
+    from: "logix indie",
+    title: "fast win! 23 seconds! just like the bot!",
+    replay:
+      "eifgeifhjfihjfhheeekekfkihjjhhjjfgeieifkhhfiihiieidididfjjiijjkjdfgfgfkfiihjfihjkfdffhdffiehkjhjdffhdfdekjikikgjfhggggkkhjgjhjghxfhekfikfhhfkdekjdieigfiidfehhjikgjghggdikkhkhfgfgdejgixkxedxjlgxidxfggljxejhximxfgjiexhfm",
+  },
+  {
+    from: "logix indie",
+    title: "bots fight! battle of kings!",
+    replay:
+      "fgffeeffihjijjjieeedfffejfkfjiijfeededddjjkkkkjkfegdeifhijjkkfkefhggdddeijhkkejdgghghgifjkjjjjijdeeeeefeijhkijhifegdfeffhkgkgkfjxjdkkkfgggdedhkddijifehjkdeffhihgfjeehjjjkfgkidheedkgfkxggggggxggxjglxiexgiljmxehexhmxglfkexjfm",
+  },
+  {
+    from: "logix indie",
+    title: "69 points!",
+    replay:
+      "eifgfgeeihhgjfhgeijdeegfjfkgjjjhfgggjdgghgjhhghdjdjgjgggjhijijkkjggdgggfhdhjhjdjggefgdefkghjdjhjgfefefgfdjekhjdjefdegdeeekdjekdkxijjdkkhdjhkgefjgekgddkggeedjkhgifkdefdikeihhigkjjdjfghxfxdgxjfexjmxehijiixghexjgxhelfkxffd",
+  },
+  {
+    from: "duke",
+    title: "best score so far",
+    replay:
+      "eifgeihfjjkjihkjfgeefghgihiiiidihghfhggfdiddddkdeegfeehhjfkdjfjghfgfhfghjgjkkjgfkjjjhhjjjkgkgfehgheihhfhkdiegkgifhfefedegikikikexkjdijkhgiihfgfddjgghgkhhfhehiefedfgijjejkedeeiidkijfdixjxdgxjhmxifxmgekkxgkdxhgxhdmmexedh",
+  },
+
+  {
     from: "logix indie",
     title: "example replay 8",
     replay:
@@ -256,8 +287,8 @@ const REPLAYS_MENU = {
     ng.rect(50, 130, 360, 38);
 
     // title & from
-    myText(item.title, 58, 146, 10, color1, ng);
-    myText("from " + item.from, 58, 162, 10, color1, ng);
+    myText(item.title, 58, 146, 10, whiteColor, ng);
+    myText("from " + item.from, 58, 162, 10, whiteColor, ng);
 
     // white score
     myText(item.replay[5] + "", 70, 200, 26, whiteColor, ng);
