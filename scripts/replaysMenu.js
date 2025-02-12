@@ -1,6 +1,31 @@
 // add new replay to the beginning
 const COMMUNITY_REPLAYS = [
   {
+    from: "logix indie",
+    title: "used my knight to block twice!!",
+    replay:
+      "eifgfgeejjfjfjfgeiggggeeihgjgjehfjejeeffehfgehghejeieieefgehghehffeeggifjfkdehghfffdifggehhkkdieeefdeegeghihihkhfdgefdfhhkkhhkhjxfjkdehejgefdghieggkfhjhkeikehfdhkiihkjjkfhhddejfjgdgidxixdgxikixjexegfegfxhikxifxhgihkxhff",
+  },
+  {
+    from: "logix indie",
+    title: "draw match",
+    replay:
+      "eifgfgeejjfjfjfhfgegegeifhfdfdhdeiegeihfjfihjfieegkgkghgiejdhdhfhgegegeeihgigifgegdeeedefghffgfjeedgdeeefjejhfjgdgeedgdfjgiiiikhxegiefdkghdfhfjhfejgijdkhdedgdfiikkgfjgeieffdfeggfgkddixjxdgxiekxifxkdkljxhkhxifxhdemexglf",
+  },
+  {
+    from: "snowymountain",
+    title:
+      "when you lose but you took too long to\n                                             lose",
+    replay:
+      "eeeieefgjfihjfieeeggggeijjjdiejdggfgggheieidjdfhfgfefehefhgiihgifedfeidjihfkgifkdjhfhehfgihhhhjjhegfhfgfidikjjikhffddfehjjjkikkixdfidiefkjkggdjhhhekifhejjjjfgidefdgfdkdddikghghkkhggehxixdexjdlxigxgkidjekixhkmxkkxfgmhexffm",
+  },
+  {
+    from: "logix indie",
+    title: "the bot spent 2 moves to stop my bishop :o",
+    replay:
+      "eifgeifhjjhjihhgfhggggeehjhgjfhggggdgdgghjikikkiggfgeeffjfkfkfkgggfifgffhgfhkgfgffefefehfgfhfgeifidjdjeheidkfhihdjejkghjihididjdxikejfhkigdfikfdkehefffeiidkgekfkihfekdjdkkikhjdjkjjfedxlxdgxjfmxjmxlhdddxghgxiexikgkgxegh",
+  },
+  {
     from: "radar",
     title: "fast win! 22 seconds!",
     replay:
@@ -29,55 +54,6 @@ const COMMUNITY_REPLAYS = [
     title: "best score so far",
     replay:
       "eifgeihfjjkjihkjfgeefghgihiiiidihghfhggfdiddddkdeegfeehhjfkdjfjghfgfhfghjgjkkjgfkjjjhhjjjkgkgfehgheihhfhkdiegkgifhfefedegikikikexkjdijkhgiihfgfddjgghgkhhfhehiefedfgijjejkedeeiidkijfdixjxdgxjhmxifxmgekkxgkdxhgxhdmmexedh",
-  },
-
-  {
-    from: "logix indie",
-    title: "example replay 8",
-    replay:
-      "eifgfgeejjgjihgjfgjgeefgihjhgjhkjgfgjghhjhkhhkkhhhfifgfhhkikjfkhfhfifhefjfgiikfkfieifiejgiegegdfeiefeigjfkjkkhigefgfgfhfighejkjjxjhejikefgjhkfkhhjggifiegdfgjhehfjkfhhgkijjkkjiighijfgfxdxdexkdmxjexglgklxmfxigxlflmxhmd",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 7",
-    replay:
-      "eifgfgeejfihjfekeiggfgffihhjjjjgggffffeejgjejeeeffdejekdeeehehekgggfgfffekehekfjdeffdeddehfhfhfjffhgdddffhhfhjfkhgjfjfihfjijhfigxekdeffjegghjfjjgkdddgfehfhhgfkjgijhfidgdihjfkkdfigekgixmxdexijhxjhxegffidxfkhxhhxlflexgli",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 6",
-    replay:
-      "eifgeidhjjjfjfjhfgeefgggjhihjhgegghghghkihikikifhkfkfkfdifijijgjfdededeegeegegdfdhgeedgegjgfgfefeefeedfedffdjjihgeedgeiefdhfefhfxgeikdhhkfkgggjdfifjdfdkjieefjeedhfjhekijhkkiihehhieidgxixedxijgxghxllijxheexflxlgdlkxgfj",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 5",
-    replay:
-      "fgefefdgjfihjfigeidgdgeeihjjihijdghghghjijigijghhjgjeegfghfgigfggffdgjjjgjikigekeidhdhffikkjfgkgjjjhjhkhekigkgigkhkikiiiigegegefxigikdgekijefghhjhggjfdkjkikgkhiidhefdjjhffkfejkdijjghexdxdexjmfxgkxfdmfixejixijxlgjkxjg",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 4",
-    replay:
-      "eeeifghejfihjfhdeiefefffjjgjgjkjffifheifkjkkihgihejeifjehdegeggieedgifjfegdigihhjfjgjgjehhkkhhihjgkhjeiedifhihfhieigigggihjjfhfexkkhegjhddgkjefffgijfdijeeghhggihedkhiefegegfkfjjkgiieixgxdexjhdxhmxmkiikxfkkxgmxlgfjxj",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 3",
-    replay:
-      "eifgeidhihgjjjgjfgdhfgdegjgkgkggeedeeedfgggegehededfdeefjfhejfhfefijdhfihfhghghefihhhhijhgiijjiihhgiijgijjkhhehiijhkhkgjhiiihijkxgkdfdhdehfgehhggijkhiiefgigjfijdedgefhhkfjjkkkieighjifxkxedxjhfxjexlljlxiffxiexkmdgmxkg",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 2",
-    replay:
-      "eifgeidhjfihjfhhfgdhfgheihjjihkhdhejheifjjkhjjjiifghghjkkhiijiiieedejkdejiikhhigjkkkejgiiiigiiggkkjkdejkgghfhfgededdddidgeiggejexikjihhdhkhhejkifejgeghkkggigidgjddehgijefkdjfihfhkiihixmxedxjmfxhlxlkmmxhmiximxifkgfxehd",
-  },
-  {
-    from: "logix indie",
-    title: "example replay 1",
-    replay:
-      "eifgeigkihgjjjgjfgeefgfejjikikgifefgeefggjgigjjgeededehejfhghggihekekekfhggggggikfkhkhfhjggdggfigkfjfhjhgiiiiijijhihihidjifijikgxgkikkffedegjhegdfijgggkhjikefhhgidfjiifddjkikgkegjkjefxhxedxjlexhixekjldxjiixiexllgfjxhkk",
   },
 ];
 
