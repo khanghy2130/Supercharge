@@ -1,6 +1,30 @@
 // add new replay to the beginning
 const COMMUNITY_REPLAYS = [
   {
+    from: "avenger",
+    title: "finally, a win!",
+    replay:
+      "eifgfgeejfkdihfkfgegeegffkkfjjhjeggggghghjgjkfgjeihfhghfkfkegjhihgejhfhdhidekedehdhgejhgkeigigfdejekhggfdejejejjhgiiiijkjjijijdjxkdegfkgfkfhfjkggkeejhdigjjfdekijhkdjiidigikieheifkedhhxhxdexjiixjfxlmjjjxiljxhdxfimgdxgli",
+  },
+  {
+    from: "swankyman",
+    title: "easy as chess",
+    replay:
+      "eifgeeiejjjhjhihieidfghfihififjfidhdeiggifjhifejggdjdjekjfifejifhdhfhfgfejeeeefegfffhdiffeiehdieifjdekfjhdgdgdghfffdfdfjghgjiehfxhdhfggidjhejifekgfffeegjkkdgjdghfdfjdejggdihhfhkkgkddkxkxdexijdxglxleimjxgmjxgkxffmilxiil",
+  },
+  {
+    from: "snowymountain",
+    title: "hard mode win",
+    replay:
+      "eifgeidhjjkjjfihfgdhfgjkjfigihjfdhfgfgeeigjfigjefgggjkfgkjkfkfkgeefgeeffjfkgjfjiggfgggfijijejikkfgfifgeijekekegefifffiejgegdgdedxjeigkfdhggkkjkffjieigdedkehdfifeejfkigfjiiidkhjfihehhixgxdgxjhdxjjxkgemlxfglxjixifmggxhig",
+  },
+  {
+    from: "snowymountain",
+    title: "my first winning submisson :d",
+    replay:
+      "eifgeidhjjjfjjihfgeefgkgjjiiihjfdhgekgkdihhhiihhkdededeeiiikikifeddfeefeifihjfihdffedfdejfjgjgjededhgedhhhggihggdhgedhfhihfkjejkxgeediifekgdhikdfhhfkdejgggifjejddkfhgiiejkkkefdhfjejifxhxedximkxilxfiifmxhiixjfxkihfdxeml",
+  },
+  {
     from: "logix indie",
     title: "used my knight to block twice!!",
     replay:
